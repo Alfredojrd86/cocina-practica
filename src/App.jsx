@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { STYLES } from "./styles.js";
 import { DB } from "./data/recipes.js";
 import { SHOPPING, FRUTAS } from "./data/shopping.js";
@@ -41,6 +41,9 @@ function buildWeek(approach) {
 
 const names = (arr) => arr.map((x) => x.n).join("  ·  ");
 
+// Ingredientes disponibles, derivados de la lista de compras (sin paréntesis ni duplicados).
+const INGREDIENTS = [...new Set(SHOPPING.map((s) => s.item.replace(/\s*\(.*?\)/g, "").trim()))];
+
 function fmtQty(base, n, unit) {
   const v = base * n;
   const s = Number.isInteger(v) ? v : v.toFixed(1);
@@ -56,6 +59,8 @@ export default function App() {
   const [week, setWeek] = useLocalStorage("cm_week", null);
   const [open, setOpen] = useLocalStorage("cm_open", {});
   const [checked, setChecked] = useLocalStorage("cm_checked", {});
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiErr, setAiErr] = useState(null);
 
   useEffect(() => {
     const l = document.createElement("style");
@@ -65,6 +70,25 @@ export default function App() {
   }, []);
 
   const roll = () => { let s = suggest(approach, meal); if (res && s.titulo === res.titulo) s = suggest(approach, meal); setRes(s); };
+
+  const rollAI = async () => {
+    setAiLoading(true);
+    setAiErr(null);
+    try {
+      const r = await fetch("/.netlify/functions/sugerir", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ approach, meal, ingredients: INGREDIENTS }),
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || "Error");
+      setRes(d);
+    } catch (e) {
+      setAiErr("No se pudo generar con IA. Revisa que GEMINI_API_KEY esté configurada en Netlify (no funciona en local sin netlify dev).");
+    } finally {
+      setAiLoading(false);
+    }
+  };
   const toggle = (key) => setOpen({ ...open, [key]: !open[key] });
   const cats = [...new Set(SHOPPING.map((s) => s.cat))];
 
@@ -107,6 +131,8 @@ export default function App() {
             </div>
           ) : <p className="placeholder">Toca el botón para una sugerencia con su preparación…</p>}</div>
           <button className="cm-roll" onClick={roll}>🍽 {res ? "Otra sugerencia" : "Sugerir " + meal.toLowerCase()}</button>
+          <button className="cm-outline" onClick={rollAI} disabled={aiLoading}>{aiLoading ? "✨ Pensando…" : "✨ Sugerir con IA"}</button>
+          {aiErr && <p className="cm-hint" style={{ color: "var(--terra)", marginTop: 10 }}>{aiErr}</p>}
         </div>
       )}
 

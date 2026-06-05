@@ -5,6 +5,9 @@
 [build.environment]
   NODE_VERSION = "20"
 
+[functions]
+  directory = "netlify/functions"
+
 # Para que una app de una sola página funcione en cualquier ruta
 [[redirects]]
   from = "/*"
