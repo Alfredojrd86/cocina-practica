@@ -60,7 +60,7 @@ export const handler = async (event) => {
 
     if (!r.ok) {
       const t = await r.text();
-      return json(502, { error: "Error de Gemini", detail: t.slice(0, 300) });
+      return json(502, { error: "Error de Gemini", detail: t.slice(0, 1500) });
     }
 
     const data = await r.json();
