@@ -49,7 +49,7 @@ export const handler = async (event) => {
     `Sugiere 3 ideas distintas de ${meal} siguiendo ${enfoque}. ` +
     `Usa SOLO estos ingredientes disponibles: ${lista}. Sin azúcar añadida. ` +
     `Indica cantidades aproximadas para ${personas} persona(s).${rapida} ` +
-    `Reglas: la cebolla SIEMPRE cocida o salteada, nunca cruda. No combines queso con cambur.`;
+    `Reglas: la cebolla SIEMPRE cocida o salteada, nunca cruda. NUNCA combines queso con ninguna fruta.`;
 
   try {
     const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {

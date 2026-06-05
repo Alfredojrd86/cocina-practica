@@ -140,7 +140,7 @@ export const DB = {
       i("Yogur griego", "Solo o con fresas."),
       i("Puñado de frutos secos", "Al natural."),
       i("Huevo duro", "Con una pizca de sal."),
-      i("Queso con manzana verde", "Unos cubos de queso llanero con rodajas de manzana verde."),
+      i("Queso con frutos secos", "Unos cubos de queso llanero con un puñado de frutos secos."),
     ],
   },
 };
