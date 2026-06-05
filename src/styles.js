@@ -115,4 +115,14 @@ export const STYLES = `
 .cm-empty{ text-align:center; color:var(--muted); font-style:italic; padding:36px 16px; font-size:14px; }
 .cm-fav-row{ display:flex; align-items:center; gap:10px; }
 .cm-fav-meta{ font-size:11px; color:var(--sage); font-weight:700; text-transform:uppercase; letter-spacing:0.04em; margin-top:4px; }
+
+/* Panel de auth (sync) */
+.cm-auth{ background:var(--paper); border:1px solid var(--line); border-radius:16px; padding:14px 16px; margin-bottom:16px; }
+.cm-auth-row{ display:flex; gap:8px; align-items:center; }
+.cm-input{ flex:1; min-height:44px; border:1.5px solid var(--line); border-radius:12px; padding:0 14px; font-family:'Karla'; font-size:14px; color:var(--ink); background:#fff; }
+.cm-input:focus{ outline:none; border-color:var(--sage); }
+.cm-auth-send{ border:none; background:var(--green); color:var(--cream); border-radius:12px; min-height:44px; padding:0 16px; font-family:'Karla'; font-weight:700; font-size:14px; cursor:pointer; white-space:nowrap; -webkit-tap-highlight-color:transparent; }
+.cm-auth-send:active{ transform:scale(0.97); }
+.cm-auth-mail{ flex:1; font-size:13.5px; font-weight:600; color:var(--green); }
+.cm-auth-out{ border:1.5px solid var(--line); background:#fff; color:var(--muted); border-radius:12px; min-height:40px; padding:0 14px; font-family:'Karla'; font-weight:700; font-size:13px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
 `;

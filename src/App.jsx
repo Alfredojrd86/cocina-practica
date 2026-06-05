@@ -3,6 +3,8 @@ import { STYLES } from "./styles.js";
 import { SHOPPING, FRUTAS } from "./data/shopping.js";
 import { APPROACHES, MEALS, PEOPLE, DAYS } from "./data/config.js";
 import { useLocalStorage } from "./hooks/useLocalStorage.js";
+import { useFavorites } from "./hooks/useFavorites.js";
+import { supabase, supabaseReady } from "./lib/supabase.js";
 import { suggestN, buildWeek, names, fmtQty } from "./lib/suggest.js";
 import { analyzeSuggestion, TIPO_INFO } from "./data/foodTypes.js";
 
@@ -63,10 +65,12 @@ export default function App() {
   const [week, setWeek] = useLocalStorage("cm_week", null);
   const [open, setOpen] = useLocalStorage("cm_open", {});
   const [checked, setChecked] = useLocalStorage("cm_checked", {});
-  const [favs, setFavs] = useLocalStorage("cm_favs", []);
+  const { favs, add: addFav, remove: removeFav, session, syncing } = useFavorites();
   const [openSug, setOpenSug] = useState({});
   const [aiLoading, setAiLoading] = useState(false);
   const [aiErr, setAiErr] = useState(null);
+  const [email, setEmail] = useState("");
+  const [authMsg, setAuthMsg] = useState(null);
 
   useEffect(() => {
     const l = document.createElement("style");
@@ -102,9 +106,18 @@ export default function App() {
   const toggleSug = (key) => setOpenSug({ ...openSug, [key]: !openSug[key] });
   const isFav = (s) => favs.some((f) => favKey(f) === favKey(s));
   const toggleFav = (s) => {
-    if (isFav(s)) setFavs(favs.filter((f) => favKey(f) !== favKey(s)));
-    else setFavs([{ titulo: s.titulo, pasos: s.pasos, approach, meal }, ...favs]);
+    if (isFav(s)) removeFav(s.titulo);
+    else addFav({ titulo: s.titulo, pasos: s.pasos, approach, meal });
   };
+
+  const sendMagicLink = async () => {
+    setAuthMsg(null);
+    if (!supabaseReady) { setAuthMsg("Sync no configurado (faltan variables Supabase)."); return; }
+    if (!email.includes("@")) { setAuthMsg("Escribe un correo válido."); return; }
+    const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin } });
+    setAuthMsg(error ? "Error: " + error.message : "Revisa tu correo y abre el enlace para entrar.");
+  };
+  const signOut = async () => { if (supabase) await supabase.auth.signOut(); };
   const cats = [...new Set(SHOPPING.map((s) => s.cat))];
 
   const Slot = ({ dk, slot, label, prepItems }) => {
@@ -174,7 +187,26 @@ export default function App() {
       {tab === "favoritos" && (
         <div className="cm-section" style={{ marginTop: 20 }}>
           <h2 className="cm-h2">Tus favoritos</h2>
-          <p className="cm-p">Recetas que guardaste. Se quedan en este teléfono.</p>
+          <p className="cm-p">{session ? "Sincronizados en tu cuenta: los ves en cualquier dispositivo." : "Guardados en este teléfono. Inicia sesión para verlos en todos tus dispositivos."}</p>
+
+          <div className="cm-auth">
+            {session ? (
+              <div className="cm-auth-row">
+                <span className="cm-auth-mail">✓ {session.user.email}{syncing ? " · sincronizando…" : ""}</span>
+                <button className="cm-auth-out" onClick={signOut}>Salir</button>
+              </div>
+            ) : (
+              <>
+                <p className="cm-mini" style={{ margin: "0 0 8px" }}>Sincronizar mis favoritos</p>
+                <div className="cm-auth-row">
+                  <input className="cm-input" type="email" inputMode="email" placeholder="tu@correo.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+                  <button className="cm-auth-send" onClick={sendMagicLink}>Enviar enlace</button>
+                </div>
+              </>
+            )}
+            {authMsg && <p className="cm-hint" style={{ marginTop: 8 }}>{authMsg}</p>}
+          </div>
+
           {favs.length === 0 ? (
             <p className="cm-empty">Aún no guardas recetas. Toca la ★ en cualquier sugerencia.</p>
           ) : (
@@ -183,7 +215,7 @@ export default function App() {
                 <div key={favKey(s) + k} className="cm-sug open">
                   <div className="cm-sug-top">
                     <span className="cm-sug-title">{s.titulo}</span>
-                    <button className="cm-fav on" aria-label="Quitar de favoritos" onClick={() => setFavs(favs.filter((f) => favKey(f) !== favKey(s)))}>★</button>
+                    <button className="cm-fav on" aria-label="Quitar de favoritos" onClick={() => removeFav(s.titulo)}>★</button>
                   </div>
                   <p className="cm-fav-meta">{APPROACHES.find((a) => a[0] === s.approach)?.[1] || s.approach} · {s.meal}</p>
                   <TypeFeedback sug={s} approach={s.approach} />
