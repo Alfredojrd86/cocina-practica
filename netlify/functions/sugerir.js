@@ -1,8 +1,8 @@
-// Netlify Function: proxy seguro a Gemini.
-// El key vive aquí (lado servidor) en process.env.GEMINI_API_KEY.
+// Netlify Function: proxy seguro a Groq (OpenAI-compatible).
+// El key vive aquí (lado servidor) en process.env.GROQ_API_KEY.
 // El navegador llama a /.netlify/functions/sugerir y nunca ve el key.
 
-const MODEL = "gemini-2.0-flash";
+const MODEL = "llama-3.3-70b-versatile";
 
 const APPROACH_LABEL = {
   metabolismo:
@@ -24,8 +24,8 @@ function json(statusCode, obj) {
 export const handler = async (event) => {
   if (event.httpMethod !== "POST") return json(405, { error: "Método no permitido" });
 
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) return json(500, { error: "Falta GEMINI_API_KEY en las variables de entorno de Netlify." });
+  const key = process.env.GROQ_API_KEY;
+  if (!key) return json(500, { error: "Falta GROQ_API_KEY en las variables de entorno de Netlify." });
 
   let body;
   try {
@@ -38,33 +38,40 @@ export const handler = async (event) => {
   const enfoque = APPROACH_LABEL[approach] || APPROACH_LABEL.balanceado;
   const lista = Array.isArray(ingredients) && ingredients.length ? ingredients.join(", ") : "ingredientes saludables comunes";
 
-  const prompt =
-    `Eres un asistente de cocina saludable. Sugiere UNA idea de ${meal} siguiendo ${enfoque}. ` +
-    `Usa SOLO estos ingredientes disponibles: ${lista}. Sin azúcar añadida. ` +
-    `Responde EXCLUSIVAMENTE en JSON válido con esta forma exacta: ` +
-    `{"titulo":"string","pasos":[{"n":"nombre del componente","p":"preparación breve en una o dos frases"}]}. ` +
-    `Todo en español. Entre 1 y 4 pasos.`;
+  const sys =
+    "Eres un asistente de cocina saludable. Respondes EXCLUSIVAMENTE en JSON válido, en español. " +
+    'La forma exacta es: {"titulo":"string","pasos":[{"n":"nombre del componente","p":"preparación breve"}]}. ' +
+    "Entre 1 y 4 pasos. Sin texto fuera del JSON.";
+
+  const user =
+    `Sugiere UNA idea de ${meal} siguiendo ${enfoque}. ` +
+    `Usa SOLO estos ingredientes disponibles: ${lista}. Sin azúcar añadida.`;
 
   try {
-    const r = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${key}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.9, responseMimeType: "application/json" },
-        }),
-      }
-    );
+    const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${key}`,
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        temperature: 0.9,
+        response_format: { type: "json_object" },
+        messages: [
+          { role: "system", content: sys },
+          { role: "user", content: user },
+        ],
+      }),
+    });
 
     if (!r.ok) {
       const t = await r.text();
-      return json(502, { error: "Error de Gemini", detail: t.slice(0, 1500) });
+      return json(502, { error: "Error de Groq", detail: t.slice(0, 800) });
     }
 
     const data = await r.json();
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const text = data?.choices?.[0]?.message?.content || "";
 
     let parsed;
     try {

@@ -84,7 +84,7 @@ export default function App() {
       if (!r.ok) throw new Error(d.error || "Error");
       setRes(d);
     } catch (e) {
-      setAiErr("No se pudo generar con IA. Revisa que GEMINI_API_KEY esté configurada en Netlify (no funciona en local sin netlify dev).");
+      setAiErr("No se pudo generar con IA. Revisa que GROQ_API_KEY esté configurada en Netlify (no funciona en local sin netlify dev).");
     } finally {
       setAiLoading(false);
     }
