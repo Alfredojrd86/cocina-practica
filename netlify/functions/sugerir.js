@@ -34,18 +34,21 @@ export const handler = async (event) => {
     return json(400, { error: "JSON inválido" });
   }
 
-  const { approach = "balanceado", meal = "Almuerzo", ingredients = [] } = body;
+  const { approach = "balanceado", meal = "Almuerzo", ingredients = [], people = 1, quick = false } = body;
   const enfoque = APPROACH_LABEL[approach] || APPROACH_LABEL.balanceado;
   const lista = Array.isArray(ingredients) && ingredients.length ? ingredients.join(", ") : "ingredientes saludables comunes";
+  const personas = Number(people) > 0 ? Number(people) : 1;
+  const rapida = quick ? " Que sean RÁPIDAS: sin horno, pocos pasos y pocos ingredientes." : "";
 
   const sys =
     "Eres un asistente de cocina saludable. Respondes EXCLUSIVAMENTE en JSON válido, en español. " +
-    'La forma exacta es: {"titulo":"string","pasos":[{"n":"nombre del componente","p":"preparación breve"}]}. ' +
-    "Entre 1 y 4 pasos. Sin texto fuera del JSON.";
+    'La forma exacta es: {"sugerencias":[{"titulo":"string","pasos":[{"n":"nombre del componente","p":"preparación breve con cantidades"}]}]}. ' +
+    "Devuelve EXACTAMENTE 3 sugerencias distintas, cada una con 1 a 4 pasos. Sin texto fuera del JSON.";
 
   const user =
-    `Sugiere UNA idea de ${meal} siguiendo ${enfoque}. ` +
-    `Usa SOLO estos ingredientes disponibles: ${lista}. Sin azúcar añadida.`;
+    `Sugiere 3 ideas distintas de ${meal} siguiendo ${enfoque}. ` +
+    `Usa SOLO estos ingredientes disponibles: ${lista}. Sin azúcar añadida. ` +
+    `Indica cantidades aproximadas para ${personas} persona(s).${rapida}`;
 
   try {
     const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -80,11 +83,14 @@ export const handler = async (event) => {
       return json(502, { error: "Respuesta no parseable", raw: text.slice(0, 300) });
     }
 
-    if (!parsed?.titulo || !Array.isArray(parsed?.pasos)) {
+    // Acepta {sugerencias:[...]} o una sola receta {titulo,pasos}.
+    let sugerencias = Array.isArray(parsed?.sugerencias) ? parsed.sugerencias : (parsed?.titulo ? [parsed] : null);
+    sugerencias = (sugerencias || []).filter((s) => s && s.titulo && Array.isArray(s.pasos));
+    if (!sugerencias.length) {
       return json(502, { error: "Formato inesperado", raw: parsed });
     }
 
-    return json(200, parsed);
+    return json(200, { sugerencias });
   } catch (e) {
     return json(500, { error: String(e) });
   }

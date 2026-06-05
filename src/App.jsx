@@ -1,53 +1,56 @@
 import React, { useEffect, useState } from "react";
 import { STYLES } from "./styles.js";
-import { DB } from "./data/recipes.js";
 import { SHOPPING, FRUTAS } from "./data/shopping.js";
 import { APPROACHES, MEALS, PEOPLE, DAYS } from "./data/config.js";
 import { useLocalStorage } from "./hooks/useLocalStorage.js";
-
-const rnd = (a) => a[Math.floor(Math.random() * a.length)];
-
-function suggest(approach, type) {
-  const d = DB[approach];
-  if (type === "Desayuno") { const x = rnd(d.desayunos); return { titulo: x.n, pasos: [x] }; }
-  if (type === "Snack") { const x = rnd(d.snacks); return { titulo: x.n, pasos: [x] }; }
-  const items = [rnd(d.proteinas)];
-  if (d.carbos && d.carbos.length) items.push(rnd(d.carbos));
-  items.push(rnd(d.vegetales), rnd(d.grasas));
-  return { titulo: items.map((x) => x.n).join("  ·  "), pasos: items };
-}
-
-function shuffle(a) {
-  const x = [...a];
-  for (let k = x.length - 1; k > 0; k--) {
-    const j = Math.floor(Math.random() * (k + 1));
-    [x[k], x[j]] = [x[j], x[k]];
-  }
-  return x;
-}
-
-const pick = (arr, k) => (arr && arr.length ? arr[k % arr.length] : null);
-
-function buildWeek(approach) {
-  const d = DB[approach];
-  const P = shuffle(d.proteinas), C = shuffle(d.carbos), V = shuffle(d.vegetales), F = shuffle(d.grasas), B = shuffle(d.desayunos);
-  return DAYS.map((day, k) => ({
-    dia: day,
-    desayuno: pick(B, k),
-    almuerzo: [pick(P, k), pick(C, k), pick(V, k), pick(F, k)].filter(Boolean),
-    cena: [pick(P, k + 2), pick(C, k + 1), pick(V, k + 3), pick(F, k + 1)].filter(Boolean),
-  }));
-}
-
-const names = (arr) => arr.map((x) => x.n).join("  ·  ");
+import { suggestN, buildWeek, names, fmtQty } from "./lib/suggest.js";
+import { analyzeSuggestion, TIPO_INFO } from "./data/foodTypes.js";
 
 // Ingredientes disponibles, derivados de la lista de compras (sin paréntesis ni duplicados).
 const INGREDIENTS = [...new Set(SHOPPING.map((s) => s.item.replace(/\s*\(.*?\)/g, "").trim()))];
 
-function fmtQty(base, n, unit) {
-  const v = base * n;
-  const s = Number.isInteger(v) ? v : v.toFixed(1);
-  return `${s} ${unit}`;
+const favKey = (s) => s.titulo;
+
+// Fila de badges de tipo + consejo para una sugerencia.
+function TypeFeedback({ sug, approach }) {
+  const { badges, consejo } = analyzeSuggestion(sug.pasos, approach);
+  return (
+    <>
+      <div className="cm-badges">
+        {badges.map((b, k) => {
+          const info = TIPO_INFO[b.tipo];
+          return (
+            <span key={k} className="cm-badge" style={{ background: info.bg, color: info.color }}>
+              <span className="dot" style={{ background: info.color }} />
+              {b.n}{b.tipo !== "A" ? ` · ${info.label}` : ""}
+            </span>
+          );
+        })}
+      </div>
+      <p className="cm-consejo">{consejo}</p>
+    </>
+  );
+}
+
+function SuggestionCard({ sug, approach, isOpen, onToggle, isFav, onFav }) {
+  return (
+    <div className={"cm-sug" + (isOpen ? " open" : "")} onClick={onToggle}>
+      <div className="cm-sug-top">
+        <span className="cm-sug-title">{sug.titulo}</span>
+        <button
+          className={"cm-fav" + (isFav ? " on" : "")}
+          aria-label={isFav ? "Quitar de favoritos" : "Guardar en favoritos"}
+          onClick={(e) => { e.stopPropagation(); onFav(); }}
+        >★</button>
+      </div>
+      <TypeFeedback sug={sug} approach={approach} />
+      {isOpen ? (
+        <div className="cm-sug-steps">
+          {sug.pasos.map((s, k) => (<div key={k} className="st"><b>{s.n}:</b> {s.p}</div>))}
+        </div>
+      ) : <p className="cm-sug-hint">Toca para ver la preparación ▾</p>}
+    </div>
+  );
 }
 
 export default function App() {
@@ -55,10 +58,13 @@ export default function App() {
   const [approach, setApproach] = useLocalStorage("cm_approach", "metabolismo");
   const [people, setPeople] = useLocalStorage("cm_people", 2);
   const [meal, setMeal] = useLocalStorage("cm_meal", "Almuerzo");
-  const [res, setRes] = useLocalStorage("cm_res", null);
+  const [quick, setQuick] = useLocalStorage("cm_quick", false);
+  const [sugs, setSugs] = useLocalStorage("cm_sugs", null);
   const [week, setWeek] = useLocalStorage("cm_week", null);
   const [open, setOpen] = useLocalStorage("cm_open", {});
   const [checked, setChecked] = useLocalStorage("cm_checked", {});
+  const [favs, setFavs] = useLocalStorage("cm_favs", []);
+  const [openSug, setOpenSug] = useState({});
   const [aiLoading, setAiLoading] = useState(false);
   const [aiErr, setAiErr] = useState(null);
 
@@ -69,7 +75,7 @@ export default function App() {
     return () => document.head.removeChild(l);
   }, []);
 
-  const roll = () => { let s = suggest(approach, meal); if (res && s.titulo === res.titulo) s = suggest(approach, meal); setRes(s); };
+  const rollLocal = () => { setAiErr(null); setOpenSug({}); setSugs(suggestN(approach, meal, 3, { practical: quick })); };
 
   const rollAI = async () => {
     setAiLoading(true);
@@ -78,18 +84,27 @@ export default function App() {
       const r = await fetch("/.netlify/functions/sugerir", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ approach, meal, ingredients: INGREDIENTS }),
+        body: JSON.stringify({ approach, meal, ingredients: INGREDIENTS, people, quick }),
       });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || "Error");
-      setRes(d);
+      const arr = Array.isArray(d.sugerencias) ? d.sugerencias : [d];
+      setOpenSug({});
+      setSugs(arr);
     } catch (e) {
       setAiErr("No se pudo generar con IA. Revisa que GROQ_API_KEY esté configurada en Netlify (no funciona en local sin netlify dev).");
     } finally {
       setAiLoading(false);
     }
   };
+
   const toggle = (key) => setOpen({ ...open, [key]: !open[key] });
+  const toggleSug = (key) => setOpenSug({ ...openSug, [key]: !openSug[key] });
+  const isFav = (s) => favs.some((f) => favKey(f) === favKey(s));
+  const toggleFav = (s) => {
+    if (isFav(s)) setFavs(favs.filter((f) => favKey(f) !== favKey(s)));
+    else setFavs([{ titulo: s.titulo, pasos: s.pasos, approach, meal }, ...favs]);
+  };
   const cats = [...new Set(SHOPPING.map((s) => s.cat))];
 
   const Slot = ({ dk, slot, label, prepItems }) => {
@@ -114,25 +129,71 @@ export default function App() {
         <div className="cm-banner">🍯 Sin azúcar añadida · solo lo natural</div>
         <p className="cm-mini">Enfoque</p>
         <div className="cm-seg">
-          {APPROACHES.map(([id, lab]) => (<button key={id} className={"cm-pill" + (approach === id ? " on" : "")} onClick={() => { setApproach(id); setWeek(null); setRes(null); }}>{lab}</button>))}
+          {APPROACHES.map(([id, lab]) => (<button key={id} className={"cm-pill" + (approach === id ? " on" : "")} onClick={() => { setApproach(id); setWeek(null); setSugs(null); }}>{lab}</button>))}
         </div>
       </div>
 
       {tab === "ahora" && (
         <div className="cm-section" style={{ marginTop: 20 }}>
           <h2 className="cm-h2">¿Qué comemos ahora?</h2>
-          <p className="cm-p">Elige el momento y toca para una idea, con su preparación.</p>
+          <p className="cm-p">Elige el momento. Te damos 3 ideas con su tipo de alimento y preparación.</p>
           <p className="cm-mini">Momento</p>
-          <div className="cm-pills">{MEALS.map((m) => (<button key={m} className={"cm-pill" + (meal === m ? " on" : "")} onClick={() => { setMeal(m); setRes(null); }}>{m}</button>))}</div>
-          <div className="cm-res">{res ? (
-            <div className="cm-rescontent" key={res.titulo}>
-              <p className="cm-restitle">{res.titulo}</p>
-              <div className="cm-steps">{res.pasos.map((s, k) => (<div key={k} className="cm-step"><b>{s.n}:</b> {s.p}</div>))}</div>
+          <div className="cm-pills">{MEALS.map((m) => (<button key={m} className={"cm-pill" + (meal === m ? " on" : "")} onClick={() => { setMeal(m); }}>{m}</button>))}</div>
+
+          <div className="cm-toggle" onClick={() => setQuick(!quick)} role="switch" aria-checked={quick}>
+            <span className={"cm-switch" + (quick ? " on" : "")} />
+            <span><span className="lbl">Solo rápidas</span> <span className="sub">— sin horno, pocos ingredientes</span></span>
+          </div>
+
+          <div className="cm-legend cm-consejo" style={{ border: "none", padding: 0, marginTop: 0, marginBottom: 4 }}>
+            🟢 Tipo A (libre) · 🟡 Fruta (moderar) · 🟠 Tipo E (modera porción)
+          </div>
+
+          {aiLoading ? (
+            <div className="cm-cards">
+              {[0, 1, 2].map((k) => (<div key={k} className="cm-skel"><div className="cm-skel-line w70" /><div className="cm-skel-line w90" /><div className="cm-skel-line w45" /></div>))}
             </div>
-          ) : <p className="placeholder">Toca el botón para una sugerencia con su preparación…</p>}</div>
-          <button className="cm-roll" onClick={roll}>🍽 {res ? "Otra sugerencia" : "Sugerir " + meal.toLowerCase()}</button>
+          ) : sugs && sugs.length ? (
+            <div className="cm-cards">
+              {sugs.map((s, k) => (
+                <SuggestionCard key={s.titulo + k} sug={s} approach={approach}
+                  isOpen={!!openSug[s.titulo + k]} onToggle={() => toggleSug(s.titulo + k)}
+                  isFav={isFav(s)} onFav={() => toggleFav(s)} />
+              ))}
+            </div>
+          ) : (
+            <div className="cm-res"><p className="placeholder">Toca un botón para 3 sugerencias con su tipo de alimento…</p></div>
+          )}
+
+          <button className="cm-roll" onClick={rollLocal}>🍽 {sugs ? "Otras 3 ideas" : "Sugerir 3 ideas"}</button>
           <button className="cm-outline" onClick={rollAI} disabled={aiLoading}>{aiLoading ? "✨ Pensando…" : "✨ Sugerir con IA"}</button>
           {aiErr && <p className="cm-hint" style={{ color: "var(--terra)", marginTop: 10 }}>{aiErr}</p>}
+        </div>
+      )}
+
+      {tab === "favoritos" && (
+        <div className="cm-section" style={{ marginTop: 20 }}>
+          <h2 className="cm-h2">Tus favoritos</h2>
+          <p className="cm-p">Recetas que guardaste. Se quedan en este teléfono.</p>
+          {favs.length === 0 ? (
+            <p className="cm-empty">Aún no guardas recetas. Toca la ★ en cualquier sugerencia.</p>
+          ) : (
+            <div className="cm-cards">
+              {favs.map((s, k) => (
+                <div key={favKey(s) + k} className="cm-sug open">
+                  <div className="cm-sug-top">
+                    <span className="cm-sug-title">{s.titulo}</span>
+                    <button className="cm-fav on" aria-label="Quitar de favoritos" onClick={() => setFavs(favs.filter((f) => favKey(f) !== favKey(s)))}>★</button>
+                  </div>
+                  <p className="cm-fav-meta">{APPROACHES.find((a) => a[0] === s.approach)?.[1] || s.approach} · {s.meal}</p>
+                  <TypeFeedback sug={s} approach={s.approach} />
+                  <div className="cm-sug-steps">
+                    {s.pasos.map((p, i) => (<div key={i} className="st"><b>{p.n}:</b> {p.p}</div>))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -196,6 +257,7 @@ export default function App() {
 
       <nav className="cm-tabs"><div className="cm-tabs-inner">
         <button className={"cm-tab" + (tab === "ahora" ? " on" : "")} onClick={() => setTab("ahora")}><span className="ic">🍽</span>Ahora</button>
+        <button className={"cm-tab" + (tab === "favoritos" ? " on" : "")} onClick={() => setTab("favoritos")}><span className="ic">⭐</span>Favoritos</button>
         <button className={"cm-tab" + (tab === "semana" ? " on" : "")} onClick={() => setTab("semana")}><span className="ic">📅</span>Semana</button>
         <button className={"cm-tab" + (tab === "compras" ? " on" : "")} onClick={() => setTab("compras")}><span className="ic">🛒</span>Compras</button>
       </div></nav>
