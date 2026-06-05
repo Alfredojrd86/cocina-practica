@@ -21,7 +21,7 @@ export const DB = {
       i("Cerdo al horno", "Sazona con sal y especias. Hornea a 180°C unos 35-40 min."),
       i("Carne de res a la plancha", "Sal y pimienta. Sella 3-4 min por lado a fuego alto al punto que prefieras."),
       i("Atún", "Escúrrelo y mézclalo con un chorrito de aceite de oliva y limón."),
-      i("Sardinas con limón", "Escúrrelas y sírvelas con limón, cebolla picada y aceite de oliva. Omega-3."),
+      i("Sardinas con limón", "Escúrrelas y sírvelas con limón, cebolla salteada y aceite de oliva. Omega-3."),
       i("Huevos cocidos", "Hierve 8-10 min, enfría en agua y pela."),
       i("Pollo al horno con limón", "Adoba con limón, ajo y sal. Hornea a 190°C 35-40 min."),
     ],
@@ -35,7 +35,7 @@ export const DB = {
       i("Brócoli al vapor", "Cuece al vapor 5-7 min hasta que esté verde y tierno."),
       i("Espinaca salteada con ajo", "Saltea espinaca con ajo y aceite de oliva 2-3 min hasta marchitar."),
       i("Pimentón asado", "Ásalo en tiras a fuego alto hasta que se ablande."),
-      i("Ensalada de pepino y cebolla", "Corta en rodajas y aliña con limón, sal y aceite de oliva."),
+      i("Ensalada de pepino", "Corta el pepino en rodajas y aliña con limón, sal y aceite de oliva."),
     ],
     grasas: [
       i("Palta", "En rodajas o cubos, con un toque de sal y limón."),
@@ -126,7 +126,7 @@ export const DB = {
       i("Brócoli al vapor", "Al vapor 5-7 min."),
       i("Espinaca salteada", "Con ajo y aceite de oliva, 2-3 min."),
       i("Pimentón", "Asado o salteado en tiras."),
-      i("Cebolla y tomate", "Salteados como base de guiso o frescos en ensalada."),
+      i("Cebolla salteada con tomate", "Sofríe la cebolla en aceite hasta transparente y añade tomate. Siempre cocida."),
     ],
     grasas: [
       i("Palta", "En rodajas con sal y limón."),
@@ -140,7 +140,7 @@ export const DB = {
       i("Yogur griego", "Solo o con fresas."),
       i("Puñado de frutos secos", "Al natural."),
       i("Huevo duro", "Con una pizca de sal."),
-      i("Queso con cambur", "Unos cubos de queso con medio cambur. Cambur: moderar."),
+      i("Queso con manzana verde", "Unos cubos de queso llanero con rodajas de manzana verde."),
     ],
   },
 };
