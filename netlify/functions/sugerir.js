@@ -2,7 +2,7 @@
 // El key vive aquí (lado servidor) en process.env.GEMINI_API_KEY.
 // El navegador llama a /.netlify/functions/sugerir y nunca ve el key.
 
-const MODEL = "gemini-1.5-flash";
+const MODEL = "gemini-2.0-flash";
 
 const APPROACH_LABEL = {
   metabolismo:
