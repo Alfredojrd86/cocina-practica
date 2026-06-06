@@ -125,4 +125,13 @@ export const STYLES = `
 .cm-auth-send:active{ transform:scale(0.97); }
 .cm-auth-mail{ flex:1; font-size:13.5px; font-weight:600; color:var(--green); }
 .cm-auth-out{ border:1.5px solid var(--line); background:#fff; color:var(--muted); border-radius:12px; min-height:40px; padding:0 14px; font-family:'Karla'; font-weight:700; font-size:13px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+
+/* Toast de feedback (guardar/quitar favorito) */
+.cm-toast{ position:fixed; left:50%; bottom:calc(env(safe-area-inset-bottom) + 80px); transform:translateX(-50%); z-index:60; display:inline-flex; align-items:center; gap:8px; background:var(--green); color:var(--cream); padding:12px 20px; border-radius:999px; font-size:13.5px; font-weight:700; box-shadow:0 14px 34px -12px rgba(47,61,46,0.8); animation:cm-toast-in .26s cubic-bezier(.2,1.2,.4,1) both; max-width:88%; text-align:center; pointer-events:none; }
+.cm-toast.rm{ background:var(--terra); box-shadow:0 14px 34px -12px rgba(191,91,60,0.7); }
+@keyframes cm-toast-in{ from{ opacity:0; transform:translate(-50%,16px) scale(.92) } to{ opacity:1; transform:translate(-50%,0) scale(1) } }
+
+/* Pop de la estrella al marcar favorito */
+@keyframes cm-star-pop{ 0%{ transform:scale(1) } 40%{ transform:scale(1.35) } 70%{ transform:scale(.9) } 100%{ transform:scale(1) } }
+.cm-fav.on{ animation:cm-star-pop .34s ease; }
 `;

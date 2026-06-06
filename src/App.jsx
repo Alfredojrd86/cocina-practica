@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { STYLES } from "./styles.js";
 import { SHOPPING, FRUTAS } from "./data/shopping.js";
 import { APPROACHES, MEALS, PEOPLE, DAYS } from "./data/config.js";
@@ -71,6 +71,14 @@ export default function App() {
   const [aiErr, setAiErr] = useState(null);
   const [email, setEmail] = useState("");
   const [authMsg, setAuthMsg] = useState(null);
+  const [toast, setToast] = useState(null);
+  const toastTimer = useRef(null);
+
+  const showToast = (msg, kind = "ok") => {
+    setToast({ msg, kind, id: Date.now() });
+    clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 2200);
+  };
 
   useEffect(() => {
     const l = document.createElement("style");
@@ -106,9 +114,10 @@ export default function App() {
   const toggleSug = (key) => setOpenSug({ ...openSug, [key]: !openSug[key] });
   const isFav = (s) => favs.some((f) => favKey(f) === favKey(s));
   const toggleFav = (s) => {
-    if (isFav(s)) removeFav(s.titulo);
-    else addFav({ titulo: s.titulo, pasos: s.pasos, approach, meal });
+    if (isFav(s)) { removeFav(s.titulo); showToast("Quitado de favoritos", "rm"); }
+    else { addFav({ titulo: s.titulo, pasos: s.pasos, approach, meal }); showToast("★ Guardado en favoritos", "ok"); }
   };
+  const removeFavWithToast = (titulo) => { removeFav(titulo); showToast("Quitado de favoritos", "rm"); };
 
   const sendMagicLink = async () => {
     setAuthMsg(null);
@@ -215,7 +224,7 @@ export default function App() {
                 <div key={favKey(s) + k} className="cm-sug open">
                   <div className="cm-sug-top">
                     <span className="cm-sug-title">{s.titulo}</span>
-                    <button className="cm-fav on" aria-label="Quitar de favoritos" onClick={() => removeFav(s.titulo)}>★</button>
+                    <button className="cm-fav on" aria-label="Quitar de favoritos" onClick={() => removeFavWithToast(s.titulo)}>★</button>
                   </div>
                   <p className="cm-fav-meta">{APPROACHES.find((a) => a[0] === s.approach)?.[1] || s.approach} · {s.meal}</p>
                   <TypeFeedback sug={s} approach={s.approach} />
@@ -286,6 +295,8 @@ export default function App() {
           <p className="cm-foot"><b>Funciona sola</b>, sin internet ni costo. Tu lista y semana quedan guardadas en este teléfono.<br /><br />Solo educativa; no reemplaza a un médico o nutricionista.</p>
         </div>
       )}
+
+      {toast && <div key={toast.id} className={"cm-toast " + toast.kind} role="status" aria-live="polite">{toast.msg}</div>}
 
       <nav className="cm-tabs"><div className="cm-tabs-inner">
         <button className={"cm-tab" + (tab === "ahora" ? " on" : "")} onClick={() => setTab("ahora")}><span className="ic">🍽</span>Ahora</button>
