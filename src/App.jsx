@@ -8,8 +8,16 @@ import { usePantry } from "./hooks/usePantry.js";
 import { supabase, supabaseReady } from "./lib/supabase.js";
 import { suggestN, buildWeek, names, fmtQty } from "./lib/suggest.js";
 import { analyzeSuggestion, TIPO_INFO } from "./data/foodTypes.js";
-import { CATALOG, PANTRY_CATS, PANTRY_INFO, statusOf, qtyOf, restockAll, adjustQty, stepFor, servingFor, extractItems, itemsFromNames, splitByPantry, applyCooked, findItem } from "./data/pantry.js";
+import { CATALOG, PANTRY_CATS, PANTRY_INFO, statusOf, qtyOf, restockAll, adjustQty, stepFor, servingFor, extractItems, itemsFromNames, splitByPantry, applyCooked, findItem, getItem } from "./data/pantry.js";
 const Scanner = lazy(() => import("./Scanner.jsx"));
+
+// Evita la pantalla en blanco si el escáner (o su chunk) falla al cargar.
+class ScannerBoundary extends React.Component {
+  constructor(p) { super(p); this.state = { err: false }; }
+  static getDerivedStateFromError() { return { err: true }; }
+  componentDidCatch() {}
+  render() { return this.state.err ? this.props.fallback : this.props.children; }
+}
 
 // Ingredientes disponibles, derivados de la lista de compras (sin paréntesis ni duplicados).
 const INGREDIENTS = [...new Set(SHOPPING.map((s) => s.item.replace(/\s*\(.*?\)/g, "").trim()))];
@@ -317,9 +325,9 @@ export default function App() {
   };
 
   // Agrega un producto escaneado a la compra usando su peso neto real.
-  const addScannedToBuy = (product, { amount = 1, unit = "unid." } = {}) => {
+  const addScannedToBuy = (product, { amount = 1, unit = "unid.", target = "match", matchedKey = null } = {}) => {
     buzz(14);
-    const item = findItem(`${product.name} ${product.ingredients}`);
+    const item = target === "new" ? null : (matchedKey ? getItem(matchedKey) : findItem(`${product.name} ${product.ingredients}`));
     if (item) {
       // A la unidad del ítem: peso (g/ml) -> kg/L; resto, la cantidad tal cual.
       let amt = (unit === "g" || unit === "ml") ? amount / 1000 : amount;
@@ -724,9 +732,17 @@ export default function App() {
         <button className="cm-fab" onClick={() => setShowScanner(true)} aria-label="Escanear producto">📷</button>
       )}
       {showScanner && (
-        <Suspense fallback={<div className="cm-scan"><p className="cm-scan-hint">Abriendo escáner…</p></div>}>
-          <Scanner approach={approach} onClose={() => setShowScanner(false)} onAdd={addScannedToBuy} />
-        </Suspense>
+        <ScannerBoundary fallback={
+          <div className="cm-scan">
+            <div className="cm-scan-top"><span className="cm-scan-title">Escáner</span><button className="cm-scan-close" onClick={() => setShowScanner(false)}>✕</button></div>
+            <p className="cm-scan-hint">No se pudo abrir el escáner. Recarga la app.</p>
+            <button className="cm-roll" onClick={() => window.location.reload()}>↻ Recargar</button>
+          </div>
+        }>
+          <Suspense fallback={<div className="cm-scan"><p className="cm-scan-hint">Abriendo escáner…</p></div>}>
+            <Scanner approach={approach} onClose={() => setShowScanner(false)} onAdd={addScannedToBuy} />
+          </Suspense>
+        </ScannerBoundary>
       )}
 
       {toast && (

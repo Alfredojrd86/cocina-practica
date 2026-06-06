@@ -20,9 +20,11 @@ export default function Scanner({ approach, onClose, onAdd }) {
   const [mSeals, setMSeals] = useState([]);
   const [addAmount, setAddAmount] = useState("");
   const [addUnit, setAddUnit] = useState("unid.");
+  const [addTarget, setAddTarget] = useState("new"); // "match" | "new"
 
   const initAdd = (p) => {
     const m = findItem(`${p.name} ${p.ingredients}`);
+    setAddTarget(m ? "match" : "new");
     if (m && (m.unit === "kg" || m.unit === "L")) { setAddUnit("g"); setAddAmount(p.grams != null ? String(p.grams) : ""); }
     else if (m) { setAddUnit(m.unit); setAddAmount("1"); }
     else { setAddUnit("unid."); setAddAmount("1"); }
@@ -142,15 +144,27 @@ export default function Scanner({ approach, onClose, onAdd }) {
           )}
           {onAdd && (() => {
             const matched = findItem(`${product.name} ${product.ingredients}`);
-            const isWeight = matched && (matched.unit === "kg" || matched.unit === "L");
+            const useMatch = matched && addTarget === "match";
+            const isWeight = useMatch && (matched.unit === "kg" || matched.unit === "L");
+            const a = Number(addAmount) || 0;
             return (
               <>
+                {matched && (
+                  <div className="cm-scan-weight">
+                    <label>Agregar a</label>
+                    <select className="cm-add-unit" style={{ width: "100%" }} value={addTarget}
+                      onChange={(e) => { const t = e.target.value; setAddTarget(t); setAdded(false); if (t === "match") { if (matched.unit === "kg" || matched.unit === "L") { setAddUnit("g"); setAddAmount(product.grams != null ? String(product.grams) : ""); } else { setAddUnit(matched.unit); setAddAmount("1"); } } else { setAddUnit("unid."); setAddAmount("1"); } }}>
+                      <option value="match">{matched.label} (existente)</option>
+                      <option value="new">Nuevo: {product.name.slice(0, 28)}</option>
+                    </select>
+                  </div>
+                )}
                 <div className="cm-scan-weight">
                   <label>{isWeight ? "Peso que compraste" : "Cantidad"}</label>
                   <div className="cm-scan-wrow">
                     <input className="cm-input" inputMode="decimal" placeholder={isWeight ? "g" : "1"} value={addAmount}
                       onChange={(e) => { setAddAmount(e.target.value.replace(/[^0-9.]/g, "")); setAdded(false); }} />
-                    {matched ? (
+                    {useMatch ? (
                       <span className="u">{isWeight ? "g" : matched.unit}</span>
                     ) : (
                       <select className="cm-add-unit" value={addUnit} onChange={(e) => { setAddUnit(e.target.value); setAdded(false); }}>
@@ -164,11 +178,11 @@ export default function Scanner({ approach, onClose, onAdd }) {
                     )}
                   </div>
                 </div>
-                <button className="cm-outline" style={{ marginTop: 0, marginBottom: 6 }} disabled={added || !(Number(addAmount) > 0)}
-                  onClick={() => { const a = Number(addAmount) || 0; if (!added && a > 0) { onAdd(product, { amount: a, unit: addUnit }); setAdded(true); } }}>
+                <button className="cm-outline" style={{ marginTop: 0, marginBottom: 6 }} disabled={added || !(a > 0)}
+                  onClick={() => { if (!added && a > 0) { onAdd(product, { amount: a, unit: addUnit, target: addTarget, matchedKey: matched ? matched.key : null }); setAdded(true); } }}>
                   {added ? "✓ Agregado a tu compra" : "➕ Agregar a mi compra"}
                 </button>
-                {!added && !(Number(addAmount) > 0) && <p className="cm-hint" style={{ marginTop: 0, marginBottom: 10 }}>Indica la cantidad para agregarlo.</p>}
+                {!added && !(a > 0) && <p className="cm-hint" style={{ marginTop: 0, marginBottom: 10 }}>Indica la cantidad para agregarlo.</p>}
               </>
             );
           })()}
