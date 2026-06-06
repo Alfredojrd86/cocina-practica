@@ -222,4 +222,5 @@ export const STYLES = `
 .cm-scan-err{ font-size:14px; color:var(--terra); text-align:center; margin:18px 0; }
 .cm-scan-manual{ display:flex; gap:8px; margin-top:14px; }
 .cm-scan-manual .cm-input{ flex:1; }
+.cm-textarea{ width:100%; min-height:90px; padding:10px 12px; font-family:'Karla'; font-size:14px; line-height:1.4; resize:vertical; }
 `;

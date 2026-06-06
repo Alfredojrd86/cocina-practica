@@ -14,6 +14,8 @@ export default function Scanner({ approach, onClose, onAdd }) {
   const [verdict, setVerdict] = useState(null);
   const [err, setErr] = useState(null);
   const [manual, setManual] = useState("");
+  const [mName, setMName] = useState("");
+  const [mIng, setMIng] = useState("");
 
   const stop = () => { try { controlsRef.current?.stop(); } catch {} };
 
@@ -57,6 +59,16 @@ export default function Scanner({ approach, onClose, onAdd }) {
   const close = () => { stop(); onClose(); };
   const submitManual = () => { const c = manual.trim(); if (c) { stop(); lookup(c); } };
 
+  // Evaluación manual por etiqueta (cuando el producto no está en la base).
+  const evalManual = () => {
+    const p = {
+      name: mName.trim() || "Producto", brand: "",
+      ingredients: mIng.trim().toLowerCase(),
+      sugars: null, carbs: null, proteins: null, fat: null, additives: [], nova: null,
+    };
+    setProduct(p); setVerdict({ ...evaluateProduct(approach, p), manual: true }); setAdded(false); setPhase("result");
+  };
+
   const v = verdict ? VERDICT_INFO[verdict.verdict] : null;
 
   return (
@@ -89,6 +101,7 @@ export default function Scanner({ approach, onClose, onAdd }) {
           <ul className="cm-scan-reasons">
             {verdict.reasons.map((r, k) => (<li key={k}>{r}</li>))}
           </ul>
+          {verdict.manual && <p className="cm-scan-nutri">Evaluado por los ingredientes que ingresaste (sin datos de azúcar exactos).</p>}
           {(product.sugars != null || product.proteins != null) && (
             <p className="cm-scan-nutri">
               {product.sugars != null && <>Azúcar {product.sugars}g · </>}
@@ -111,10 +124,20 @@ export default function Scanner({ approach, onClose, onAdd }) {
         <div className="cm-scan-result">
           <p className="cm-scan-err">{err}</p>
           <button className="cm-outline" style={{ marginTop: 0 }} onClick={start}>📷 Reintentar cámara</button>
+          <div className="cm-scan-manual">
+            <input className="cm-input" inputMode="numeric" placeholder="o ingresa el código…" value={manual}
+              onChange={(e) => setManual(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") submitManual(); }} />
+            <button className="cm-auth-send" onClick={submitManual}>Buscar</button>
+          </div>
+
+          <div className="cm-divider"><span>¿No está? Evalúalo por su etiqueta</span></div>
+          <input className="cm-input" placeholder="Nombre del producto" value={mName} onChange={(e) => setMName(e.target.value)} style={{ width: "100%", marginBottom: 8 }} />
+          <textarea className="cm-input cm-textarea" placeholder="Pega o escribe los ingredientes de la etiqueta…" value={mIng} onChange={(e) => setMIng(e.target.value)} />
+          <button className="cm-roll" style={{ marginTop: 10 }} onClick={evalManual}>Evaluar por ingredientes</button>
         </div>
       )}
 
-      {(phase === "scan" || phase === "error") && (
+      {phase === "scan" && (
         <div className="cm-scan-manual">
           <input className="cm-input" inputMode="numeric" placeholder="o ingresa el código…" value={manual}
             onChange={(e) => setManual(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") submitManual(); }} />
