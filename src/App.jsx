@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, lazy, Suspense } from "react";
 import { STYLES } from "./styles.js";
 import { SHOPPING, FRUTAS } from "./data/shopping.js";
-import { APPROACHES, MEALS, PEOPLE, DAYS } from "./data/config.js";
+import { APPROACHES, APPROACH_META, CATEGORY_ICONS, MEALS, PEOPLE, DAYS } from "./data/config.js";
 import { useLocalStorage } from "./hooks/useLocalStorage.js";
 import { useFavorites } from "./hooks/useFavorites.js";
 import { usePantry } from "./hooks/usePantry.js";
@@ -79,7 +79,8 @@ function SuggestionCard({ sug, approach, pantry, people, isOpen, onToggle, isFav
 }
 
 export default function App() {
-  const [tab, setTab] = useLocalStorage("cm_tab", "ahora");
+  const [tab, setTab] = useLocalStorage("cm_tab", "inicio");
+  const [onboarded, setOnboarded] = useLocalStorage("cm_onboarded", false);
   const [approach, setApproach] = useLocalStorage("cm_approach", "metabolismo");
   const [people, setPeople] = useLocalStorage("cm_people", 2);
   const [meal, setMeal] = useLocalStorage("cm_meal", "Almuerzo");
@@ -305,6 +306,24 @@ export default function App() {
         </div>
       </div>
 
+      {tab === "inicio" && (
+        <div className="cm-section" style={{ marginTop: 20 }}>
+          <div className="cm-home-enfoque">
+            <span className="emo">{APPROACH_META[approach]?.emoji}</span>
+            <div>
+              <div className="lbl">Enfoque: {APPROACH_META[approach]?.name}</div>
+              <div className="sub">{APPROACH_META[approach]?.desc}</div>
+            </div>
+          </div>
+          <div className="cm-home-grid">
+            <button className="cm-home-btn" onClick={() => setTab("ahora")}><span className="ic">🍽</span><span className="t">¿Qué como?</span><span className="d">Ideas para tu próxima comida</span></button>
+            <button className="cm-home-btn" onClick={() => setTab("despensa")}><span className="ic">🧺</span><span className="t">Mi despensa</span><span className="d">{agotadosLabels.length ? `${agotadosLabels.length} por reponer` : "Lo que tienes en casa"}</span></button>
+            <button className="cm-home-btn" onClick={() => setShowScanner(true)}><span className="ic">📷</span><span className="t">Escanear</span><span className="d">¿Este producto me sirve?</span></button>
+            <button className="cm-home-btn" onClick={() => setTab("compras")}><span className="ic">🛒</span><span className="t">Comprar</span><span className="d">Tu lista del mes</span></button>
+          </div>
+        </div>
+      )}
+
       {tab === "ahora" && (
         <div className="cm-section" style={{ marginTop: 20 }}>
           <h2 className="cm-h2">¿Qué comemos ahora?</h2>
@@ -431,7 +450,7 @@ export default function App() {
               if (!items.length) return null;
               return (
                 <div key={cat}>
-                  <p className="cm-shop-cat-h">{cat}</p>
+                  <p className="cm-shop-cat-h">{CATEGORY_ICONS[cat] ? CATEGORY_ICONS[cat] + " " : ""}{cat}</p>
                   {items.map((c) => {
                     const st = statusOf(c.key, pantry, people);
                     const info = PANTRY_INFO[st];
@@ -456,7 +475,7 @@ export default function App() {
             })}
             {custom.length > 0 && (
               <div>
-                <p className="cm-shop-cat-h">Otros (tuyos)</p>
+                <p className="cm-shop-cat-h">🛒 Otros (tuyos)</p>
                 {custom.map((c) => {
                   const qty = customQty(c.key, pantry);
                   const st = qty > 0 ? "tengo" : "agotado";
@@ -525,7 +544,7 @@ export default function App() {
               const items = CATALOG.filter((c) => c.cat === cat && !hidden.includes(c.key));
               if (!items.length) return null;
               return (<div key={cat}>
-                <p className="cm-shop-cat-h">{cat}</p>
+                <p className="cm-shop-cat-h">{CATEGORY_ICONS[cat] ? CATEGORY_ICONS[cat] + " " : ""}{cat}</p>
                 {items.map((c) => {
                   const on = !!checked[c.key];
                   const qty = qtyOf(c.key, buy, people);
@@ -547,7 +566,7 @@ export default function App() {
 
             {custom.length > 0 && (
               <div>
-                <p className="cm-shop-cat-h">Otros (tuyos)</p>
+                <p className="cm-shop-cat-h">🛒 Otros (tuyos)</p>
                 {custom.map((c) => {
                   const on = !!checked[c.key];
                   const qty = customQty(c.key, buy);
@@ -591,7 +610,30 @@ export default function App() {
         </div>
       )}
 
-      {!showScanner && (
+      {!onboarded && (
+        <div className="cm-onb">
+          <div className="cm-onb-card">
+            <h1 className="cm-onb-h">¿Qué <em>comemos</em>?</h1>
+            <p className="cm-onb-p">Comidas según tu estilo. Elige uno (lo cambias cuando quieras):</p>
+            <div className="cm-onb-opts">
+              {APPROACHES.map(([id]) => (
+                <button key={id} className={"cm-onb-opt" + (approach === id ? " on" : "")} onClick={() => setApproach(id)}>
+                  <span className="emo">{APPROACH_META[id].emoji}</span>
+                  <span className="t">{APPROACH_META[id].name}</span>
+                  <span className="d">{APPROACH_META[id].desc}</span>
+                </button>
+              ))}
+            </div>
+            <p className="cm-onb-p" style={{ marginTop: 16 }}>¿Para cuántas personas cocinas?</p>
+            <div className="cm-seg">
+              {PEOPLE.map(([lab, n]) => (<button key={n} className={"cm-pill" + (people === n ? " on" : "")} onClick={() => setPeople(n)}>{lab}</button>))}
+            </div>
+            <button className="cm-roll" style={{ marginTop: 18 }} onClick={() => { setOnboarded(true); setTab("inicio"); }}>Empezar →</button>
+          </div>
+        </div>
+      )}
+
+      {!showScanner && onboarded && (
         <button className="cm-fab" onClick={() => setShowScanner(true)} aria-label="Escanear producto">📷</button>
       )}
       {showScanner && (
@@ -610,6 +652,7 @@ export default function App() {
       )}
 
       <nav className="cm-tabs"><div className="cm-tabs-inner">
+        <button className={"cm-tab" + (tab === "inicio" ? " on" : "")} onClick={() => setTab("inicio")}><span className="ic">🏠</span>Inicio</button>
         <button className={"cm-tab" + (tab === "ahora" ? " on" : "")} onClick={() => setTab("ahora")}><span className="ic">🍽</span>Ahora</button>
         <button className={"cm-tab" + (tab === "favoritos" ? " on" : "")} onClick={() => setTab("favoritos")}><span className="ic">⭐</span>Favoritos</button>
         <button className={"cm-tab" + (tab === "despensa" ? " on" : "")} onClick={() => setTab("despensa")}><span className="ic">🧺</span>Despensa</button>
