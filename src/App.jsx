@@ -317,9 +317,9 @@ export default function App() {
   };
 
   // Agrega un producto escaneado a la compra usando su peso neto real.
-  const addScannedToBuy = (product) => {
+  const addScannedToBuy = (product, gramsOverride) => {
     buzz(14);
-    const g = product.grams; // peso neto en g/ml
+    const g = gramsOverride != null ? gramsOverride : product.grams; // peso neto en g/ml (editable)
     const item = findItem(`${product.name} ${product.ingredients}`);
     if (item) {
       // kg/L => convierte gramos a la unidad; envases (latas/unid) => suma 1.
@@ -331,7 +331,7 @@ export default function App() {
       return;
     }
     const baseName = product.brand ? `${product.name} (${product.brand})` : product.name;
-    const label = ((g && product.quantity ? `${baseName} ${product.quantity}` : baseName) || "Producto").slice(0, 40);
+    const label = ((g ? `${baseName} ${g} g` : baseName) || "Producto").slice(0, 40);
     const existing = custom.find((c) => c.label === label);
     if (existing) {
       setBuy({ ...buy, [existing.key]: customQty(existing.key, buy) + 1 });

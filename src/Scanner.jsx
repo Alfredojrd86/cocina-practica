@@ -17,6 +17,7 @@ export default function Scanner({ approach, onClose, onAdd }) {
   const [mName, setMName] = useState("");
   const [mIng, setMIng] = useState("");
   const [mSeals, setMSeals] = useState([]);
+  const [addGrams, setAddGrams] = useState("");
   const toggleSeal = (s) => setMSeals((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]));
 
   const stop = () => { try { controlsRef.current?.stop(); } catch {} };
@@ -27,6 +28,7 @@ export default function Scanner({ approach, onClose, onAdd }) {
     const p = await fetchProduct(code);
     if (!p) { setErr("Producto no encontrado en Open Food Facts. Prueba otro código."); setPhase("error"); return; }
     setProduct(p);
+    setAddGrams(p.grams != null ? String(p.grams) : "");
     const vd = evaluateProduct(approach, p);
     setVerdict(vd);
     setPhase("result");
@@ -71,7 +73,7 @@ export default function Scanner({ approach, onClose, onAdd }) {
       sugars: null, carbs: null, proteins: null, fat: null, additives: [], nova: null,
       seals: mSeals,
     };
-    setProduct(p); setVerdict({ ...evaluateProduct(approach, p), manual: true }); setAdded(false); setPhase("result");
+    setProduct(p); setVerdict({ ...evaluateProduct(approach, p), manual: true }); setAdded(false); setAddGrams(""); setPhase("result");
   };
 
   const v = verdict ? VERDICT_INFO[verdict.verdict] : null;
@@ -130,10 +132,19 @@ export default function Scanner({ approach, onClose, onAdd }) {
             </p>
           )}
           {onAdd && (
-            <button className="cm-outline" style={{ marginTop: 0, marginBottom: 10 }} disabled={added}
-              onClick={() => { if (!added) { onAdd(product); setAdded(true); } }}>
-              {added ? "✓ Agregado a tu compra" : "➕ Agregar a mi compra"}
-            </button>
+            <>
+              <div className="cm-scan-weight">
+                <label>Peso del envase</label>
+                <div className="cm-scan-wrow">
+                  <input className="cm-input" inputMode="numeric" placeholder="g" value={addGrams} onChange={(e) => { setAddGrams(e.target.value.replace(/[^0-9.]/g, "")); setAdded(false); }} />
+                  <span className="u">g</span>
+                </div>
+              </div>
+              <button className="cm-outline" style={{ marginTop: 0, marginBottom: 10 }} disabled={added}
+                onClick={() => { if (!added) { onAdd(product, Number(addGrams) || null); setAdded(true); } }}>
+                {added ? "✓ Agregado a tu compra" : "➕ Agregar a mi compra"}
+              </button>
+            </>
           )}
           <button className="cm-roll" onClick={start}>📷 Escanear otro</button>
         </div>

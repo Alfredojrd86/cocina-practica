@@ -397,6 +397,11 @@ export const STYLES = `
 .cm-scan-nutri{ font-size:12.5px; color:var(--muted); margin:0 0 14px; }
 .cm-scan-nutri .per{ opacity:0.7; }
 .cm-scan-err{ font-size:14px; color:var(--terra); text-align:center; margin:18px 0; }
+.cm-scan-weight{ margin:10px 0; }
+.cm-scan-weight label{ display:block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--muted); margin-bottom:5px; }
+.cm-scan-wrow{ display:flex; align-items:center; gap:8px; }
+.cm-scan-wrow .cm-input{ flex:1; }
+.cm-scan-wrow .u{ font-weight:700; color:var(--muted); font-size:14px; }
 .cm-scan-manual{ display:flex; gap:8px; margin-top:14px; }
 .cm-scan-manual .cm-input{ flex:1; }
 .cm-textarea{ width:100%; min-height:90px; padding:10px 12px; font-family:'Karla'; font-size:14px; line-height:1.4; resize:vertical; }
