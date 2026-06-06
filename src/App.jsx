@@ -566,7 +566,7 @@ export default function App() {
         <div className="cm-section" style={{ marginTop: 20 }}>
           <h2 className="cm-h2">Tu semana rotada</h2>
           <p className="cm-p">7 días combinados sin repetir, desde la misma base.</p>
-          {!week && <button className="cm-roll" onClick={() => { setWeek(buildWeek(approach)); setOpen({}); }}>📅 Generar la semana</button>}
+          {!week && <button className="cm-roll" onClick={() => { setWeek(buildWeek(approach)); setOpen({}); }}>📋 Generar la semana</button>}
           {week && (<>
             <p className="cm-hint">Toca cualquier comida para ver cómo se prepara.</p>
             {week.map((d, k) => (<div key={k} className="cm-day"><p className="cm-day-h">{d.dia}</p>
@@ -730,7 +730,7 @@ export default function App() {
         <button className={"cm-tab" + (tab === "ahora" ? " on" : "")} onClick={() => setTab("ahora")}><span className="ic">🍽</span>Ahora</button>
         <button className={"cm-tab" + (tab === "favoritos" ? " on" : "")} onClick={() => setTab("favoritos")}><span className="ic">⭐</span>Favoritos</button>
         <button className={"cm-tab" + (tab === "despensa" ? " on" : "")} onClick={() => setTab("despensa")}><span className="ic">🧺</span>Despensa</button>
-        <button className={"cm-tab" + (tab === "semana" ? " on" : "")} onClick={() => setTab("semana")}><span className="ic">📅</span>Semana</button>
+        <button className={"cm-tab" + (tab === "semana" ? " on" : "")} onClick={() => setTab("semana")}><span className="ic">📋</span>Semana</button>
         <button className={"cm-tab" + (tab === "compras" ? " on" : "")} onClick={() => setTab("compras")}><span className="ic">🛒</span>Compras</button>
       </div></nav>
     </div></div>
