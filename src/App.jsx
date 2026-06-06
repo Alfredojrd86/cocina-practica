@@ -121,6 +121,7 @@ export default function App() {
     clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(null), action ? 4000 : 2200);
   };
+  const buzz = (p = 12) => { try { navigator.vibrate?.(p); } catch {} };
 
   useEffect(() => {
     const l = document.createElement("style");
@@ -128,6 +129,12 @@ export default function App() {
     document.head.appendChild(l);
     return () => document.head.removeChild(l);
   }, []);
+
+  // Al entrar a "Ahora" sin ideas, genera 3 automáticamente (pantalla nunca vacía).
+  useEffect(() => {
+    if (tab === "ahora" && !sugs) setSugs(suggestN(approach, meal, 3, { practical: quick }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
 
   const rollLocal = () => {
     setAiErr(null);
@@ -179,6 +186,7 @@ export default function App() {
   const isFav = (s) => favs.some((f) => favKey(f) === favKey(s));
   const toggleFav = async (s) => {
     if (isFav(s)) { return removeFavWithToast(s.titulo); }
+    buzz(14);
     const r = await addFav({ titulo: s.titulo, pasos: s.pasos, approach, meal });
     if (session) showToast(r.error ? "Guardado local · no sincronizó" : "★ Guardado y sincronizado", r.error ? "rm" : "ok");
     else if (supabaseReady) showToast("Guardado en este equipo", "ok", { label: "Iniciar sesión", fn: () => setTab("favoritos") });
@@ -192,6 +200,7 @@ export default function App() {
     const items = sug.ingredientes && sug.ingredientes.length ? itemsFromNames(sug.ingredientes) : extractItems(sug);
     const used = items.filter((it) => !it.condiment);
     if (!used.length) { showToast("No detecté ingredientes para descontar", "rm"); return; }
+    buzz(18);
     setPantry(applyCooked(items, pantry, people));
     const resumen = used.slice(0, 3).map((it) => `${servingFor(it, people)} ${it.unit} ${it.label.toLowerCase()}`).join(", ");
     showToast(`🍳 Desconté ${resumen}${used.length > 3 ? "…" : ""}`, "ok");
@@ -232,6 +241,7 @@ export default function App() {
     const next = {};
     for (const c of CATALOG) if (!hidden.includes(c.key)) next[c.key] = qtyOf(c.key, buy, people);
     for (const c of custom) next[c.key] = typeof buy[c.key] === "number" ? buy[c.key] : 0;
+    buzz(18);
     setPantry(next);
     showToast("🧺 Despensa cargada con tu compra", "ok");
     setTab("despensa");
@@ -256,6 +266,7 @@ export default function App() {
 
   // Agrega un producto escaneado a la compra usando su peso neto real.
   const addScannedToBuy = (product) => {
+    buzz(14);
     const g = product.grams; // peso neto en g/ml
     const item = findItem(`${product.name} ${product.ingredients}`);
     if (item) {
@@ -444,6 +455,9 @@ export default function App() {
           <div className="cm-pantry-actions">
             <button className="cm-outline" style={{ marginTop: 0 }} onClick={() => setTab("compras")}>🛒 Editar y cargar desde mis compras</button>
           </div>
+          {Object.keys(pantry).length === 0 && (
+            <p className="cm-hint" style={{ marginBottom: 8 }}>Aún no cargas tu despensa. Ajusta tu compra y tócala para llenarla.</p>
+          )}
           <div className="cm-card">
             {PANTRY_CATS.map((cat) => {
               const items = CATALOG.filter((c) => c.cat === cat && !hidden.includes(c.key));

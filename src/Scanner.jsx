@@ -27,8 +27,10 @@ export default function Scanner({ approach, onClose, onAdd }) {
     const p = await fetchProduct(code);
     if (!p) { setErr("Producto no encontrado en Open Food Facts. Prueba otro código."); setPhase("error"); return; }
     setProduct(p);
-    setVerdict(evaluateProduct(approach, p));
+    const vd = evaluateProduct(approach, p);
+    setVerdict(vd);
     setPhase("result");
+    try { navigator.vibrate?.(vd.verdict === "evita" ? [40, 40, 40] : vd.verdict === "moderar" ? [15, 60, 15] : 18); } catch {}
   };
 
   const start = async () => {

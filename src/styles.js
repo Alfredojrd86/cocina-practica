@@ -1,7 +1,7 @@
 export const STYLES = `
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,500&family=Karla:wght@400;500;700&display=swap');
 
-.cm-root{ --cream:#F4EEE2; --paper:#FBF7EF; --ink:#2A2620; --muted:#6E6557; --green:#2F3D2E; --terra:#BF5B3C; --sage:#8A9A5B; --line:#E2D8C4;
+.cm-root{ --cream:#F4EEE2; --paper:#FBF7EF; --ink:#2A2620; --muted:#5A5346; --green:#2F3D2E; --terra:#BF5B3C; --sage:#8A9A5B; --line:#E2D8C4;
   font-family:'Karla',sans-serif; background:var(--cream);
   background-image:radial-gradient(circle at 12% 0%,rgba(138,154,91,0.10),transparent 40%),radial-gradient(circle at 92% 6%,rgba(191,91,60,0.09),transparent 38%);
   color:var(--ink); min-height:100vh; box-sizing:border-box;
