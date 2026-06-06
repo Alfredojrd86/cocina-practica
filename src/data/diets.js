@@ -32,6 +32,10 @@ export const DIETS = {
       else if (b.sugarMod) { v = worst(v, "moderar"); r.push(`Algo de azúcar (${p.sugars} g/100g)`); }
       if (b.carbHigh) { v = worst(v, "moderar"); r.push("Alto en carbohidratos (Tipo E)"); }
       if (b.ultra) { v = worst(v, "moderar"); r.push("Ultraprocesado (NOVA 4)"); }
+      const s = p.seals || [];
+      if (s.includes("azucar")) { v = worst(v, "evita"); r.push("Sello: ALTO EN AZÚCARES"); }
+      if (s.includes("calorias")) { v = worst(v, "moderar"); r.push("Sello: ALTO EN CALORÍAS"); }
+      if (s.includes("sodio")) { v = worst(v, "moderar"); r.push("Sello: ALTO EN SODIO"); }
       if (v === "ok") r.push("Bajo en azúcar: encaja con el 3x1");
       return { verdict: v, reasons: r };
     },
@@ -46,6 +50,11 @@ export const DIETS = {
       if (b.sugarIng || b.sugarHigh) { v = worst(v, "evita"); r.push("Azúcar añadida"); }
       if (b.addCount >= 1) { v = worst(v, "moderar"); r.push(`${b.addCount} aditivo(s)`); }
       if (b.ultra) { v = worst(v, "moderar"); r.push("Ultraprocesado (NOVA 4)"); }
+      const s = p.seals || [];
+      if (s.includes("azucar")) { v = worst(v, "evita"); r.push("Sello: ALTO EN AZÚCARES"); }
+      if (s.includes("calorias")) { v = worst(v, "moderar"); r.push("Sello: ALTO EN CALORÍAS"); }
+      if (s.includes("sodio")) { v = worst(v, "moderar"); r.push("Sello: ALTO EN SODIO"); }
+      // Las grasas no penalizan en animal-based (acepta grasa saturada).
       if (v === "ok") r.push("Comida simple: encaja con animal-based");
       return { verdict: v, reasons: r };
     },
@@ -58,6 +67,11 @@ export const DIETS = {
       else if (b.sugarIng || b.sugarMod) { v = worst(v, "moderar"); r.push("Tiene algo de azúcar"); }
       if (has(p.ingredients, SEED_OILS)) { v = worst(v, "moderar"); r.push("Aceites de semilla"); }
       if (b.ultra) { v = worst(v, "moderar"); r.push("Ultraprocesado (NOVA 4)"); }
+      const s = p.seals || [];
+      if (s.includes("azucar")) { v = worst(v, "evita"); r.push("Sello: ALTO EN AZÚCARES"); }
+      if (s.includes("grasas")) { v = worst(v, "moderar"); r.push("Sello: ALTO EN GRASAS SATURADAS"); }
+      if (s.includes("calorias")) { v = worst(v, "moderar"); r.push("Sello: ALTO EN CALORÍAS"); }
+      if (s.includes("sodio")) { v = worst(v, "moderar"); r.push("Sello: ALTO EN SODIO"); }
       if (v === "ok") r.push("Comida real y equilibrada");
       return { verdict: v, reasons: r };
     },

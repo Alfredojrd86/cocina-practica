@@ -223,4 +223,8 @@ export const STYLES = `
 .cm-scan-manual{ display:flex; gap:8px; margin-top:14px; }
 .cm-scan-manual .cm-input{ flex:1; }
 .cm-textarea{ width:100%; min-height:90px; padding:10px 12px; font-family:'Karla'; font-size:14px; line-height:1.4; resize:vertical; }
+.cm-seals{ display:flex; flex-wrap:wrap; gap:8px; }
+.cm-seal{ border:1.5px solid var(--line); background:#fff; color:var(--ink); border-radius:11px; padding:9px 12px; font-family:'Karla'; font-weight:600; font-size:13px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.cm-seal.on{ background:var(--ink); border-color:var(--ink); color:#fff; }
+.cm-seal:active{ transform:scale(.97); }
 `;

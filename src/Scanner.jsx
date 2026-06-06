@@ -16,6 +16,8 @@ export default function Scanner({ approach, onClose, onAdd }) {
   const [manual, setManual] = useState("");
   const [mName, setMName] = useState("");
   const [mIng, setMIng] = useState("");
+  const [mSeals, setMSeals] = useState([]);
+  const toggleSeal = (s) => setMSeals((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]));
 
   const stop = () => { try { controlsRef.current?.stop(); } catch {} };
 
@@ -65,6 +67,7 @@ export default function Scanner({ approach, onClose, onAdd }) {
       name: mName.trim() || "Producto", brand: "",
       ingredients: mIng.trim().toLowerCase(),
       sugars: null, carbs: null, proteins: null, fat: null, additives: [], nova: null,
+      seals: mSeals,
     };
     setProduct(p); setVerdict({ ...evaluateProduct(approach, p), manual: true }); setAdded(false); setPhase("result");
   };
@@ -131,9 +134,15 @@ export default function Scanner({ approach, onClose, onAdd }) {
           </div>
 
           <div className="cm-divider"><span>¿No está? Evalúalo por su etiqueta</span></div>
-          <input className="cm-input" placeholder="Nombre del producto" value={mName} onChange={(e) => setMName(e.target.value)} style={{ width: "100%", marginBottom: 8 }} />
-          <textarea className="cm-input cm-textarea" placeholder="Pega o escribe los ingredientes de la etiqueta…" value={mIng} onChange={(e) => setMIng(e.target.value)} />
-          <button className="cm-roll" style={{ marginTop: 10 }} onClick={evalManual}>Evaluar por ingredientes</button>
+          <input className="cm-input" placeholder="Nombre del producto" value={mName} onChange={(e) => setMName(e.target.value)} style={{ width: "100%", marginBottom: 10 }} />
+          <p className="cm-mini" style={{ margin: "0 0 6px" }}>Sellos negros del producto</p>
+          <div className="cm-seals">
+            {[["azucar", "Alto en azúcares"], ["calorias", "Alto en calorías"], ["grasas", "Alto en grasas sat."], ["sodio", "Alto en sodio"]].map(([k, lab]) => (
+              <button key={k} className={"cm-seal" + (mSeals.includes(k) ? " on" : "")} onClick={() => toggleSeal(k)}>{mSeals.includes(k) ? "⬛ " : ""}{lab}</button>
+            ))}
+          </div>
+          <textarea className="cm-input cm-textarea" placeholder="(opcional) pega los ingredientes de la etiqueta…" value={mIng} onChange={(e) => setMIng(e.target.value)} style={{ marginTop: 10 }} />
+          <button className="cm-roll" style={{ marginTop: 10 }} onClick={evalManual}>Evaluar</button>
         </div>
       )}
 
