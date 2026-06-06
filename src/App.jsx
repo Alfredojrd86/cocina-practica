@@ -125,7 +125,7 @@ export default function App() {
     if (isFav(s)) { return removeFavWithToast(s.titulo); }
     const r = await addFav({ titulo: s.titulo, pasos: s.pasos, approach, meal });
     if (session) showToast(r.error ? "Guardado local · no sincronizó" : "★ Guardado y sincronizado", r.error ? "rm" : "ok");
-    else if (supabaseReady) showToast("Guardado en este equipo", "ok", { label: "Registrar correo", fn: () => setTab("favoritos") });
+    else if (supabaseReady) showToast("Guardado en este equipo", "ok", { label: "Iniciar sesión", fn: () => setTab("favoritos") });
     else showToast("★ Guardado en favoritos", "ok");
   };
   const removeFavWithToast = async (titulo) => {
@@ -207,7 +207,7 @@ export default function App() {
 
           {supabaseReady && !session && (
             <button className="cm-nudge" onClick={() => setTab("favoritos")}>
-              💡 Registra tu correo en <b>★ Favoritos</b> para guardar tus platos en todos tus dispositivos →
+              💡 Inicia sesión con Google en <b>★ Favoritos</b> para guardar tus platos en todos tus dispositivos →
             </button>
           )}
 
