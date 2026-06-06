@@ -79,6 +79,7 @@ export default function App() {
   const [people, setPeople] = useLocalStorage("cm_people", 2);
   const [meal, setMeal] = useLocalStorage("cm_meal", "Almuerzo");
   const [quick, setQuick] = useLocalStorage("cm_quick", false);
+  const [cookWith, setCookWith] = useLocalStorage("cm_cookwith", false);
   const [sugs, setSugs] = useLocalStorage("cm_sugs", null);
   const [week, setWeek] = useLocalStorage("cm_week", null);
   const [open, setOpen] = useLocalStorage("cm_open", {});
@@ -115,7 +116,21 @@ export default function App() {
     return () => document.head.removeChild(l);
   }, []);
 
-  const rollLocal = () => { setAiErr(null); setOpenSug({}); setSugs(suggestN(approach, meal, 3, { practical: quick })); };
+  const rollLocal = () => {
+    setAiErr(null);
+    setOpenSug({});
+    if (cookWith) {
+      const pool = suggestN(approach, meal, 12, { practical: quick });
+      const ranked = pool
+        .map((s) => { const { have, missing } = splitByPantry(extractItems(s), pantry); return { s, miss: missing.length, have: have.length }; })
+        .sort((a, b) => a.miss - b.miss || b.have - a.have)
+        .slice(0, 3)
+        .map((x) => x.s);
+      setSugs(ranked.length ? ranked : suggestN(approach, meal, 3, { practical: quick }));
+    } else {
+      setSugs(suggestN(approach, meal, 3, { practical: quick }));
+    }
+  };
 
   const rollAI = async () => {
     if (!session) { setTab("favoritos"); showToast("Inicia sesión para usar la IA", "rm"); return; }
@@ -123,10 +138,13 @@ export default function App() {
     setAiErr(null);
     try {
       const token = session?.access_token;
+      const ingredients = cookWith
+        ? CATALOG.filter((c) => statusOf(c.key, pantry) !== "agotado").map((c) => c.label)
+        : INGREDIENTS;
       const r = await fetch("/.netlify/functions/sugerir", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ approach, meal, ingredients: INGREDIENTS, people, quick }),
+        body: JSON.stringify({ approach, meal, ingredients, people, quick }),
       });
       const d = await r.json();
       if (r.status === 401) { setTab("favoritos"); showToast("Inicia sesión para usar la IA", "rm"); return; }
@@ -187,6 +205,7 @@ export default function App() {
     showToast("Sesión cerrada · tu correo quedó guardado", "rm");
   };
   const cats = [...new Set(SHOPPING.map((s) => s.cat))];
+  const agotadosLabels = CATALOG.filter((c) => statusOf(c.key, pantry) === "agotado").map((c) => c.label);
 
   const Slot = ({ dk, slot, label, prepItems }) => {
     const key = dk + slot;
@@ -225,6 +244,13 @@ export default function App() {
             <span className={"cm-switch" + (quick ? " on" : "")} />
             <span><span className="lbl">Solo rápidas</span> <span className="sub">— sin horno, pocos ingredientes</span></span>
           </div>
+          <div className="cm-toggle" onClick={() => setCookWith(!cookWith)} role="switch" aria-checked={cookWith}>
+            <span className={"cm-switch" + (cookWith ? " on" : "")} />
+            <span><span className="lbl">Cocinar con lo que tengo</span> <span className="sub">— prioriza tu despensa</span></span>
+          </div>
+          {cookWith && agotadosLabels.length > 0 && (
+            <p className="cm-hint" style={{ marginTop: 0, marginBottom: 4 }}>Excluyendo lo agotado: {agotadosLabels.join(", ")}.</p>
+          )}
 
           <div className="cm-legend cm-consejo" style={{ border: "none", padding: 0, marginTop: 0, marginBottom: 4 }}>
             🟢 Tipo A (libre) · 🟡 Fruta (moderar) · 🟠 Tipo E (modera porción)
