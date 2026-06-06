@@ -252,6 +252,7 @@ export default function App() {
                   <input className="cm-input" type="email" inputMode="email" autoComplete="email" placeholder="tu@correo.com" value={email} onChange={(e) => setEmail(e.target.value)} />
                   <button className="cm-auth-send" onClick={sendMagicLink} disabled={cooldown > 0}>{cooldown > 0 ? `Reenviar en ${cooldown}s` : "Enviar enlace"}</button>
                 </div>
+                <p className="cm-hint" style={{ marginTop: 8 }}>Solo la primera vez en este dispositivo. Después entras solo: este equipo te recuerda y no pides correo de nuevo (salvo que toques “Salir”).</p>
               </>
             )}
             {authMsg && <p className="cm-hint" style={{ marginTop: 8 }}>{authMsg}</p>}
