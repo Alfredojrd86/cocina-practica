@@ -1,5 +1,5 @@
 export const STYLES = `
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,500&family=Karla:wght@400;500;700&family=Caveat:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,500&family=Karla:wght@400;500;700&family=Caveat:wght@500;700&family=Courier+Prime:wght@400;700&display=swap');
 
 .cm-root{ --cream:#F4EEE2; --paper:#FBF7EF; --ink:#2A2620; --muted:#5A5346; --green:#2F3D2E; --terra:#BF5B3C; --sage:#8A9A5B; --line:#E2D8C4;
   font-family:'Karla',sans-serif; background:var(--cream);
@@ -141,8 +141,30 @@ export const STYLES = `
 }
 .theme-paper .cm-card, .theme-paper .cm-day{ padding-left:30px; }
 .theme-paper .cm-roll{ border-radius:10px; }
-.theme-paper .cm-pill.on{ box-shadow:1px 2px 0 rgba(57,50,42,0.18); }
+/* Botones estilo papel: sello con sombra desplazada que se hunde al tocar */
+.theme-paper .cm-roll{ border-radius:11px; box-shadow:2px 3px 0 rgba(57,50,42,0.28); }
+.theme-paper .cm-roll:active{ transform:translate(1px,2px); box-shadow:1px 1px 0 rgba(57,50,42,0.28); }
+.theme-paper .cm-outline{ border-radius:11px; box-shadow:2px 3px 0 rgba(57,50,42,0.12); }
+.theme-paper .cm-outline:active{ transform:translate(1px,2px); box-shadow:none; }
+.theme-paper .cm-pill{ border-radius:10px; }
+.theme-paper .cm-pill.on{ box-shadow:1px 2px 0 rgba(57,50,42,0.22); }
+.theme-paper .cm-roll, .theme-paper .cm-outline{ font-family:'Fraunces',serif; }
 .theme-paper .cm-tabs{ background:rgba(252,247,236,0.95); }
+.theme-paper .cm-fab{ border-radius:14px; box-shadow:2px 4px 0 rgba(57,50,42,0.3); }
+.theme-paper .cm-fab:active{ transform:translate(1px,2px); box-shadow:1px 2px 0 rgba(57,50,42,0.3); }
+
+/* Boleta de supermercado (Compras) */
+.cm-receipt .cm-rcpt-head{ text-align:center; padding:2px 0 8px; }
+.cm-receipt .store{ display:block; font-family:'Courier Prime',monospace; font-weight:700; font-size:16px; letter-spacing:2px; color:var(--ink); }
+.cm-receipt .sub{ display:block; font-family:'Courier Prime',monospace; font-size:11px; color:var(--muted); letter-spacing:1px; text-transform:uppercase; margin-top:2px; }
+.cm-rcpt-rule{ height:0; border-top:1.5px dashed var(--line); margin:6px 0; }
+.cm-receipt .cm-shop-name, .cm-receipt .cm-qty-val, .cm-receipt .cm-acc-h .t, .cm-receipt .cm-acc-h .meta{ font-family:'Courier Prime',monospace; }
+.cm-receipt .cm-shop-name{ font-size:13.5px; letter-spacing:0.3px; }
+.cm-receipt .cm-acc-h .t{ font-size:14px; text-transform:uppercase; letter-spacing:1px; }
+.cm-rcpt-foot{ display:flex; justify-content:space-between; font-family:'Courier Prime',monospace; font-size:12.5px; font-weight:700; color:var(--ink); letter-spacing:0.5px; padding:2px 0; }
+.cm-rcpt-foot.end{ justify-content:center; color:var(--muted); font-weight:400; letter-spacing:2px; margin-top:4px; }
+.theme-paper .cm-receipt::before{ display:none; }
+.theme-paper .cm-receipt{ padding-left:16px; }
 .cm-shop-item{ display:flex; align-items:center; gap:13px; padding:13px 0; border-bottom:1px dashed var(--line); cursor:pointer; -webkit-tap-highlight-color:transparent; }
 .cm-shop-box{ width:24px; height:24px; border:1.6px solid var(--sage); border-radius:7px; flex-shrink:0; display:grid; place-items:center; font-size:14px; color:#fff; transition:all .12s; }
 .cm-shop-box.on{ background:var(--sage); }

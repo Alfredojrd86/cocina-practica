@@ -106,7 +106,7 @@ export default function App() {
   const [pantryFilter, setPantryFilter] = useState("all");
   const [enfPicker, setEnfPicker] = useState(false);
   const [optsOpen, setOptsOpen] = useState(false);
-  const [theme, setTheme] = useLocalStorage("cm_theme", "default");
+  const [theme, setTheme] = useLocalStorage("cm_theme", "paper");
   const { favs, add: addFav, remove: removeFav, session, syncing } = useFavorites();
   const { pantry, setPantry } = usePantry(session);
   const [openSug, setOpenSug] = useState({});
@@ -593,7 +593,12 @@ export default function App() {
           </div>
           <button className="cm-roll" onClick={loadPantryFromBuy}>🧺 Cargar esta compra a mi despensa</button>
           <p className="cm-hint" style={{ marginTop: 8 }}>Sustituye el stock actual por estas cantidades.</p>
-          <div className="cm-card" style={{ marginTop: 12 }}>
+          <div className="cm-card cm-receipt" style={{ marginTop: 12 }}>
+            <div className="cm-rcpt-head">
+              <span className="store">🧾 MI MERCADO</span>
+              <span className="sub">lista del mes · {people} pers.</span>
+            </div>
+            <div className="cm-rcpt-rule" />
             <div className="cm-add" style={{ marginTop: 0, paddingTop: 0, borderTop: "none", marginBottom: 6 }}>
               <input className="cm-input" placeholder="Agregar ingrediente…" value={newItem}
                 onChange={(e) => setNewItem(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") addCustom(); }} />
@@ -662,6 +667,12 @@ export default function App() {
                 </div>
               );
             })()}
+            <div className="cm-rcpt-rule" />
+            <div className="cm-rcpt-foot">
+              <span>ÍTEMS</span>
+              <span>{CATALOG.filter((c) => !hidden.includes(c.key)).length + custom.length} en lista · {[...CATALOG.filter((c) => !hidden.includes(c.key)), ...custom].filter((c) => checked[c.key]).length} ✓</span>
+            </div>
+            <div className="cm-rcpt-foot end">· · · ¡buen provecho! · · ·</div>
           </div>
 
           {hidden.length > 0 && (
