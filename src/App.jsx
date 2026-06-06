@@ -4,6 +4,7 @@ import { SHOPPING, FRUTAS } from "./data/shopping.js";
 import { APPROACHES, MEALS, PEOPLE, DAYS } from "./data/config.js";
 import { useLocalStorage } from "./hooks/useLocalStorage.js";
 import { useFavorites } from "./hooks/useFavorites.js";
+import { usePantry } from "./hooks/usePantry.js";
 import { supabase, supabaseReady } from "./lib/supabase.js";
 import { suggestN, buildWeek, names, fmtQty } from "./lib/suggest.js";
 import { analyzeSuggestion, TIPO_INFO } from "./data/foodTypes.js";
@@ -84,8 +85,8 @@ export default function App() {
   const [week, setWeek] = useLocalStorage("cm_week", null);
   const [open, setOpen] = useLocalStorage("cm_open", {});
   const [checked, setChecked] = useLocalStorage("cm_checked", {});
-  const [pantry, setPantry] = useLocalStorage("cm_pantry", {});
   const { favs, add: addFav, remove: removeFav, session, syncing } = useFavorites();
+  const { pantry, setPantry } = usePantry(session);
   const [openSug, setOpenSug] = useState({});
   const [aiLoading, setAiLoading] = useState(false);
   const [aiErr, setAiErr] = useState(null);
