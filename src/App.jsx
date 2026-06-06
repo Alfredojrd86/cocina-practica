@@ -230,6 +230,12 @@ export default function App() {
     const r = await removeFav(titulo);
     showToast(session && r.error ? "Quitado local · no sincronizó" : "Quitado de favoritos", "rm");
   };
+  // Abrir escáner solo con sesión (feature para registrados).
+  const openScanner = () => {
+    if (!session) { setTab("favoritos"); showToast("Inicia sesión para escanear productos", "rm"); return; }
+    setShowScanner(true);
+  };
+
   // Lee una foto de etiqueta vía la función de visión (requiere sesión).
   const readLabel = async (image) => {
     if (!session) { const e = new Error("login"); e.code = "login"; throw e; }
@@ -428,7 +434,7 @@ export default function App() {
           <div className="cm-home-grid">
             <button className="cm-home-btn" onClick={() => setTab("ahora")}><span className="ic">🍽</span><span className="t">¿Qué como?</span><span className="d">Ideas para tu próxima comida</span></button>
             <button className="cm-home-btn" onClick={() => setTab("despensa")}><span className="ic">🧺</span><span className="t">Mi despensa</span><span className="d">{agotadosLabels.length ? `${agotadosLabels.length} por reponer` : "Lo que tienes en casa"}</span></button>
-            <button className="cm-home-btn" onClick={() => setShowScanner(true)}><span className="ic">📷</span><span className="t">Escanear</span><span className="d">¿Este producto me sirve?</span></button>
+            <button className="cm-home-btn" onClick={openScanner}><span className="ic">📷</span><span className="t">Escanear</span><span className="d">¿Este producto me sirve?</span></button>
             <button className="cm-home-btn" onClick={() => setTab("compras")}><span className="ic">🛒</span><span className="t">Comprar</span><span className="d">Tu lista del mes</span></button>
           </div>
           <button className="cm-theme-toggle" onClick={() => setTheme(theme === "paper" ? "default" : "paper")}>
@@ -757,7 +763,7 @@ export default function App() {
       )}
 
       {!showScanner && onboarded && (
-        <button className="cm-fab" onClick={() => setShowScanner(true)} aria-label="Escanear producto">📷</button>
+        <button className="cm-fab" onClick={openScanner} aria-label="Escanear producto">📷</button>
       )}
       {showScanner && (
         <ScannerBoundary fallback={

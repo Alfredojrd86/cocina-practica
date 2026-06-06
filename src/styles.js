@@ -65,6 +65,8 @@ export const STYLES = `
 .cm-roll:active{ transform:scale(0.98); }
 .cm-outline{ width:100%; border:1.5px solid var(--green); background:transparent; color:var(--green); border-radius:15px; min-height:52px; font-family:'Fraunces',serif; font-weight:600; font-size:16px; cursor:pointer; margin-top:12px; transition:all .14s; -webkit-tap-highlight-color:transparent; }
 .cm-outline:active{ background:var(--green); color:var(--cream); }
+.cm-outline:disabled{ opacity:0.45; cursor:default; box-shadow:none; }
+.cm-outline:disabled:active{ background:transparent; color:var(--green); transform:none; }
 .cm-hint{ font-size:12px; color:var(--muted); font-style:italic; margin:0 0 10px; }
 
 .cm-day{ background:var(--paper); border:1px solid var(--line); border-radius:16px; padding:13px 16px; margin-bottom:10px; }

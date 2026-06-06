@@ -267,7 +267,8 @@ export default function Scanner({ approach, onClose, onAdd, onReadLabel, hasSess
               onChange={(e) => setManual(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") submitManual(); }} />
             <button className="cm-auth-send" onClick={submitManual}>Buscar</button>
           </div>
-          <button className="cm-photo-link" onClick={() => fileRef.current?.click()}>¿Sin código de barras? 📸 Leer la etiqueta con foto</button>
+          <button className="cm-outline" style={{ marginTop: 16 }} disabled>📸 Leer etiqueta con foto</button>
+          <p className="cm-hint" style={{ textAlign: "center", marginTop: 6 }}>🔒 Primero escanea el código. Si el producto no aparece, se activa.</p>
         </>
       )}
     </div>
