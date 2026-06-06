@@ -96,6 +96,8 @@ export default function App() {
   const [newItem, setNewItem] = useState("");
   const [newUnit, setNewUnit] = useState("unid.");
   const [showHidden, setShowHidden] = useState(false);
+  const [catOpen, setCatOpen] = useLocalStorage("cm_catopen", {});
+  const [pantryFilter, setPantryFilter] = useState("all");
   const { favs, add: addFav, remove: removeFav, session, syncing } = useFavorites();
   const { pantry, setPantry } = usePantry(session);
   const [openSug, setOpenSug] = useState({});
@@ -247,6 +249,10 @@ export default function App() {
     setTab("despensa");
   };
 
+  const catKey = (where, cat) => `${where}:${cat}`;
+  const isCatOpen = (where, cat) => !!catOpen[catKey(where, cat)];
+  const toggleCat = (where, cat) => setCatOpen({ ...catOpen, [catKey(where, cat)]: !isCatOpen(where, cat) });
+
   const hideItem = (key) => setHidden([...hidden, key]);
   const unhideItem = (key) => setHidden(hidden.filter((k) => k !== key));
   const addCustom = () => {
@@ -263,6 +269,43 @@ export default function App() {
   // Cantidad simple para ítems personalizados (no escala por personas).
   const customQty = (key, map) => (typeof map[key] === "number" ? map[key] : 0);
   const adjCustomBuy = (key, d) => setBuy({ ...buy, [key]: Math.max(0, customQty(key, buy) + d) });
+
+  const renderPantryRow = (c) => {
+    const st = statusOf(c.key, pantry, people);
+    const info = PANTRY_INFO[st];
+    const qty = qtyOf(c.key, pantry, people);
+    const step = stepFor(c);
+    return (
+      <div key={c.key} className="cm-pantry-item">
+        <span className="cm-pantry-name">{c.label}{c.condiment && <span className="cm-pantry-cond">básico</span>}</span>
+        <div className="cm-qty">
+          <button className="cm-qty-btn" aria-label="Restar" onClick={() => setPantry({ ...pantry, [c.key]: adjustQty(c.key, pantry, people, -step) })}>−</button>
+          <span className="cm-qty-val">{qty} <i>{c.unit}</i></span>
+          <button className="cm-qty-btn" aria-label="Sumar" onClick={() => setPantry({ ...pantry, [c.key]: adjustQty(c.key, pantry, people, step) })}>+</button>
+        </div>
+        <span className="cm-pantry-badge" style={{ background: info.bg, color: info.color }}>
+          <span className="dot" style={{ background: info.color }} />{info.label}
+        </span>
+      </div>
+    );
+  };
+  const renderCustomPantryRow = (c) => {
+    const qty = customQty(c.key, pantry);
+    const info = PANTRY_INFO[qty > 0 ? "tengo" : "agotado"];
+    return (
+      <div key={c.key} className="cm-pantry-item">
+        <span className="cm-pantry-name">{c.label}</span>
+        <div className="cm-qty">
+          <button className="cm-qty-btn" aria-label="Restar" onClick={() => setPantry({ ...pantry, [c.key]: Math.max(0, customQty(c.key, pantry) - 1) })}>−</button>
+          <span className="cm-qty-val">{qty} <i>{c.unit}</i></span>
+          <button className="cm-qty-btn" aria-label="Sumar" onClick={() => setPantry({ ...pantry, [c.key]: customQty(c.key, pantry) + 1 })}>+</button>
+        </div>
+        <span className="cm-pantry-badge" style={{ background: info.bg, color: info.color }}>
+          <span className="dot" style={{ background: info.color }} />{info.label}
+        </span>
+      </div>
+    );
+  };
 
   // Agrega un producto escaneado a la compra usando su peso neto real.
   const addScannedToBuy = (product) => {
@@ -458,58 +501,47 @@ export default function App() {
           {Object.keys(pantry).length === 0 && (
             <p className="cm-hint" style={{ marginBottom: 8 }}>Aún no cargas tu despensa. Ajusta tu compra y tócala para llenarla.</p>
           )}
+          <div className="cm-seg" style={{ marginBottom: 12 }}>
+            <button className={"cm-pill" + (pantryFilter === "all" ? " on" : "")} onClick={() => setPantryFilter("all")}>Todos</button>
+            <button className={"cm-pill" + (pantryFilter === "low" ? " on" : "")} onClick={() => setPantryFilter("low")}>Por reponer</button>
+          </div>
           <div className="cm-card">
-            {PANTRY_CATS.map((cat) => {
-              const items = CATALOG.filter((c) => c.cat === cat && !hidden.includes(c.key));
-              if (!items.length) return null;
-              return (
-                <div key={cat}>
-                  <p className="cm-shop-cat-h">{CATEGORY_ICONS[cat] ? CATEGORY_ICONS[cat] + " " : ""}{cat}</p>
-                  {items.map((c) => {
-                    const st = statusOf(c.key, pantry, people);
-                    const info = PANTRY_INFO[st];
-                    const qty = qtyOf(c.key, pantry, people);
-                    const step = stepFor(c);
-                    return (
-                      <div key={c.key} className="cm-pantry-item">
-                        <span className="cm-pantry-name">{c.label}{c.condiment && <span className="cm-pantry-cond">básico</span>}</span>
-                        <div className="cm-qty">
-                          <button className="cm-qty-btn" aria-label="Restar" onClick={() => setPantry({ ...pantry, [c.key]: adjustQty(c.key, pantry, people, -step) })}>−</button>
-                          <span className="cm-qty-val">{qty} <i>{c.unit}</i></span>
-                          <button className="cm-qty-btn" aria-label="Sumar" onClick={() => setPantry({ ...pantry, [c.key]: adjustQty(c.key, pantry, people, step) })}>+</button>
-                        </div>
-                        <span className="cm-pantry-badge" style={{ background: info.bg, color: info.color }}>
-                          <span className="dot" style={{ background: info.color }} />{info.label}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })}
-            {custom.length > 0 && (
-              <div>
-                <p className="cm-shop-cat-h">🛒 Otros (tuyos)</p>
-                {custom.map((c) => {
-                  const qty = customQty(c.key, pantry);
-                  const st = qty > 0 ? "tengo" : "agotado";
-                  const info = PANTRY_INFO[st];
-                  return (
-                    <div key={c.key} className="cm-pantry-item">
-                      <span className="cm-pantry-name">{c.label}</span>
-                      <div className="cm-qty">
-                        <button className="cm-qty-btn" aria-label="Restar" onClick={() => setPantry({ ...pantry, [c.key]: Math.max(0, customQty(c.key, pantry) - 1) })}>−</button>
-                        <span className="cm-qty-val">{qty} <i>{c.unit}</i></span>
-                        <button className="cm-qty-btn" aria-label="Sumar" onClick={() => setPantry({ ...pantry, [c.key]: customQty(c.key, pantry) + 1 })}>+</button>
-                      </div>
-                      <span className="cm-pantry-badge" style={{ background: info.bg, color: info.color }}>
-                        <span className="dot" style={{ background: info.color }} />{info.label}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+            {pantryFilter === "low" ? (() => {
+              const low = CATALOG.filter((c) => !hidden.includes(c.key) && !c.condiment && statusOf(c.key, pantry, people) !== "tengo");
+              const lowCustom = custom.filter((c) => customQty(c.key, pantry) <= 0);
+              if (!low.length && !lowCustom.length) return <p className="cm-empty">✅ Todo en orden. Nada por reponer.</p>;
+              return (<>{low.map(renderPantryRow)}{lowCustom.map(renderCustomPantryRow)}</>);
+            })() : (<>
+              {PANTRY_CATS.map((cat) => {
+                const items = CATALOG.filter((c) => c.cat === cat && !hidden.includes(c.key));
+                if (!items.length) return null;
+                const open = isCatOpen("despensa", cat);
+                const lowN = items.filter((c) => !c.condiment && statusOf(c.key, pantry, people) !== "tengo").length;
+                return (
+                  <div key={cat}>
+                    <button className="cm-acc-h" onClick={() => toggleCat("despensa", cat)} aria-expanded={open}>
+                      <span className="ic">{CATEGORY_ICONS[cat] || "•"}</span>
+                      <span className="t">{cat}</span>
+                      {lowN > 0 && <span className="meta low">{lowN} por reponer</span>}
+                      <span className="chev">{open ? "▾" : "▸"}</span>
+                    </button>
+                    {open && items.map(renderPantryRow)}
+                  </div>
+                );
+              })}
+              {custom.length > 0 && (() => {
+                const open = isCatOpen("despensa", "Otros");
+                return (
+                  <div>
+                    <button className="cm-acc-h" onClick={() => toggleCat("despensa", "Otros")} aria-expanded={open}>
+                      <span className="ic">🛒</span><span className="t">Otros (tuyos)</span>
+                      <span className="meta">{custom.length}</span><span className="chev">{open ? "▾" : "▸"}</span>
+                    </button>
+                    {open && custom.map(renderCustomPantryRow)}
+                  </div>
+                );
+              })()}
+            </>)}
           </div>
           <p className="cm-foot">Los <b>básicos</b> (aceite, sal, ajo, miel, mantequilla) no se descuentan al cocinar: duran mucho.</p>
         </div>
@@ -557,9 +589,16 @@ export default function App() {
             {PANTRY_CATS.map((cat) => {
               const items = CATALOG.filter((c) => c.cat === cat && !hidden.includes(c.key));
               if (!items.length) return null;
+              const open = isCatOpen("compras", cat);
+              const done = items.filter((c) => checked[c.key]).length;
               return (<div key={cat}>
-                <p className="cm-shop-cat-h">{CATEGORY_ICONS[cat] ? CATEGORY_ICONS[cat] + " " : ""}{cat}</p>
-                {items.map((c) => {
+                <button className="cm-acc-h" onClick={() => toggleCat("compras", cat)} aria-expanded={open}>
+                  <span className="ic">{CATEGORY_ICONS[cat] || "•"}</span>
+                  <span className="t">{cat}</span>
+                  <span className="meta">{done}/{items.length}</span>
+                  <span className="chev">{open ? "▾" : "▸"}</span>
+                </button>
+                {open && items.map((c) => {
                   const on = !!checked[c.key];
                   const qty = qtyOf(c.key, buy, people);
                   const step = stepFor(c);
@@ -578,26 +617,32 @@ export default function App() {
               </div>);
             })}
 
-            {custom.length > 0 && (
-              <div>
-                <p className="cm-shop-cat-h">🛒 Otros (tuyos)</p>
-                {custom.map((c) => {
-                  const on = !!checked[c.key];
-                  const qty = customQty(c.key, buy);
-                  return (
-                    <div key={c.key} className="cm-shop-item">
-                      <span className={"cm-shop-box" + (on ? " on" : "")} onClick={() => setChecked({ ...checked, [c.key]: !on })}>{on ? "✓" : ""}</span>
-                      <span className={"cm-shop-name" + (on ? " done" : "")} onClick={() => setChecked({ ...checked, [c.key]: !on })}>{c.label}</span>
-                      <div className="cm-qty">
-                        <button className="cm-qty-btn" aria-label="Restar" onClick={() => adjCustomBuy(c.key, -1)}>−</button>
-                        <span className="cm-qty-val">{qty} <i>{c.unit}</i></span>
-                        <button className="cm-qty-btn" aria-label="Sumar" onClick={() => adjCustomBuy(c.key, 1)}>+</button>
-                      </div>
-                      <button className="cm-row-x" aria-label="Eliminar" onClick={() => delCustom(c.key)}>✕</button>
-                    </div>);
-                })}
-              </div>
-            )}
+            {custom.length > 0 && (() => {
+              const open = isCatOpen("compras", "Otros");
+              return (
+                <div>
+                  <button className="cm-acc-h" onClick={() => toggleCat("compras", "Otros")} aria-expanded={open}>
+                    <span className="ic">🛒</span><span className="t">Otros (tuyos)</span>
+                    <span className="meta">{custom.length}</span><span className="chev">{open ? "▾" : "▸"}</span>
+                  </button>
+                  {open && custom.map((c) => {
+                    const on = !!checked[c.key];
+                    const qty = customQty(c.key, buy);
+                    return (
+                      <div key={c.key} className="cm-shop-item">
+                        <span className={"cm-shop-box" + (on ? " on" : "")} onClick={() => setChecked({ ...checked, [c.key]: !on })}>{on ? "✓" : ""}</span>
+                        <span className={"cm-shop-name" + (on ? " done" : "")} onClick={() => setChecked({ ...checked, [c.key]: !on })}>{c.label}</span>
+                        <div className="cm-qty">
+                          <button className="cm-qty-btn" aria-label="Restar" onClick={() => adjCustomBuy(c.key, -1)}>−</button>
+                          <span className="cm-qty-val">{qty} <i>{c.unit}</i></span>
+                          <button className="cm-qty-btn" aria-label="Sumar" onClick={() => adjCustomBuy(c.key, 1)}>+</button>
+                        </div>
+                        <button className="cm-row-x" aria-label="Eliminar" onClick={() => delCustom(c.key)}>✕</button>
+                      </div>);
+                  })}
+                </div>
+              );
+            })()}
           </div>
 
           {hidden.length > 0 && (

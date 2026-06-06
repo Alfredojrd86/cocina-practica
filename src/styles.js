@@ -56,6 +56,15 @@ export const STYLES = `
 
 .cm-shop-cat-h{ font-family:'Fraunces',serif; font-weight:600; font-size:16px; color:var(--terra); margin:16px 0 2px; }
 .cm-shop-cat-h:first-child{ margin-top:0; }
+
+/* Acordeón de categorías */
+.cm-acc-h{ width:100%; display:flex; align-items:center; gap:10px; background:none; border:none; border-top:1px solid var(--line); padding:14px 2px; cursor:pointer; font-family:'Karla'; -webkit-tap-highlight-color:transparent; }
+.cm-acc-h:first-child{ border-top:none; }
+.cm-acc-h .ic{ font-size:19px; }
+.cm-acc-h .t{ flex:1; text-align:left; font-family:'Fraunces',serif; font-weight:600; font-size:16px; color:var(--green); }
+.cm-acc-h .meta{ font-size:12px; font-weight:700; color:var(--muted); }
+.cm-acc-h .meta.low{ color:var(--terra); background:rgba(191,91,60,0.12); border-radius:999px; padding:2px 9px; }
+.cm-acc-h .chev{ color:var(--muted); font-size:13px; width:14px; text-align:center; }
 .cm-shop-item{ display:flex; align-items:center; gap:13px; padding:13px 0; border-bottom:1px dashed var(--line); cursor:pointer; -webkit-tap-highlight-color:transparent; }
 .cm-shop-box{ width:24px; height:24px; border:1.6px solid var(--sage); border-radius:7px; flex-shrink:0; display:grid; place-items:center; font-size:14px; color:#fff; transition:all .12s; }
 .cm-shop-box.on{ background:var(--sage); }
