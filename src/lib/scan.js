@@ -1,5 +1,6 @@
 // Consulta un producto por código de barras en Open Food Facts (API abierta, sin key).
-const num = (v) => (typeof v === "number" && !Number.isNaN(v) ? v : null);
+// Número válido redondeado a máximo 2 decimales.
+const num = (v) => (typeof v === "number" && !Number.isNaN(v) ? Math.round(v * 100) / 100 : null);
 
 export async function fetchProduct(barcode) {
   try {

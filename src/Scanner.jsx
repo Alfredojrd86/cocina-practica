@@ -103,16 +103,29 @@ export default function Scanner({ approach, onClose, onAdd }) {
               <div className="vd">según tu enfoque {verdict.dietLabel}</div>
             </div>
           </div>
-          <p className="cm-scan-pname">{product.name}{product.brand ? ` · ${product.brand}` : ""}{product.quantity ? ` · ${product.quantity}` : ""}</p>
+          <div className="cm-scan-prod">
+            {product.image && <img className="cm-scan-img" src={product.image} alt="" />}
+            <p className="cm-scan-pname">{product.name}{product.brand ? ` · ${product.brand}` : ""}{product.quantity ? ` · ${product.quantity}` : ""}</p>
+          </div>
+
+          {(product.nutriscore || product.nova || (product.additives && product.additives.length > 0)) && (
+            <div className="cm-scan-facts">
+              {product.nutriscore && <span className={"fact ns ns-" + product.nutriscore}>Nutri-Score {product.nutriscore.toUpperCase()}</span>}
+              {product.nova && <span className="fact">{novaLabel(product.nova)}</span>}
+              {product.additives && product.additives.length > 0 && <span className="fact">{product.additives.length} aditivo(s)</span>}
+            </div>
+          )}
+
           <ul className="cm-scan-reasons">
             {verdict.reasons.map((r, k) => (<li key={k}>{r}</li>))}
           </ul>
           {verdict.manual && <p className="cm-scan-nutri">Evaluado por los ingredientes que ingresaste (sin datos de azúcar exactos).</p>}
-          {(product.sugars != null || product.proteins != null) && (
+          {(product.sugars != null || product.proteins != null || product.fat != null) && (
             <p className="cm-scan-nutri">
               {product.sugars != null && <>Azúcar {product.sugars}g · </>}
               {product.carbs != null && <>Carbos {product.carbs}g · </>}
-              {product.proteins != null && <>Proteína {product.proteins}g</>}
+              {product.proteins != null && <>Proteína {product.proteins}g · </>}
+              {product.fat != null && <>Grasa {product.fat}g</>}
               <span className="per"> /100g</span>
             </p>
           )}
@@ -162,4 +175,8 @@ export default function Scanner({ approach, onClose, onAdd }) {
 
 function verdictApproachLabel(approach) {
   return approach === "metabolismo" ? "3x1" : approach === "animal" ? "Animal" : "Balanceado";
+}
+
+function novaLabel(n) {
+  return n === 1 ? "Sin procesar" : n === 2 ? "Ingrediente culinario" : n === 3 ? "Procesado" : "Ultraprocesado";
 }

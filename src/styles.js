@@ -385,6 +385,13 @@ export const STYLES = `
 .cm-scan-verdict .vl{ font-family:'Fraunces',serif; font-weight:900; font-size:20px; }
 .cm-scan-verdict .vd{ font-size:12.5px; opacity:0.85; }
 .cm-scan-pname{ font-weight:700; font-size:15px; color:var(--ink); margin:0 0 8px; }
+.cm-scan-prod{ display:flex; align-items:center; gap:12px; }
+.cm-scan-prod .cm-scan-pname{ margin:0; flex:1; }
+.cm-scan-img{ width:54px; height:54px; object-fit:cover; border-radius:8px; border:1px solid var(--line); background:#fff; flex-shrink:0; }
+.cm-scan-facts{ display:flex; flex-wrap:wrap; gap:7px; margin:10px 0; }
+.cm-scan-facts .fact{ font-size:11.5px; font-weight:700; color:var(--ink); background:rgba(0,0,0,0.05); border:1px solid var(--line); border-radius:999px; padding:3px 10px; }
+.cm-scan-facts .ns{ color:#fff; border:none; }
+.cm-scan-facts .ns-a{ background:#2E7D32; } .cm-scan-facts .ns-b{ background:#7CB342; } .cm-scan-facts .ns-c{ background:#F9A825; } .cm-scan-facts .ns-d{ background:#EF6C00; } .cm-scan-facts .ns-e{ background:#C62828; }
 .cm-scan-reasons{ margin:0 0 10px; padding-left:18px; }
 .cm-scan-reasons li{ font-size:13.5px; color:var(--ink); line-height:1.5; }
 .cm-scan-nutri{ font-size:12.5px; color:var(--muted); margin:0 0 14px; }
