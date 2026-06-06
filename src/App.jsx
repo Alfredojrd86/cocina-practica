@@ -69,6 +69,7 @@ export default function App() {
   const [openSug, setOpenSug] = useState({});
   const [aiLoading, setAiLoading] = useState(false);
   const [aiErr, setAiErr] = useState(null);
+  const [aiUsage, setAiUsage] = useState(null);
   const [email, setEmail] = useLocalStorage("cm_email", "");
   const [authMsg, setAuthMsg] = useState(null);
   const [confirmOut, setConfirmOut] = useState(false);
@@ -98,21 +99,26 @@ export default function App() {
   const rollLocal = () => { setAiErr(null); setOpenSug({}); setSugs(suggestN(approach, meal, 3, { practical: quick })); };
 
   const rollAI = async () => {
+    if (!session) { setTab("favoritos"); showToast("Inicia sesión para usar la IA", "rm"); return; }
     setAiLoading(true);
     setAiErr(null);
     try {
+      const token = session?.access_token;
       const r = await fetch("/.netlify/functions/sugerir", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ approach, meal, ingredients: INGREDIENTS, people, quick }),
       });
       const d = await r.json();
+      if (r.status === 401) { setTab("favoritos"); showToast("Inicia sesión para usar la IA", "rm"); return; }
+      if (r.status === 429) { setAiErr(d.error || "Llegaste a tu límite diario de IA. Vuelve mañana."); if (d.max) setAiUsage({ used: d.used, max: d.max }); return; }
       if (!r.ok) throw new Error(d.error || "Error");
       const arr = Array.isArray(d.sugerencias) ? d.sugerencias : [d];
       setOpenSug({});
       setSugs(arr);
+      if (d.usage) setAiUsage(d.usage);
     } catch (e) {
-      setAiErr("No se pudo generar con IA. Revisa que GROQ_API_KEY esté configurada en Netlify (no funciona en local sin netlify dev).");
+      setAiErr("No se pudo generar con IA. Intenta de nuevo en un momento.");
     } finally {
       setAiLoading(false);
     }
@@ -228,7 +234,12 @@ export default function App() {
           )}
 
           <button className="cm-roll" onClick={rollLocal}>🍽 {sugs ? "Otras 3 ideas" : "Sugerir 3 ideas"}</button>
-          <button className="cm-outline" onClick={rollAI} disabled={aiLoading}>{aiLoading ? "✨ Pensando…" : "✨ Sugerir con IA"}</button>
+          <button className="cm-outline" onClick={rollAI} disabled={aiLoading}>
+            {aiLoading ? "✨ Pensando…" : session ? "✨ Sugerir con IA" : "🔒 Inicia sesión para usar la IA"}
+          </button>
+          {session && aiUsage && !aiErr && (
+            <p className="cm-hint" style={{ marginTop: 8, textAlign: "center" }}>Te quedan {Math.max(0, aiUsage.max - aiUsage.used)} de {aiUsage.max} consultas de IA hoy.</p>
+          )}
           {aiErr && <p className="cm-hint" style={{ color: "var(--terra)", marginTop: 10 }}>{aiErr}</p>}
         </div>
       )}
