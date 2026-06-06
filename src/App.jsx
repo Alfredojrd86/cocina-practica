@@ -72,6 +72,13 @@ export default function App() {
   const [email, setEmail] = useLocalStorage("cm_email", "");
   const [authMsg, setAuthMsg] = useState(null);
   const [confirmOut, setConfirmOut] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = setInterval(() => setCooldown((c) => (c <= 1 ? 0 : c - 1)), 1000);
+    return () => clearInterval(t);
+  }, [cooldown]);
   const [toast, setToast] = useState(null);
   const toastTimer = useRef(null);
 
@@ -130,8 +137,18 @@ export default function App() {
     setAuthMsg(null);
     if (!supabaseReady) { setAuthMsg("Sync no configurado (faltan variables Supabase)."); return; }
     if (!email.includes("@")) { setAuthMsg("Escribe un correo válido."); return; }
+    if (cooldown > 0) return;
     const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin } });
-    setAuthMsg(error ? "Error: " + error.message : "Revisa tu correo y abre el enlace para entrar.");
+    if (!error) {
+      setAuthMsg("✓ Enlace enviado. Revisa tu correo (y la carpeta spam) y ábrelo para entrar.");
+      setCooldown(60);
+    } else {
+      const m = error.message || "";
+      if (/rate limit/i.test(m)) setAuthMsg("Demasiados envíos seguidos. Espera unos minutos e intenta de nuevo.");
+      else if (/invalid/i.test(m)) setAuthMsg("Correo inválido. Revísalo e intenta de nuevo.");
+      else setAuthMsg("No se pudo enviar: " + m);
+      setCooldown(30);
+    }
   };
   const signOut = async () => {
     if (supabase) await supabase.auth.signOut();
@@ -232,8 +249,8 @@ export default function App() {
               <>
                 <p className="cm-mini" style={{ margin: "0 0 8px" }}>Sincronizar mis favoritos</p>
                 <div className="cm-auth-row">
-                  <input className="cm-input" type="email" inputMode="email" placeholder="tu@correo.com" value={email} onChange={(e) => setEmail(e.target.value)} />
-                  <button className="cm-auth-send" onClick={sendMagicLink}>Enviar enlace</button>
+                  <input className="cm-input" type="email" inputMode="email" autoComplete="email" placeholder="tu@correo.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+                  <button className="cm-auth-send" onClick={sendMagicLink} disabled={cooldown > 0}>{cooldown > 0 ? `Reenviar en ${cooldown}s` : "Enviar enlace"}</button>
                 </div>
               </>
             )}
