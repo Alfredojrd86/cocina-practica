@@ -9,7 +9,16 @@ import { supabase, supabaseReady } from "./lib/supabase.js";
 import { suggestN, buildWeek, names, fmtQty } from "./lib/suggest.js";
 import { analyzeSuggestion, TIPO_INFO } from "./data/foodTypes.js";
 import { CATALOG, PANTRY_CATS, PANTRY_INFO, statusOf, qtyOf, restockAll, adjustQty, stepFor, servingFor, extractItems, itemsFromNames, splitByPantry, applyCooked, findItem, getItem } from "./data/pantry.js";
-const Scanner = lazy(() => import("./Scanner.jsx"));
+// Carga el escáner; si el chunk falla (service worker viejo tras deploy), recarga una vez.
+const importScanner = () => import("./Scanner.jsx").catch((e) => {
+  if (!sessionStorage.getItem("cm_reload_scanner")) {
+    sessionStorage.setItem("cm_reload_scanner", "1");
+    window.location.reload();
+    return new Promise(() => {});
+  }
+  throw e;
+});
+const Scanner = lazy(importScanner);
 
 // Evita la pantalla en blanco si el escáner (o su chunk) falla al cargar.
 class ScannerBoundary extends React.Component {
@@ -147,6 +156,12 @@ export default function App() {
     l.textContent = STYLES;
     document.head.appendChild(l);
     return () => document.head.removeChild(l);
+  }, []);
+
+  // Precarga el escáner en segundo plano para que abra al instante (sin pantalla blanca).
+  useEffect(() => {
+    const id = setTimeout(() => { importScanner().catch(() => {}); }, 1500);
+    return () => clearTimeout(id);
   }, []);
 
   // Al entrar a "Ahora" sin ideas, genera 3 automáticamente (pantalla nunca vacía).
