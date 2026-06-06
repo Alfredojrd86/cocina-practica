@@ -1,5 +1,5 @@
 export const STYLES = `
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,500&family=Karla:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,500&family=Karla:wght@400;500;700&family=Caveat:wght@500;700&display=swap');
 
 .cm-root{ --cream:#F4EEE2; --paper:#FBF7EF; --ink:#2A2620; --muted:#5A5346; --green:#2F3D2E; --terra:#BF5B3C; --sage:#8A9A5B; --line:#E2D8C4;
   font-family:'Karla',sans-serif; background:var(--cream);
@@ -89,6 +89,60 @@ export const STYLES = `
 .cm-acc-h .meta{ font-size:12px; font-weight:700; color:var(--muted); }
 .cm-acc-h .meta.low{ color:var(--terra); background:rgba(191,91,60,0.12); border-radius:999px; padding:2px 9px; }
 .cm-acc-h .chev{ color:var(--muted); font-size:13px; width:14px; text-align:center; }
+
+.cm-theme-toggle{ width:100%; margin-top:14px; border:1px dashed var(--line); background:transparent; color:var(--muted); border-radius:13px; padding:11px; font-family:'Karla'; font-weight:700; font-size:12.5px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.cm-theme-toggle:active{ transform:scale(.99); }
+
+/* ===== TEMA: Receta (papel) ===== */
+.theme-paper{
+  --cream:#EFE6D2; --paper:#FCF7EC; --ink:#39322A; --muted:#6B5E49; --green:#3C4A2E; --terra:#B23A2E; --sage:#7E8B52; --line:#D9C8A6;
+  background-color:#EFE6D2;
+  background-image:
+    radial-gradient(circle at 15% 0%, rgba(126,139,82,0.10), transparent 42%),
+    radial-gradient(circle at 88% 8%, rgba(178,58,46,0.08), transparent 40%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+}
+/* Títulos manuscritos */
+.theme-paper .cm-brand,
+.theme-paper .cm-h2,
+.theme-paper .cm-onb-h,
+.theme-paper .cm-restitle,
+.theme-paper .cm-sug-title,
+.theme-paper .cm-day-h,
+.theme-paper .cm-home-btn .t,
+.theme-paper .cm-home-enfoque .lbl,
+.theme-paper .cm-scan-title{ font-family:'Caveat', cursive; font-weight:700; letter-spacing:0.2px; }
+.theme-paper .cm-brand{ font-size:27px; }
+.theme-paper .cm-h2{ font-size:30px; }
+.theme-paper .cm-onb-h{ font-size:40px; }
+.theme-paper .cm-sug-title{ font-size:21px; }
+.theme-paper .cm-home-btn .t{ font-size:21px; }
+.theme-paper .cm-day-h{ font-size:21px; }
+/* Tarjetas tipo ficha de receta: papel rayado + línea roja de margen + sombra desplazada */
+.theme-paper .cm-card,
+.theme-paper .cm-sug,
+.theme-paper .cm-day,
+.theme-paper .cm-home-btn,
+.theme-paper .cm-home-enfoque,
+.theme-paper .cm-auth,
+.theme-paper .cm-sheet-card,
+.theme-paper .cm-skel{
+  background-image:repeating-linear-gradient(180deg, transparent 0 30px, rgba(60,74,46,0.07) 30px 31px);
+  background-color:var(--paper);
+  border:1px solid var(--line);
+  border-radius:8px;
+  box-shadow:2px 3px 0 rgba(57,50,42,0.07), 0 14px 30px -22px rgba(57,50,42,0.5);
+  position:relative;
+}
+.theme-paper .cm-card::before,
+.theme-paper .cm-sug::before,
+.theme-paper .cm-day::before{
+  content:""; position:absolute; left:14px; top:8px; bottom:8px; width:1.5px; background:rgba(178,58,46,0.35);
+}
+.theme-paper .cm-card, .theme-paper .cm-day{ padding-left:30px; }
+.theme-paper .cm-roll{ border-radius:10px; }
+.theme-paper .cm-pill.on{ box-shadow:1px 2px 0 rgba(57,50,42,0.18); }
+.theme-paper .cm-tabs{ background:rgba(252,247,236,0.95); }
 .cm-shop-item{ display:flex; align-items:center; gap:13px; padding:13px 0; border-bottom:1px dashed var(--line); cursor:pointer; -webkit-tap-highlight-color:transparent; }
 .cm-shop-box{ width:24px; height:24px; border:1.6px solid var(--sage); border-radius:7px; flex-shrink:0; display:grid; place-items:center; font-size:14px; color:#fff; transition:all .12s; }
 .cm-shop-box.on{ background:var(--sage); }
