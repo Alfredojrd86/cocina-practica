@@ -9,9 +9,10 @@ ${rootVars}
   padding:calc(env(safe-area-inset-top) + 18px) 0 0; -webkit-font-smoothing:antialiased;
   background-color:var(--cream);
   background-image:
-    radial-gradient(ellipse at 50% 35%, transparent 52%, rgba(58,45,30,0.13) 100%),
-    radial-gradient(circle at 15% 0%, rgba(86,106,44,0.12), transparent 42%),
-    radial-gradient(circle at 88% 8%, rgba(164,56,42,0.10), transparent 40%),
+    radial-gradient(ellipse at 50% 35%, transparent 52%, rgba(58,45,30,0.14) 100%),
+    repeating-linear-gradient(180deg, transparent 0 31px, rgba(58,45,30,0.05) 31px 32px),
+    radial-gradient(circle at 15% 0%, rgba(86,106,44,0.10), transparent 42%),
+    radial-gradient(circle at 88% 8%, rgba(164,56,42,0.09), transparent 40%),
     var(--paper-noise);
   background-attachment:fixed;
 }
@@ -399,6 +400,25 @@ ${rootVars}
 .cm-scan-facts .fact{ font-size:11.5px; font-weight:700; color:var(--ink); background:rgba(0,0,0,0.05); border:1px solid var(--line); border-radius:999px; padding:3px 10px; }
 .cm-scan-facts .ns{ color:#fff; border:none; }
 .cm-scan-facts .ns-a{ background:#2E7D32; } .cm-scan-facts .ns-b{ background:#7CB342; } .cm-scan-facts .ns-c{ background:#F9A825; } .cm-scan-facts .ns-d{ background:#EF6C00; } .cm-scan-facts .ns-e{ background:#C62828; }
+
+/* ===== Notas de papel escritas a mano: rotación leve + cinta adhesiva ===== */
+.cm-sug, .cm-home-btn, .cm-day, .cm-home-enfoque, .cm-scan-card{ position:relative; }
+.cm-sug{ transform:rotate(-0.5deg); }
+.cm-sug:nth-of-type(even){ transform:rotate(0.55deg); }
+.cm-sug.open{ transform:none; }
+.cm-day:nth-of-type(odd){ transform:rotate(-0.4deg); }
+.cm-day:nth-of-type(even){ transform:rotate(0.4deg); }
+.cm-home-btn:nth-child(odd){ transform:rotate(-0.7deg); }
+.cm-home-btn:nth-child(even){ transform:rotate(0.7deg); }
+.cm-home-btn:active{ transform:scale(.97); }
+/* cinta adhesiva translúcida arriba de cada nota */
+.cm-sug::after, .cm-home-btn::after{
+  content:""; position:absolute; top:-7px; left:50%;
+  width:56px; height:16px; transform:translateX(-50%) rotate(-3deg);
+  background:rgba(199,174,130,0.45); border:1px dashed rgba(58,45,30,0.22);
+  box-shadow:0 1px 2px rgba(58,45,30,0.15); pointer-events:none; z-index:2;
+}
+.cm-home-btn:nth-child(even)::after{ transform:translateX(-50%) rotate(3deg); }
 .cm-scan-reasons{ margin:0 0 10px; padding-left:18px; }
 .cm-scan-reasons li{ font-size:13.5px; color:var(--ink); line-height:1.5; }
 .cm-scan-nutri{ font-size:12.5px; color:var(--muted); margin:0 0 14px; }
