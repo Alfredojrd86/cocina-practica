@@ -89,6 +89,11 @@ export default function App() {
   const [open, setOpen] = useLocalStorage("cm_open", {});
   const [checked, setChecked] = useLocalStorage("cm_checked", {});
   const [buy, setBuy] = useLocalStorage("cm_buy", {});
+  const [hidden, setHidden] = useLocalStorage("cm_hidden", []);
+  const [custom, setCustom] = useLocalStorage("cm_custom", []);
+  const [newItem, setNewItem] = useState("");
+  const [newUnit, setNewUnit] = useState("unid.");
+  const [showHidden, setShowHidden] = useState(false);
   const { favs, add: addFav, remove: removeFav, session, syncing } = useFavorites();
   const { pantry, setPantry } = usePantry(session);
   const [openSug, setOpenSug] = useState({});
@@ -222,11 +227,29 @@ export default function App() {
   // Carga la despensa con las cantidades de la compra (lo que realmente compraste).
   const loadPantryFromBuy = () => {
     const next = {};
-    for (const c of CATALOG) next[c.key] = qtyOf(c.key, buy, people);
+    for (const c of CATALOG) if (!hidden.includes(c.key)) next[c.key] = qtyOf(c.key, buy, people);
+    for (const c of custom) next[c.key] = typeof buy[c.key] === "number" ? buy[c.key] : 0;
     setPantry(next);
     showToast("🧺 Despensa cargada con tu compra", "ok");
     setTab("despensa");
   };
+
+  const hideItem = (key) => setHidden([...hidden, key]);
+  const unhideItem = (key) => setHidden(hidden.filter((k) => k !== key));
+  const addCustom = () => {
+    const label = newItem.trim();
+    if (!label) return;
+    const key = "c_" + label.toLowerCase().replace(/[^a-z0-9]+/g, "_") + "_" + (custom.length + 1);
+    setCustom([...custom, { key, label, unit: newUnit, cat: "Otros" }]);
+    setNewItem("");
+  };
+  const delCustom = (key) => {
+    setCustom(custom.filter((c) => c.key !== key));
+    const b = { ...buy }; delete b[key]; setBuy(b);
+  };
+  // Cantidad simple para ítems personalizados (no escala por personas).
+  const customQty = (key, map) => (typeof map[key] === "number" ? map[key] : 0);
+  const adjCustomBuy = (key, d) => setBuy({ ...buy, [key]: Math.max(0, customQty(key, buy) + d) });
 
   const Slot = ({ dk, slot, label, prepItems }) => {
     const key = dk + slot;
@@ -375,21 +398,48 @@ export default function App() {
             <button className="cm-outline" style={{ marginTop: 0 }} onClick={() => setTab("compras")}>🛒 Editar y cargar desde mis compras</button>
           </div>
           <div className="cm-card">
-            {PANTRY_CATS.map((cat) => (
-              <div key={cat}>
-                <p className="cm-shop-cat-h">{cat}</p>
-                {CATALOG.filter((c) => c.cat === cat).map((c) => {
-                  const st = statusOf(c.key, pantry, people);
+            {PANTRY_CATS.map((cat) => {
+              const items = CATALOG.filter((c) => c.cat === cat && !hidden.includes(c.key));
+              if (!items.length) return null;
+              return (
+                <div key={cat}>
+                  <p className="cm-shop-cat-h">{cat}</p>
+                  {items.map((c) => {
+                    const st = statusOf(c.key, pantry, people);
+                    const info = PANTRY_INFO[st];
+                    const qty = qtyOf(c.key, pantry, people);
+                    const step = stepFor(c);
+                    return (
+                      <div key={c.key} className="cm-pantry-item">
+                        <span className="cm-pantry-name">{c.label}{c.condiment && <span className="cm-pantry-cond">básico</span>}</span>
+                        <div className="cm-qty">
+                          <button className="cm-qty-btn" aria-label="Restar" onClick={() => setPantry({ ...pantry, [c.key]: adjustQty(c.key, pantry, people, -step) })}>−</button>
+                          <span className="cm-qty-val">{qty} <i>{c.unit}</i></span>
+                          <button className="cm-qty-btn" aria-label="Sumar" onClick={() => setPantry({ ...pantry, [c.key]: adjustQty(c.key, pantry, people, step) })}>+</button>
+                        </div>
+                        <span className="cm-pantry-badge" style={{ background: info.bg, color: info.color }}>
+                          <span className="dot" style={{ background: info.color }} />{info.label}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })}
+            {custom.length > 0 && (
+              <div>
+                <p className="cm-shop-cat-h">Otros (tuyos)</p>
+                {custom.map((c) => {
+                  const qty = customQty(c.key, pantry);
+                  const st = qty > 0 ? "tengo" : "agotado";
                   const info = PANTRY_INFO[st];
-                  const qty = qtyOf(c.key, pantry, people);
-                  const step = stepFor(c);
                   return (
                     <div key={c.key} className="cm-pantry-item">
-                      <span className="cm-pantry-name">{c.label}{c.condiment && <span className="cm-pantry-cond">básico</span>}</span>
+                      <span className="cm-pantry-name">{c.label}</span>
                       <div className="cm-qty">
-                        <button className="cm-qty-btn" aria-label="Restar" onClick={() => setPantry({ ...pantry, [c.key]: adjustQty(c.key, pantry, people, -step) })}>−</button>
+                        <button className="cm-qty-btn" aria-label="Restar" onClick={() => setPantry({ ...pantry, [c.key]: Math.max(0, customQty(c.key, pantry) - 1) })}>−</button>
                         <span className="cm-qty-val">{qty} <i>{c.unit}</i></span>
-                        <button className="cm-qty-btn" aria-label="Sumar" onClick={() => setPantry({ ...pantry, [c.key]: adjustQty(c.key, pantry, people, step) })}>+</button>
+                        <button className="cm-qty-btn" aria-label="Sumar" onClick={() => setPantry({ ...pantry, [c.key]: customQty(c.key, pantry) + 1 })}>+</button>
                       </div>
                       <span className="cm-pantry-badge" style={{ background: info.bg, color: info.color }}>
                         <span className="dot" style={{ background: info.color }} />{info.label}
@@ -398,7 +448,7 @@ export default function App() {
                   );
                 })}
               </div>
-            ))}
+            )}
           </div>
           <p className="cm-foot">Los <b>básicos</b> (aceite, sal, ajo, miel, mantequilla) no se descuentan al cocinar: duran mucho.</p>
         </div>
@@ -432,25 +482,76 @@ export default function App() {
           <button className="cm-roll" onClick={loadPantryFromBuy}>🧺 Cargar esta compra a mi despensa</button>
           <p className="cm-hint" style={{ marginTop: 8 }}>Sustituye el stock actual por estas cantidades.</p>
           <div className="cm-card" style={{ marginTop: 12 }}>
-            {PANTRY_CATS.map((cat) => (<div key={cat}>
-              <p className="cm-shop-cat-h">{cat}</p>
-              {CATALOG.filter((c) => c.cat === cat).map((c) => {
-                const on = !!checked[c.key];
-                const qty = qtyOf(c.key, buy, people);
-                const step = stepFor(c);
-                return (
-                  <div key={c.key} className="cm-shop-item">
-                    <span className={"cm-shop-box" + (on ? " on" : "")} onClick={() => setChecked({ ...checked, [c.key]: !on })}>{on ? "✓" : ""}</span>
-                    <span className={"cm-shop-name" + (on ? " done" : "")} onClick={() => setChecked({ ...checked, [c.key]: !on })}>{c.label}</span>
-                    <div className="cm-qty">
-                      <button className="cm-qty-btn" aria-label="Restar" onClick={() => setBuy({ ...buy, [c.key]: adjustQty(c.key, buy, people, -step) })}>−</button>
-                      <span className="cm-qty-val">{qty} <i>{c.unit}</i></span>
-                      <button className="cm-qty-btn" aria-label="Sumar" onClick={() => setBuy({ ...buy, [c.key]: adjustQty(c.key, buy, people, step) })}>+</button>
-                    </div>
-                  </div>);
-              })}
-            </div>))}
+            {PANTRY_CATS.map((cat) => {
+              const items = CATALOG.filter((c) => c.cat === cat && !hidden.includes(c.key));
+              if (!items.length) return null;
+              return (<div key={cat}>
+                <p className="cm-shop-cat-h">{cat}</p>
+                {items.map((c) => {
+                  const on = !!checked[c.key];
+                  const qty = qtyOf(c.key, buy, people);
+                  const step = stepFor(c);
+                  return (
+                    <div key={c.key} className="cm-shop-item">
+                      <span className={"cm-shop-box" + (on ? " on" : "")} onClick={() => setChecked({ ...checked, [c.key]: !on })}>{on ? "✓" : ""}</span>
+                      <span className={"cm-shop-name" + (on ? " done" : "")} onClick={() => setChecked({ ...checked, [c.key]: !on })}>{c.label}</span>
+                      <div className="cm-qty">
+                        <button className="cm-qty-btn" aria-label="Restar" onClick={() => setBuy({ ...buy, [c.key]: adjustQty(c.key, buy, people, -step) })}>−</button>
+                        <span className="cm-qty-val">{qty} <i>{c.unit}</i></span>
+                        <button className="cm-qty-btn" aria-label="Sumar" onClick={() => setBuy({ ...buy, [c.key]: adjustQty(c.key, buy, people, step) })}>+</button>
+                      </div>
+                      <button className="cm-row-x" aria-label="Quitar de la lista" onClick={() => hideItem(c.key)}>✕</button>
+                    </div>);
+                })}
+              </div>);
+            })}
+
+            {custom.length > 0 && (
+              <div>
+                <p className="cm-shop-cat-h">Otros (tuyos)</p>
+                {custom.map((c) => {
+                  const on = !!checked[c.key];
+                  const qty = customQty(c.key, buy);
+                  return (
+                    <div key={c.key} className="cm-shop-item">
+                      <span className={"cm-shop-box" + (on ? " on" : "")} onClick={() => setChecked({ ...checked, [c.key]: !on })}>{on ? "✓" : ""}</span>
+                      <span className={"cm-shop-name" + (on ? " done" : "")} onClick={() => setChecked({ ...checked, [c.key]: !on })}>{c.label}</span>
+                      <div className="cm-qty">
+                        <button className="cm-qty-btn" aria-label="Restar" onClick={() => adjCustomBuy(c.key, -1)}>−</button>
+                        <span className="cm-qty-val">{qty} <i>{c.unit}</i></span>
+                        <button className="cm-qty-btn" aria-label="Sumar" onClick={() => adjCustomBuy(c.key, 1)}>+</button>
+                      </div>
+                      <button className="cm-row-x" aria-label="Eliminar" onClick={() => delCustom(c.key)}>✕</button>
+                    </div>);
+                })}
+              </div>
+            )}
+
+            <div className="cm-add">
+              <input className="cm-input" placeholder="Agregar ingrediente…" value={newItem}
+                onChange={(e) => setNewItem(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") addCustom(); }} />
+              <select className="cm-add-unit" value={newUnit} onChange={(e) => setNewUnit(e.target.value)}>
+                <option value="unid.">unid.</option>
+                <option value="kg">kg</option>
+                <option value="L">L</option>
+                <option value="latas">latas</option>
+              </select>
+              <button className="cm-add-btn" onClick={addCustom}>＋</button>
+            </div>
           </div>
+
+          {hidden.length > 0 && (
+            <div style={{ marginTop: 10 }}>
+              <button className="cm-link" onClick={() => setShowHidden(!showHidden)}>{showHidden ? "Ocultar" : `Ver ${hidden.length} quitado(s)`}</button>
+              {showHidden && (
+                <div className="cm-hidden-list">
+                  {hidden.map((k) => { const it = CATALOG.find((c) => c.key === k); return it ? (
+                    <button key={k} className="cm-chip-restore" onClick={() => unhideItem(k)}>+ {it.label}</button>
+                  ) : null; })}
+                </div>
+              )}
+            </div>
+          )}
           <h2 className="cm-h2" style={{ marginTop: 26 }}>Guía de frutas</h2>
           <p className="cm-p">El único dulce permitido es el natural.</p>
           <div className="cm-card cm-frutas">
