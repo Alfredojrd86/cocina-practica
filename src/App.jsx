@@ -482,6 +482,17 @@ export default function App() {
           <button className="cm-roll" onClick={loadPantryFromBuy}>🧺 Cargar esta compra a mi despensa</button>
           <p className="cm-hint" style={{ marginTop: 8 }}>Sustituye el stock actual por estas cantidades.</p>
           <div className="cm-card" style={{ marginTop: 12 }}>
+            <div className="cm-add" style={{ marginTop: 0, paddingTop: 0, borderTop: "none", marginBottom: 6 }}>
+              <input className="cm-input" placeholder="Agregar ingrediente…" value={newItem}
+                onChange={(e) => setNewItem(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") addCustom(); }} />
+              <select className="cm-add-unit" value={newUnit} onChange={(e) => setNewUnit(e.target.value)}>
+                <option value="unid.">unid.</option>
+                <option value="kg">kg</option>
+                <option value="L">L</option>
+                <option value="latas">latas</option>
+              </select>
+              <button className="cm-add-btn" onClick={addCustom}>＋</button>
+            </div>
             {PANTRY_CATS.map((cat) => {
               const items = CATALOG.filter((c) => c.cat === cat && !hidden.includes(c.key));
               if (!items.length) return null;
@@ -526,18 +537,6 @@ export default function App() {
                 })}
               </div>
             )}
-
-            <div className="cm-add">
-              <input className="cm-input" placeholder="Agregar ingrediente…" value={newItem}
-                onChange={(e) => setNewItem(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") addCustom(); }} />
-              <select className="cm-add-unit" value={newUnit} onChange={(e) => setNewUnit(e.target.value)}>
-                <option value="unid.">unid.</option>
-                <option value="kg">kg</option>
-                <option value="L">L</option>
-                <option value="latas">latas</option>
-              </select>
-              <button className="cm-add-btn" onClick={addCustom}>＋</button>
-            </div>
           </div>
 
           {hidden.length > 0 && (
