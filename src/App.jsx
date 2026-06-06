@@ -54,6 +54,7 @@ function PantryMatch({ sug, pantry, people }) {
 }
 
 function SuggestionCard({ sug, approach, pantry, people, isOpen, onToggle, isFav, onFav, onCook }) {
+  const { badges } = analyzeSuggestion(sug.pasos, approach);
   return (
     <div className={"cm-sug" + (isOpen ? " open" : "")} onClick={onToggle}>
       <div className="cm-sug-top">
@@ -64,16 +65,21 @@ function SuggestionCard({ sug, approach, pantry, people, isOpen, onToggle, isFav
           onClick={(e) => { e.stopPropagation(); onFav(); }}
         >★</button>
       </div>
-      <TypeFeedback sug={sug} approach={approach} />
-      <PantryMatch sug={sug} pantry={pantry} people={people} />
-      {isOpen ? (
+      {!isOpen ? (
+        <div className="cm-dots">
+          {badges.slice(0, 8).map((b, k) => (<span key={k} className="cm-dot" style={{ background: TIPO_INFO[b.tipo].color }} />))}
+          <span className="cm-dots-hint">ver ▾</span>
+        </div>
+      ) : (
         <>
+          <TypeFeedback sug={sug} approach={approach} />
+          <PantryMatch sug={sug} pantry={pantry} people={people} />
           <div className="cm-sug-steps">
             {sug.pasos.map((s, k) => (<div key={k} className="st"><b>{s.n}:</b> {s.p}</div>))}
           </div>
           <button className="cm-cooked" onClick={(e) => { e.stopPropagation(); onCook(sug); }}>🍳 Lo cociné — descontar de mi despensa</button>
         </>
-      ) : <p className="cm-sug-hint">Toca para ver la preparación ▾</p>}
+      )}
     </div>
   );
 }
@@ -98,6 +104,8 @@ export default function App() {
   const [showHidden, setShowHidden] = useState(false);
   const [catOpen, setCatOpen] = useLocalStorage("cm_catopen", {});
   const [pantryFilter, setPantryFilter] = useState("all");
+  const [enfPicker, setEnfPicker] = useState(false);
+  const [optsOpen, setOptsOpen] = useState(false);
   const { favs, add: addFav, remove: removeFav, session, syncing } = useFavorites();
   const { pantry, setPantry } = usePantry(session);
   const [openSug, setOpenSug] = useState({});
@@ -351,14 +359,27 @@ export default function App() {
 
   return (
     <div className="cm-root"><div className="cm-app">
-      <div className="cm-head">
-        <h1>¿Qué <em>comemos</em>?</h1>
-        <div className="cm-banner">🍯 Sin azúcar añadida · solo lo natural</div>
-        <p className="cm-mini">Enfoque</p>
-        <div className="cm-seg">
-          {APPROACHES.map(([id, lab]) => (<button key={id} className={"cm-pill" + (approach === id ? " on" : "")} onClick={() => { setApproach(id); setWeek(null); setSugs(null); }}>{lab}</button>))}
-        </div>
+      <div className="cm-topbar">
+        <span className="cm-brand" onClick={() => setTab("inicio")}>¿Qué <em>comemos</em>?</span>
+        <button className="cm-enfchip" onClick={() => setEnfPicker(true)} aria-label="Cambiar enfoque">
+          <span className="e">{APPROACH_META[approach]?.emoji}</span>{APPROACH_META[approach]?.name}<span className="cv">▾</span>
+        </button>
       </div>
+
+      {enfPicker && (
+        <div className="cm-sheet" onClick={() => setEnfPicker(false)}>
+          <div className="cm-sheet-card" onClick={(e) => e.stopPropagation()}>
+            <p className="cm-mini" style={{ marginBottom: 10 }}>Tu enfoque</p>
+            {APPROACHES.map(([id]) => (
+              <button key={id} className={"cm-onb-opt" + (approach === id ? " on" : "")} onClick={() => { setApproach(id); setWeek(null); setSugs(null); setEnfPicker(false); }}>
+                <span className="emo">{APPROACH_META[id].emoji}</span>
+                <span className="t">{APPROACH_META[id].name}</span>
+                <span className="d">{APPROACH_META[id].desc}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {tab === "inicio" && (
         <div className="cm-section" style={{ marginTop: 20 }}>
@@ -380,31 +401,25 @@ export default function App() {
 
       {tab === "ahora" && (
         <div className="cm-section" style={{ marginTop: 20 }}>
-          <h2 className="cm-h2">¿Qué comemos ahora?</h2>
-          <p className="cm-p">Elige el momento. Te damos 3 ideas con su tipo de alimento y preparación.</p>
-          <p className="cm-mini">Momento</p>
-          <div className="cm-pills">{MEALS.map((m) => (<button key={m} className={"cm-pill" + (meal === m ? " on" : "")} onClick={() => { setMeal(m); }}>{m}</button>))}</div>
+          <h2 className="cm-h2">¿Qué comemos?</h2>
+          <div className="cm-pills" style={{ marginTop: 4 }}>{MEALS.map((m) => (<button key={m} className={"cm-pill" + (meal === m ? " on" : "")} onClick={() => { setMeal(m); }}>{m}</button>))}</div>
 
-          <div className="cm-toggle" onClick={() => setQuick(!quick)} role="switch" aria-checked={quick}>
-            <span className={"cm-switch" + (quick ? " on" : "")} />
-            <span><span className="lbl">Solo rápidas</span> <span className="sub">— sin horno, pocos ingredientes</span></span>
-          </div>
-          <div className="cm-toggle" onClick={() => setCookWith(!cookWith)} role="switch" aria-checked={cookWith}>
-            <span className={"cm-switch" + (cookWith ? " on" : "")} />
-            <span><span className="lbl">Cocinar con lo que tengo</span> <span className="sub">— prioriza tu despensa</span></span>
-          </div>
-          {cookWith && agotadosLabels.length > 0 && (
-            <p className="cm-hint" style={{ marginTop: 0, marginBottom: 4 }}>Excluyendo lo agotado: {agotadosLabels.join(", ")}.</p>
+          <button className="cm-opts-toggle" onClick={() => setOptsOpen(!optsOpen)} aria-expanded={optsOpen}>⚙ Opciones {optsOpen ? "▾" : "▸"}</button>
+          {optsOpen && (
+            <div className="cm-opts">
+              <div className="cm-toggle" onClick={() => setQuick(!quick)} role="switch" aria-checked={quick}>
+                <span className={"cm-switch" + (quick ? " on" : "")} />
+                <span className="lbl">Solo rápidas</span>
+              </div>
+              <div className="cm-toggle" onClick={() => setCookWith(!cookWith)} role="switch" aria-checked={cookWith}>
+                <span className={"cm-switch" + (cookWith ? " on" : "")} />
+                <span className="lbl">Cocinar con lo que tengo</span>
+              </div>
+              <p className="cm-consejo" style={{ border: "none", padding: 0, margin: "2px 0 0" }}>🟢 Tipo A · 🟡 Fruta · 🟠 Tipo E (modera)</p>
+            </div>
           )}
-
-          <div className="cm-legend cm-consejo" style={{ border: "none", padding: 0, marginTop: 0, marginBottom: 4 }}>
-            🟢 Tipo A (libre) · 🟡 Fruta (moderar) · 🟠 Tipo E (modera porción)
-          </div>
-
-          {supabaseReady && !session && (
-            <button className="cm-nudge" onClick={() => setTab("favoritos")}>
-              💡 Inicia sesión con Google en <b>★ Favoritos</b> para guardar tus platos en todos tus dispositivos →
-            </button>
+          {cookWith && agotadosLabels.length > 0 && (
+            <p className="cm-hint" style={{ marginTop: 4, marginBottom: 4 }}>Excluyendo agotado: {agotadosLabels.join(", ")}.</p>
           )}
 
           {aiLoading ? (
@@ -490,7 +505,7 @@ export default function App() {
       {tab === "despensa" && (
         <div className="cm-section" style={{ marginTop: 20 }}>
           <h2 className="cm-h2">Mi despensa</h2>
-          <p className="cm-p">Cantidad real de cada ingrediente. Al cocinar se descuenta la porción según las personas. El estado (Tengo/Poco/Agotado) se calcula solo.</p>
+          <p className="cm-p">Lo que tienes en casa. Al cocinar se descuenta solo.</p>
           <p className="cm-mini">¿Para cuántas personas?</p>
           <div className="cm-seg" style={{ marginBottom: 14 }}>
             {PEOPLE.map(([lab, n]) => (<button key={n} className={"cm-pill" + (people === n ? " on" : "")} onClick={() => setPeople(n)}>{lab}</button>))}
@@ -567,7 +582,7 @@ export default function App() {
       {tab === "compras" && (
         <div className="cm-section" style={{ marginTop: 20 }}>
           <h2 className="cm-h2">Lista de compras</h2>
-          <p className="cm-p">Ajusta con +/− lo que vas a comprar este mes. Marca lo que ya echaste al carrito. Al terminar, cárgalo a tu despensa.</p>
+          <p className="cm-p">Ajusta lo que vas a comprar y cárgalo a tu despensa.</p>
           <p className="cm-mini">¿Para cuántas personas?</p>
           <div className="cm-seg" style={{ marginBottom: 14 }}>
             {PEOPLE.map(([lab, n]) => (<button key={n} className={"cm-pill" + (people === n ? " on" : "")} onClick={() => setPeople(n)}>{lab}</button>))}

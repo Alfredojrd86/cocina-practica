@@ -9,6 +9,30 @@ export const STYLES = `
 .cm-app{ max-width:620px; margin:0 auto; padding:0 16px calc(env(safe-area-inset-bottom) + 96px); }
 @media(min-width:640px){ .cm-root{ padding-top:36px; } }
 
+/* Barra superior compacta */
+.cm-topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:18px; }
+.cm-brand{ font-family:'Fraunces',serif; font-weight:900; font-size:20px; color:var(--green); cursor:pointer; line-height:1; }
+.cm-brand em{ font-style:italic; font-weight:500; color:var(--terra); }
+.cm-enfchip{ display:inline-flex; align-items:center; gap:6px; background:#fff; border:1.5px solid var(--line); border-radius:999px; padding:7px 13px; font-family:'Karla'; font-weight:700; font-size:13px; color:var(--green); cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.cm-enfchip .e{ font-size:15px; }
+.cm-enfchip .cv{ color:var(--muted); font-size:11px; }
+
+/* Bottom sheet (selector de enfoque) */
+.cm-sheet{ position:fixed; inset:0; z-index:85; background:rgba(42,38,32,0.4); display:flex; align-items:flex-end; justify-content:center; animation:cm-fade .2s both; }
+.cm-sheet-card{ width:100%; max-width:620px; background:var(--cream); border-radius:22px 22px 0 0; padding:20px 16px calc(env(safe-area-inset-bottom) + 20px); display:grid; gap:10px; animation:cm-sheet-up .26s cubic-bezier(.2,1,.4,1) both; }
+@keyframes cm-sheet-up{ from{ transform:translateY(100%) } to{ transform:none } }
+
+/* Opciones plegables en Ahora */
+.cm-opts-toggle{ border:none; background:none; color:var(--muted); font-family:'Karla'; font-weight:700; font-size:13px; cursor:pointer; padding:14px 0 6px; -webkit-tap-highlight-color:transparent; }
+.cm-opts{ display:grid; gap:10px; padding:4px 0 6px; animation:cm-fade .2s both; }
+.cm-opts .cm-toggle{ margin:0; }
+.cm-opts .lbl{ font-size:14px; font-weight:600; color:var(--ink); }
+
+/* Puntitos de tipo en card plegada */
+.cm-dots{ display:flex; align-items:center; gap:6px; margin-top:10px; }
+.cm-dot{ width:9px; height:9px; border-radius:50%; }
+.cm-dots-hint{ margin-left:auto; font-size:11px; color:var(--muted); font-style:italic; }
+
 .cm-head h1{ font-family:'Fraunces',serif; font-weight:900; font-size:30px; line-height:1; color:var(--green); margin:0 0 9px; letter-spacing:-0.01em; }
 .cm-head h1 em{ font-style:italic; font-weight:500; color:var(--terra); }
 .cm-banner{ display:inline-flex; align-items:center; gap:7px; background:rgba(138,154,91,0.16); color:var(--green); border-radius:999px; padding:7px 14px; font-size:12px; font-weight:700; margin-bottom:16px; }
