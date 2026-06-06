@@ -249,10 +249,12 @@ export default function Scanner({ approach, onClose, onAdd, onReadLabel, hasSess
 
           <div className="cm-divider"><span>¿No está? Evalúalo por su etiqueta</span></div>
           <input className="cm-input" placeholder="Nombre del producto" value={mName} onChange={(e) => setMName(e.target.value)} style={{ width: "100%", marginBottom: 10 }} />
-          <p className="cm-mini" style={{ margin: "0 0 6px" }}>Sellos negros del producto</p>
+          <p className="cm-mini" style={{ margin: "0 0 8px" }}>Sellos del producto · toca los que tenga</p>
           <div className="cm-seals">
-            {[["azucar", "Alto en azúcares"], ["calorias", "Alto en calorías"], ["grasas", "Alto en grasas sat."], ["sodio", "Alto en sodio"]].map(([k, lab]) => (
-              <button key={k} className={"cm-seal" + (mSeals.includes(k) ? " on" : "")} onClick={() => toggleSeal(k)}>{mSeals.includes(k) ? "⬛ " : ""}{lab}</button>
+            {[["azucar", "AZÚCARES"], ["calorias", "CALORÍAS"], ["grasas", "GRASAS SAT."], ["sodio", "SODIO"]].map(([k, l2]) => (
+              <button key={k} className={"cm-seal" + (mSeals.includes(k) ? " on" : "")} onClick={() => toggleSeal(k)} aria-pressed={mSeals.includes(k)}>
+                <b>ALTO EN</b><span>{l2}</span>
+              </button>
             ))}
           </div>
           <textarea className="cm-input cm-textarea" placeholder="(opcional) pega los ingredientes de la etiqueta…" value={mIng} onChange={(e) => setMIng(e.target.value)} style={{ marginTop: 10 }} />

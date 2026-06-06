@@ -154,6 +154,10 @@ export const STYLES = `
 .theme-paper .cm-tabs{ background:rgba(252,247,236,0.95); }
 .theme-paper .cm-fab{ border-radius:14px; box-shadow:2px 4px 0 rgba(57,50,42,0.3); }
 .theme-paper .cm-fab:active{ transform:translate(1px,2px); box-shadow:1px 2px 0 rgba(57,50,42,0.3); }
+.theme-paper .cm-input, .theme-paper .cm-textarea, .theme-paper .cm-add-unit{ background:var(--paper); border-color:var(--line); color:var(--ink); border-radius:10px; }
+.theme-paper .cm-input:focus, .theme-paper .cm-textarea:focus{ border-color:var(--terra); outline:none; }
+.theme-paper .cm-auth-send{ border-radius:10px; box-shadow:2px 3px 0 rgba(57,50,42,0.22); }
+.theme-paper .cm-auth-send:active{ transform:translate(1px,2px); box-shadow:1px 1px 0 rgba(57,50,42,0.22); }
 
 /* Boleta de supermercado (Compras) */
 .cm-receipt .cm-rcpt-head{ text-align:center; padding:2px 0 8px; }
@@ -408,8 +412,16 @@ export const STYLES = `
 .cm-scan-manual{ display:flex; gap:8px; margin-top:14px; }
 .cm-scan-manual .cm-input{ flex:1; }
 .cm-textarea{ width:100%; min-height:90px; padding:10px 12px; font-family:'Karla'; font-size:14px; line-height:1.4; resize:vertical; }
-.cm-seals{ display:flex; flex-wrap:wrap; gap:8px; }
-.cm-seal{ border:1.5px solid var(--line); background:#fff; color:var(--ink); border-radius:11px; padding:9px 12px; font-family:'Karla'; font-weight:600; font-size:13px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
-.cm-seal.on{ background:var(--ink); border-color:var(--ink); color:#fff; }
-.cm-seal:active{ transform:scale(.97); }
+/* Sellos negros chilenos (octágono) */
+.cm-seals{ display:flex; flex-wrap:wrap; gap:10px; }
+.cm-seal{ width:80px; height:80px; padding:0; border:none; background:none; cursor:pointer; position:relative; display:grid; place-items:center; color:var(--muted); -webkit-tap-highlight-color:transparent; transition:transform .12s; }
+.cm-seal::before{ content:""; position:absolute; inset:0; clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%); background:#D9C8A6; transition:background .15s; }
+.cm-seal::after{ content:""; position:absolute; inset:6px; clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%); border:2px solid rgba(255,255,255,0.0); }
+.cm-seal.on{ color:#fff; }
+.cm-seal.on::before{ background:#141414; }
+.cm-seal.on::after{ border-color:rgba(255,255,255,0.55); }
+.cm-seal b, .cm-seal span{ position:relative; z-index:1; color:inherit; font-family:'Karla',sans-serif; font-weight:800; line-height:1.05; text-align:center; text-transform:uppercase; }
+.cm-seal b{ font-size:8.5px; letter-spacing:0.5px; }
+.cm-seal span{ font-size:10.5px; letter-spacing:0.2px; padding:0 4px; }
+.cm-seal:active{ transform:scale(.94); }
 `;
