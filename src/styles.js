@@ -131,7 +131,7 @@ ${rootVars}
 .cm-auth,
 .cm-sheet-card,
 .cm-skel{
-  background-image:repeating-linear-gradient(180deg, transparent 0 30px, rgba(120,92,48,0.13) 30px 31px);
+  background-image:repeating-linear-gradient(180deg, transparent 0 30px, rgba(120,92,48,0.17) 30px 31px);
   background-color:var(--paper);
   border:1px solid var(--line);
   border-radius:8px;
@@ -186,7 +186,7 @@ ${rootVars}
 .cm-scan-stage{ border:2px solid var(--ink); box-shadow:2px 3px 0 rgba(57,50,42,0.2); }
 /* Panel de resultado como ficha de receta */
 .cm-scan-card{
-  background-image:repeating-linear-gradient(180deg, transparent 0 30px, rgba(120,92,48,0.13) 30px 31px);
+  background-image:repeating-linear-gradient(180deg, transparent 0 30px, rgba(120,92,48,0.17) 30px 31px);
   background-color:var(--paper);
   border:1px solid var(--line); border-radius:8px; padding:16px 16px 16px 30px;
   box-shadow:2px 3px 0 rgba(57,50,42,0.07), 0 14px 30px -22px rgba(57,50,42,0.5);
@@ -419,6 +419,25 @@ ${rootVars}
   box-shadow:0 1px 2px rgba(58,45,30,0.15); pointer-events:none; z-index:2;
 }
 .cm-home-btn:nth-child(even)::after{ transform:translateX(-50%) rotate(3deg); }
+
+/* ===== Texto de las cards escrito a mano (sobre los renglones) ===== */
+.cm-sug-steps .st, .cm-sug-steps .st b,
+.cm-prep .pl, .cm-prep .pl b,
+.cm-step, .cm-step b,
+.cm-scan-reasons li,
+.cm-consejo, .cm-consejo b,
+.cm-slot .sv,
+.cm-p{
+  font-family:var(--font-head);
+}
+.cm-sug-steps .st{ font-size:17px; line-height:1.55; color:var(--ink); }
+.cm-sug-steps .st b{ color:var(--terra); font-weight:700; }
+.cm-prep .pl{ font-size:16px; line-height:1.5; }
+.cm-scan-reasons li{ font-size:16px; line-height:1.5; }
+.cm-consejo{ font-size:15px; line-height:1.4; }
+.cm-slot .sv{ font-size:16px; }
+.cm-p{ font-size:16px; font-style:normal; line-height:1.4; }
+.cm-home-btn .d, .cm-home-enfoque .sub{ font-family:var(--font-head); font-size:14px; line-height:1.3; }
 .cm-scan-reasons{ margin:0 0 10px; padding-left:18px; }
 .cm-scan-reasons li{ font-size:13.5px; color:var(--ink); line-height:1.5; }
 .cm-scan-nutri{ font-size:12.5px; color:var(--muted); margin:0 0 14px; }
