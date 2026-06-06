@@ -59,8 +59,8 @@ ${rootVars}
 
 .cm-card{ background:var(--paper); border:1px solid var(--line); border-radius:18px; padding:18px; box-shadow:0 1px 0 rgba(0,0,0,0.02),0 16px 36px -28px rgba(47,61,46,0.35); }
 
-.cm-res{ background:linear-gradient(150deg,var(--green),#26321f); color:var(--cream); border-radius:20px; padding:20px; margin:16px 0; min-height:120px; box-shadow:0 18px 44px -22px rgba(47,61,46,0.7); }
-.cm-res .placeholder{ font-size:15px; color:rgba(244,238,226,0.6); font-style:italic; text-align:center; margin:24px 0; }
+.cm-res{ background:var(--paper); border:1.5px dashed var(--line); color:var(--ink); border-radius:var(--radius-sm); padding:20px; margin:16px 0; min-height:110px; display:grid; place-items:center; box-shadow:var(--shadow-card); }
+.cm-res .placeholder{ font-size:14.5px; color:var(--muted); font-style:italic; text-align:center; margin:0; }
 .cm-rescontent{ animation:cm-pop .4s both; }
 @keyframes cm-pop{ from{ opacity:0; transform:translateY(6px) } to{ opacity:1; transform:none } }
 .cm-restitle{ font-family:var(--font-serif); font-weight:600; font-size:19px; line-height:1.3; margin:0 0 14px; color:#fff; }
