@@ -123,7 +123,6 @@ export default function App() {
   const [pantryFilter, setPantryFilter] = useState("all");
   const [enfPicker, setEnfPicker] = useState(false);
   const [optsOpen, setOptsOpen] = useState(false);
-  const [theme, setTheme] = useLocalStorage("cm_theme", "paper");
   const { favs, add: addFav, remove: removeFav, session, syncing } = useFavorites();
   const { pantry, setPantry } = usePantry(session);
   const [openSug, setOpenSug] = useState({});
@@ -399,7 +398,7 @@ export default function App() {
   };
 
   return (
-    <div className={"cm-root" + (theme === "paper" ? " theme-paper" : "")}><div className="cm-app">
+    <div className="cm-root"><div className="cm-app">
       <div className="cm-topbar">
         <span className="cm-brand" onClick={() => setTab("inicio")}>¿Qué <em>comemos</em>?</span>
         <button className="cm-enfchip" onClick={() => setEnfPicker(true)} aria-label="Cambiar enfoque">
@@ -437,9 +436,6 @@ export default function App() {
             <button className="cm-home-btn" onClick={openScanner}><span className="ic">📷</span><span className="t">Escanear</span><span className="d">¿Este producto me sirve?</span></button>
             <button className="cm-home-btn" onClick={() => setTab("compras")}><span className="ic">🛒</span><span className="t">Comprar</span><span className="d">Tu lista del mes</span></button>
           </div>
-          <button className="cm-theme-toggle" onClick={() => setTheme(theme === "paper" ? "default" : "paper")}>
-            🎨 Tema: {theme === "paper" ? "Receta (papel)" : "Clásico"} · cambiar
-          </button>
         </div>
       )}
 
