@@ -69,8 +69,9 @@ export default function App() {
   const [openSug, setOpenSug] = useState({});
   const [aiLoading, setAiLoading] = useState(false);
   const [aiErr, setAiErr] = useState(null);
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useLocalStorage("cm_email", "");
   const [authMsg, setAuthMsg] = useState(null);
+  const [confirmOut, setConfirmOut] = useState(false);
   const [toast, setToast] = useState(null);
   const toastTimer = useRef(null);
 
@@ -113,16 +114,17 @@ export default function App() {
   const toggle = (key) => setOpen({ ...open, [key]: !open[key] });
   const toggleSug = (key) => setOpenSug({ ...openSug, [key]: !openSug[key] });
   const isFav = (s) => favs.some((f) => favKey(f) === favKey(s));
-  const toggleFav = (s) => {
-    if (isFav(s)) { removeFav(s.titulo); showToast("Quitado de favoritos", "rm"); return; }
-    addFav({ titulo: s.titulo, pasos: s.pasos, approach, meal });
-    if (supabaseReady && !session) {
-      showToast("Guardado en este equipo", "ok", { label: "Registrar correo", fn: () => setTab("favoritos") });
-    } else {
-      showToast("★ Guardado en favoritos", "ok");
-    }
+  const toggleFav = async (s) => {
+    if (isFav(s)) { return removeFavWithToast(s.titulo); }
+    const r = await addFav({ titulo: s.titulo, pasos: s.pasos, approach, meal });
+    if (session) showToast(r.error ? "Guardado local · no sincronizó" : "★ Guardado y sincronizado", r.error ? "rm" : "ok");
+    else if (supabaseReady) showToast("Guardado en este equipo", "ok", { label: "Registrar correo", fn: () => setTab("favoritos") });
+    else showToast("★ Guardado en favoritos", "ok");
   };
-  const removeFavWithToast = (titulo) => { removeFav(titulo); showToast("Quitado de favoritos", "rm"); };
+  const removeFavWithToast = async (titulo) => {
+    const r = await removeFav(titulo);
+    showToast(session && r.error ? "Quitado local · no sincronizó" : "Quitado de favoritos", "rm");
+  };
 
   const sendMagicLink = async () => {
     setAuthMsg(null);
@@ -131,7 +133,11 @@ export default function App() {
     const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin } });
     setAuthMsg(error ? "Error: " + error.message : "Revisa tu correo y abre el enlace para entrar.");
   };
-  const signOut = async () => { if (supabase) await supabase.auth.signOut(); };
+  const signOut = async () => {
+    if (supabase) await supabase.auth.signOut();
+    setConfirmOut(false);
+    showToast("Sesión cerrada · tu correo quedó guardado", "rm");
+  };
   const cats = [...new Set(SHOPPING.map((s) => s.cat))];
 
   const Slot = ({ dk, slot, label, prepItems }) => {
@@ -213,7 +219,14 @@ export default function App() {
             {session ? (
               <div className="cm-auth-row">
                 <span className="cm-auth-mail">✓ {session.user.email}{syncing ? " · sincronizando…" : ""}</span>
-                <button className="cm-auth-out" onClick={signOut}>Salir</button>
+                {confirmOut ? (
+                  <>
+                    <button className="cm-auth-out" style={{ borderColor: "var(--terra)", color: "var(--terra)" }} onClick={signOut}>Confirmar</button>
+                    <button className="cm-auth-out" onClick={() => setConfirmOut(false)}>Cancelar</button>
+                  </>
+                ) : (
+                  <button className="cm-auth-out" onClick={() => setConfirmOut(true)}>Salir</button>
+                )}
               </div>
             ) : (
               <>

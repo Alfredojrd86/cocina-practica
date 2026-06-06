@@ -44,21 +44,26 @@ export function useFavorites() {
     return () => { cancelled = true; };
   }, [session]);
 
+  // Devuelven { synced, error }: synced=true si se escribió en la nube.
   const add = useCallback(async (f) => {
     setFavs((prev) => (prev.some((x) => x.titulo === f.titulo) ? prev : [f, ...prev]));
     if (supabase && session) {
-      await supabase.from("favorites").upsert(
+      const { error } = await supabase.from("favorites").upsert(
         { user_id: session.user.id, titulo: f.titulo, pasos: f.pasos, approach: f.approach, meal: f.meal },
         { onConflict: "user_id,titulo" }
       );
+      return { synced: !error, error };
     }
+    return { synced: false, error: null };
   }, [session, setFavs]);
 
   const remove = useCallback(async (titulo) => {
     setFavs((prev) => prev.filter((x) => x.titulo !== titulo));
     if (supabase && session) {
-      await supabase.from("favorites").delete().eq("titulo", titulo).eq("user_id", session.user.id);
+      const { error } = await supabase.from("favorites").delete().eq("titulo", titulo).eq("user_id", session.user.id);
+      return { synced: !error, error };
     }
+    return { synced: false, error: null };
   }, [session, setFavs]);
 
   return { favs, add, remove, session, syncing };
