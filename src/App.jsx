@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, lazy, Suspense } from "react";
 import { STYLES } from "./styles.js";
 import { SHOPPING, FRUTAS } from "./data/shopping.js";
 import { APPROACHES, MEALS, PEOPLE, DAYS } from "./data/config.js";
@@ -9,6 +9,7 @@ import { supabase, supabaseReady } from "./lib/supabase.js";
 import { suggestN, buildWeek, names, fmtQty } from "./lib/suggest.js";
 import { analyzeSuggestion, TIPO_INFO } from "./data/foodTypes.js";
 import { CATALOG, PANTRY_CATS, PANTRY_INFO, statusOf, qtyOf, restockAll, adjustQty, stepFor, servingFor, extractItems, itemsFromNames, splitByPantry, applyCooked } from "./data/pantry.js";
+const Scanner = lazy(() => import("./Scanner.jsx"));
 
 // Ingredientes disponibles, derivados de la lista de compras (sin paréntesis ni duplicados).
 const INGREDIENTS = [...new Set(SHOPPING.map((s) => s.item.replace(/\s*\(.*?\)/g, "").trim()))];
@@ -111,6 +112,7 @@ export default function App() {
     return () => clearInterval(t);
   }, [cooldown]);
   const [toast, setToast] = useState(null);
+  const [showScanner, setShowScanner] = useState(false);
   const toastTimer = useRef(null);
 
   const showToast = (msg, kind = "ok", action = null) => {
@@ -561,6 +563,15 @@ export default function App() {
           </div>
           <p className="cm-foot">Compras → cargas a despensa → al cocinar se descuenta solo. Tu lista queda guardada.<br /><br />Solo educativa; no reemplaza a un médico o nutricionista.</p>
         </div>
+      )}
+
+      {!showScanner && (
+        <button className="cm-fab" onClick={() => setShowScanner(true)} aria-label="Escanear producto">📷</button>
+      )}
+      {showScanner && (
+        <Suspense fallback={<div className="cm-scan"><p className="cm-scan-hint">Abriendo escáner…</p></div>}>
+          <Scanner approach={approach} onClose={() => setShowScanner(false)} />
+        </Suspense>
       )}
 
       {toast && (
