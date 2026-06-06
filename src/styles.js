@@ -108,6 +108,8 @@ export const STYLES = `
 .cm-sug-steps .st{ font-size:13.5px; line-height:1.5; color:var(--ink); }
 .cm-sug-steps .st b{ color:var(--green); font-weight:700; }
 .cm-sug-hint{ font-size:11px; color:var(--muted); font-style:italic; margin-top:8px; }
+.cm-cooked{ width:100%; margin-top:12px; border:1.5px solid var(--sage); background:rgba(138,154,91,0.10); color:var(--green); border-radius:12px; min-height:44px; font-family:'Karla'; font-weight:700; font-size:13.5px; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform .12s; }
+.cm-cooked:active{ transform:scale(.98); background:rgba(138,154,91,0.18); }
 
 /* Skeleton de carga IA */
 .cm-skel{ background:var(--paper); border:1px solid var(--line); border-radius:18px; padding:16px; }

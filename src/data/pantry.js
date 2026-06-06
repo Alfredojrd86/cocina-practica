@@ -92,6 +92,20 @@ export function itemsFromNames(names) {
   return [...found.values()];
 }
 
+// Baja un nivel: tengo -> poco -> agotado (agotado se queda).
+export function stepDown(s) {
+  if (s === "tengo") return "poco";
+  if (s === "poco") return "agotado";
+  return "agotado";
+}
+
+// Aplica "lo cociné": baja un nivel cada ingrediente usado. Devuelve nuevo mapa.
+export function applyCooked(items, pantry) {
+  const next = { ...pantry };
+  for (const it of items) next[it.key] = stepDown(statusOf(it.key, pantry));
+  return next;
+}
+
 // Separa ítems en los que tienes (tengo/poco) y los que faltan (agotado).
 export function splitByPantry(items, pantry) {
   const have = [], missing = [];

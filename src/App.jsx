@@ -8,7 +8,7 @@ import { usePantry } from "./hooks/usePantry.js";
 import { supabase, supabaseReady } from "./lib/supabase.js";
 import { suggestN, buildWeek, names, fmtQty } from "./lib/suggest.js";
 import { analyzeSuggestion, TIPO_INFO } from "./data/foodTypes.js";
-import { CATALOG, PANTRY_CATS, PANTRY_INFO, statusOf, nextStatus, extractItems, itemsFromNames, splitByPantry } from "./data/pantry.js";
+import { CATALOG, PANTRY_CATS, PANTRY_INFO, statusOf, nextStatus, extractItems, itemsFromNames, splitByPantry, applyCooked } from "./data/pantry.js";
 
 // Ingredientes disponibles, derivados de la lista de compras (sin paréntesis ni duplicados).
 const INGREDIENTS = [...new Set(SHOPPING.map((s) => s.item.replace(/\s*\(.*?\)/g, "").trim()))];
@@ -52,7 +52,7 @@ function PantryMatch({ sug, pantry }) {
   );
 }
 
-function SuggestionCard({ sug, approach, pantry, isOpen, onToggle, isFav, onFav }) {
+function SuggestionCard({ sug, approach, pantry, isOpen, onToggle, isFav, onFav, onCook }) {
   return (
     <div className={"cm-sug" + (isOpen ? " open" : "")} onClick={onToggle}>
       <div className="cm-sug-top">
@@ -66,9 +66,12 @@ function SuggestionCard({ sug, approach, pantry, isOpen, onToggle, isFav, onFav 
       <TypeFeedback sug={sug} approach={approach} />
       <PantryMatch sug={sug} pantry={pantry} />
       {isOpen ? (
-        <div className="cm-sug-steps">
-          {sug.pasos.map((s, k) => (<div key={k} className="st"><b>{s.n}:</b> {s.p}</div>))}
-        </div>
+        <>
+          <div className="cm-sug-steps">
+            {sug.pasos.map((s, k) => (<div key={k} className="st"><b>{s.n}:</b> {s.p}</div>))}
+          </div>
+          <button className="cm-cooked" onClick={(e) => { e.stopPropagation(); onCook(sug); }}>🍳 Lo cociné — descontar de mi despensa</button>
+        </>
       ) : <p className="cm-sug-hint">Toca para ver la preparación ▾</p>}
     </div>
   );
@@ -176,6 +179,12 @@ export default function App() {
     const r = await removeFav(titulo);
     showToast(session && r.error ? "Quitado local · no sincronizó" : "Quitado de favoritos", "rm");
   };
+  const onCook = (sug) => {
+    const items = sug.ingredientes && sug.ingredientes.length ? itemsFromNames(sug.ingredientes) : extractItems(sug);
+    if (!items.length) { showToast("No detecté ingredientes para descontar", "rm"); return; }
+    setPantry(applyCooked(items, pantry));
+    showToast("🍳 Despensa actualizada", "ok");
+  };
 
   const sendMagicLink = async () => {
     setAuthMsg(null);
@@ -272,7 +281,7 @@ export default function App() {
               {sugs.map((s, k) => (
                 <SuggestionCard key={s.titulo + k} sug={s} approach={approach} pantry={pantry}
                   isOpen={!!openSug[s.titulo + k]} onToggle={() => toggleSug(s.titulo + k)}
-                  isFav={isFav(s)} onFav={() => toggleFav(s)} />
+                  isFav={isFav(s)} onFav={() => toggleFav(s)} onCook={onCook} />
               ))}
             </div>
           ) : (
