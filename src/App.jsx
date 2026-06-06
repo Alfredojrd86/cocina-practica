@@ -7,6 +7,7 @@ import { useFavorites } from "./hooks/useFavorites.js";
 import { supabase, supabaseReady } from "./lib/supabase.js";
 import { suggestN, buildWeek, names, fmtQty } from "./lib/suggest.js";
 import { analyzeSuggestion, TIPO_INFO } from "./data/foodTypes.js";
+import { CATALOG, PANTRY_CATS, PANTRY_INFO, statusOf, nextStatus, extractItems, itemsFromNames, splitByPantry } from "./data/pantry.js";
 
 // Ingredientes disponibles, derivados de la lista de compras (sin paréntesis ni duplicados).
 const INGREDIENTS = [...new Set(SHOPPING.map((s) => s.item.replace(/\s*\(.*?\)/g, "").trim()))];
@@ -34,7 +35,23 @@ function TypeFeedback({ sug, approach }) {
   );
 }
 
-function SuggestionCard({ sug, approach, isOpen, onToggle, isFav, onFav }) {
+function PantryMatch({ sug, pantry }) {
+  const items = sug.ingredientes && sug.ingredientes.length ? itemsFromNames(sug.ingredientes) : extractItems(sug);
+  if (!items.length) return null;
+  const { have, missing } = splitByPantry(items, pantry);
+  return (
+    <div className="cm-pantry-match">
+      {have.length > 0 && (
+        <p className="pm-line"><span className="pm-tag have">Tienes</span> {have.map((i) => i.label).join(", ")}</p>
+      )}
+      {missing.length > 0 && (
+        <p className="pm-line"><span className="pm-tag miss">Te falta</span> {missing.map((i) => i.label).join(", ")}</p>
+      )}
+    </div>
+  );
+}
+
+function SuggestionCard({ sug, approach, pantry, isOpen, onToggle, isFav, onFav }) {
   return (
     <div className={"cm-sug" + (isOpen ? " open" : "")} onClick={onToggle}>
       <div className="cm-sug-top">
@@ -46,6 +63,7 @@ function SuggestionCard({ sug, approach, isOpen, onToggle, isFav, onFav }) {
         >★</button>
       </div>
       <TypeFeedback sug={sug} approach={approach} />
+      <PantryMatch sug={sug} pantry={pantry} />
       {isOpen ? (
         <div className="cm-sug-steps">
           {sug.pasos.map((s, k) => (<div key={k} className="st"><b>{s.n}:</b> {s.p}</div>))}
@@ -65,6 +83,7 @@ export default function App() {
   const [week, setWeek] = useLocalStorage("cm_week", null);
   const [open, setOpen] = useLocalStorage("cm_open", {});
   const [checked, setChecked] = useLocalStorage("cm_checked", {});
+  const [pantry, setPantry] = useLocalStorage("cm_pantry", {});
   const { favs, add: addFav, remove: removeFav, session, syncing } = useFavorites();
   const [openSug, setOpenSug] = useState({});
   const [aiLoading, setAiLoading] = useState(false);
@@ -224,7 +243,7 @@ export default function App() {
           ) : sugs && sugs.length ? (
             <div className="cm-cards">
               {sugs.map((s, k) => (
-                <SuggestionCard key={s.titulo + k} sug={s} approach={approach}
+                <SuggestionCard key={s.titulo + k} sug={s} approach={approach} pantry={pantry}
                   isOpen={!!openSug[s.titulo + k]} onToggle={() => toggleSug(s.titulo + k)}
                   isFav={isFav(s)} onFav={() => toggleFav(s)} />
               ))}
@@ -294,6 +313,35 @@ export default function App() {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {tab === "despensa" && (
+        <div className="cm-section" style={{ marginTop: 20 }}>
+          <h2 className="cm-h2">Mi despensa</h2>
+          <p className="cm-p">Marca lo que te queda. Las sugerencias muestran qué tienes y qué falta. Toca para cambiar: Tengo → Poco → Agotado.</p>
+          <div className="cm-pantry-actions">
+            <button className="cm-outline" style={{ marginTop: 0 }} onClick={() => setPantry({})}>↺ Reiniciar (todo: Tengo)</button>
+          </div>
+          <div className="cm-card">
+            {PANTRY_CATS.map((cat) => (
+              <div key={cat}>
+                <p className="cm-shop-cat-h">{cat}</p>
+                {CATALOG.filter((c) => c.cat === cat).map((c) => {
+                  const st = statusOf(c.key, pantry);
+                  const info = PANTRY_INFO[st];
+                  return (
+                    <div key={c.key} className="cm-pantry-item" onClick={() => setPantry({ ...pantry, [c.key]: nextStatus(st) })}>
+                      <span className="cm-pantry-name">{c.label}</span>
+                      <span className="cm-pantry-badge" style={{ background: info.bg, color: info.color }}>
+                        <span className="dot" style={{ background: info.color }} />{info.label}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -367,6 +415,7 @@ export default function App() {
       <nav className="cm-tabs"><div className="cm-tabs-inner">
         <button className={"cm-tab" + (tab === "ahora" ? " on" : "")} onClick={() => setTab("ahora")}><span className="ic">🍽</span>Ahora</button>
         <button className={"cm-tab" + (tab === "favoritos" ? " on" : "")} onClick={() => setTab("favoritos")}><span className="ic">⭐</span>Favoritos</button>
+        <button className={"cm-tab" + (tab === "despensa" ? " on" : "")} onClick={() => setTab("despensa")}><span className="ic">🧺</span>Despensa</button>
         <button className={"cm-tab" + (tab === "semana" ? " on" : "")} onClick={() => setTab("semana")}><span className="ic">📅</span>Semana</button>
         <button className={"cm-tab" + (tab === "compras" ? " on" : "")} onClick={() => setTab("compras")}><span className="ic">🛒</span>Compras</button>
       </div></nav>

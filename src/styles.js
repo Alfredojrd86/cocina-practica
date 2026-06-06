@@ -153,4 +153,22 @@ export const STYLES = `
 .cm-nudge{ display:block; width:100%; text-align:left; border:1px dashed var(--sage); background:rgba(138,154,91,0.10); color:var(--green); border-radius:13px; padding:11px 14px; font-family:'Karla'; font-size:12.5px; line-height:1.45; cursor:pointer; margin:8px 0 4px; -webkit-tap-highlight-color:transparent; }
 .cm-nudge b{ color:var(--terra); }
 .cm-nudge:active{ transform:scale(.99); }
+
+/* Despensa */
+.cm-pantry-actions{ margin-bottom:14px; }
+.cm-pantry-item{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:13px 0; border-bottom:1px dashed var(--line); cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.cm-pantry-name{ font-size:15px; color:var(--ink); }
+.cm-pantry-badge{ display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; border-radius:999px; padding:5px 12px; min-width:78px; justify-content:center; transition:background .14s, color .14s; }
+.cm-pantry-badge .dot{ width:7px; height:7px; border-radius:50%; }
+
+/* Fila tienes/falta en cards */
+.cm-pantry-match{ margin-top:10px; padding-top:10px; border-top:1px dashed var(--line); display:grid; gap:5px; }
+.cm-pantry-match .pm-line{ margin:0; font-size:12.5px; line-height:1.45; color:var(--ink); }
+.cm-pantry-match .pm-tag{ display:inline-block; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; border-radius:6px; padding:2px 7px; margin-right:6px; }
+.cm-pantry-match .pm-tag.have{ color:#2F7D32; background:rgba(47,125,50,0.13); }
+.cm-pantry-match .pm-tag.miss{ color:var(--terra); background:rgba(191,91,60,0.13); }
+
+/* 5 tabs: ajuste de espacio */
+.cm-tab{ font-size:10px; }
+.cm-tab .ic{ width:42px; }
 `;

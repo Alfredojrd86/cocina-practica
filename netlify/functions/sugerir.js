@@ -90,7 +90,8 @@ export const handler = async (event) => {
 
   const sys =
     "Eres un asistente de cocina saludable. Respondes EXCLUSIVAMENTE en JSON válido, en español. " +
-    'La forma exacta es: {"sugerencias":[{"titulo":"string","pasos":[{"n":"nombre del componente","p":"preparación breve con cantidades"}]}]}. ' +
+    'La forma exacta es: {"sugerencias":[{"titulo":"string","pasos":[{"n":"nombre del componente","p":"preparación breve con cantidades"}],"ingredientes":["ingrediente principal en singular y minúscula"]}]}. ' +
+    "El campo ingredientes lista los ingredientes base de la receta (p. ej. pollo, huevos, espinaca, aceite de oliva). " +
     "Devuelve EXACTAMENTE 3 sugerencias distintas, cada una con 1 a 4 pasos. Sin texto fuera del JSON.";
 
   const user =
