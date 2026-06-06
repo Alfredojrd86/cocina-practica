@@ -74,10 +74,10 @@ export default function App() {
   const [toast, setToast] = useState(null);
   const toastTimer = useRef(null);
 
-  const showToast = (msg, kind = "ok") => {
-    setToast({ msg, kind, id: Date.now() });
+  const showToast = (msg, kind = "ok", action = null) => {
+    setToast({ msg, kind, action, id: Date.now() });
     clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(() => setToast(null), 2200);
+    toastTimer.current = setTimeout(() => setToast(null), action ? 4000 : 2200);
   };
 
   useEffect(() => {
@@ -114,8 +114,13 @@ export default function App() {
   const toggleSug = (key) => setOpenSug({ ...openSug, [key]: !openSug[key] });
   const isFav = (s) => favs.some((f) => favKey(f) === favKey(s));
   const toggleFav = (s) => {
-    if (isFav(s)) { removeFav(s.titulo); showToast("Quitado de favoritos", "rm"); }
-    else { addFav({ titulo: s.titulo, pasos: s.pasos, approach, meal }); showToast("★ Guardado en favoritos", "ok"); }
+    if (isFav(s)) { removeFav(s.titulo); showToast("Quitado de favoritos", "rm"); return; }
+    addFav({ titulo: s.titulo, pasos: s.pasos, approach, meal });
+    if (supabaseReady && !session) {
+      showToast("Guardado en este equipo", "ok", { label: "Registrar correo", fn: () => setTab("favoritos") });
+    } else {
+      showToast("★ Guardado en favoritos", "ok");
+    }
   };
   const removeFavWithToast = (titulo) => { removeFav(titulo); showToast("Quitado de favoritos", "rm"); };
 
@@ -170,6 +175,12 @@ export default function App() {
           <div className="cm-legend cm-consejo" style={{ border: "none", padding: 0, marginTop: 0, marginBottom: 4 }}>
             🟢 Tipo A (libre) · 🟡 Fruta (moderar) · 🟠 Tipo E (modera porción)
           </div>
+
+          {supabaseReady && !session && (
+            <button className="cm-nudge" onClick={() => setTab("favoritos")}>
+              💡 Registra tu correo en <b>★ Favoritos</b> para guardar tus platos en todos tus dispositivos →
+            </button>
+          )}
 
           {aiLoading ? (
             <div className="cm-cards">
@@ -296,7 +307,14 @@ export default function App() {
         </div>
       )}
 
-      {toast && <div key={toast.id} className={"cm-toast " + toast.kind} role="status" aria-live="polite">{toast.msg}</div>}
+      {toast && (
+        <div key={toast.id} className={"cm-toast " + toast.kind} role="status" aria-live="polite">
+          <span>{toast.msg}</span>
+          {toast.action && (
+            <button className="cm-toast-btn" onClick={() => { toast.action.fn(); setToast(null); }}>{toast.action.label}</button>
+          )}
+        </div>
+      )}
 
       <nav className="cm-tabs"><div className="cm-tabs-inner">
         <button className={"cm-tab" + (tab === "ahora" ? " on" : "")} onClick={() => setTab("ahora")}><span className="ic">🍽</span>Ahora</button>

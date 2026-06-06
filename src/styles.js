@@ -68,10 +68,14 @@ export const STYLES = `
 
 .cm-tabs{ position:fixed; left:0; right:0; bottom:0; z-index:50; background:rgba(251,247,239,0.94); backdrop-filter:saturate(1.4) blur(10px); -webkit-backdrop-filter:saturate(1.4) blur(10px); border-top:1px solid var(--line); padding-bottom:env(safe-area-inset-bottom); box-shadow:0 -8px 26px -16px rgba(47,61,46,0.4); }
 .cm-tabs-inner{ max-width:620px; margin:0 auto; display:flex; }
-.cm-tab{ flex:1; background:none; border:none; padding:9px 2px; display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; color:var(--muted); font-family:'Karla'; font-size:11px; font-weight:700; min-height:60px; justify-content:center; transition:color .14s; -webkit-tap-highlight-color:transparent; }
-.cm-tab .ic{ font-size:21px; line-height:1; }
+.cm-tab{ position:relative; flex:1; background:none; border:none; padding:9px 2px 7px; display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; color:var(--muted); font-family:'Karla'; font-size:11px; font-weight:700; min-height:60px; justify-content:center; transition:color .16s; -webkit-tap-highlight-color:transparent; }
+.cm-tab .ic{ font-size:20px; line-height:1; display:grid; place-items:center; width:46px; height:30px; border-radius:999px; transition:background .2s, transform .18s cubic-bezier(.2,1.2,.4,1); }
 .cm-tab.on{ color:var(--terra); }
-.cm-tab.on .ic{ transform:translateY(-1px); }
+.cm-tab.on .ic{ background:rgba(191,91,60,0.15); transform:translateY(-1px) scale(1.06); }
+.cm-tab:active .ic{ transform:scale(.92); }
+/* indicador superior deslizante */
+.cm-tab::after{ content:""; position:absolute; top:0; left:50%; width:24px; height:3px; border-radius:0 0 3px 3px; background:var(--terra); transform:translateX(-50%) scaleX(0); transform-origin:center; transition:transform .22s cubic-bezier(.2,1,.4,1); }
+.cm-tab.on::after{ transform:translateX(-50%) scaleX(1); }
 
 .cm-foot{ text-align:center; font-size:11.5px; color:var(--muted); margin-top:24px; line-height:1.6; }
 .cm-foot b{ color:var(--green); }
@@ -134,4 +138,12 @@ export const STYLES = `
 /* Pop de la estrella al marcar favorito */
 @keyframes cm-star-pop{ 0%{ transform:scale(1) } 40%{ transform:scale(1.35) } 70%{ transform:scale(.9) } 100%{ transform:scale(1) } }
 .cm-fav.on{ animation:cm-star-pop .34s ease; }
+
+.cm-toast-btn{ border:none; background:rgba(255,255,255,0.22); color:#fff; border-radius:999px; padding:6px 12px; font-family:'Karla'; font-weight:700; font-size:12.5px; cursor:pointer; pointer-events:auto; white-space:nowrap; -webkit-tap-highlight-color:transparent; }
+.cm-toast-btn:active{ transform:scale(.95); }
+
+/* Nudge para registrar correo */
+.cm-nudge{ display:block; width:100%; text-align:left; border:1px dashed var(--sage); background:rgba(138,154,91,0.10); color:var(--green); border-radius:13px; padding:11px 14px; font-family:'Karla'; font-size:12.5px; line-height:1.45; cursor:pointer; margin:8px 0 4px; -webkit-tap-highlight-color:transparent; }
+.cm-nudge b{ color:var(--terra); }
+.cm-nudge:active{ transform:scale(.99); }
 `;
