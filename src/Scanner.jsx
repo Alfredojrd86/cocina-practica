@@ -45,7 +45,7 @@ export default function Scanner({ approach, onClose, onAdd }) {
   };
 
   const start = async () => {
-    setErr(null); setProduct(null); setVerdict(null); lockRef.current = false; setPhase("scan");
+    setErr(null); setProduct(null); setVerdict(null); setAdded(false); lockRef.current = false; setPhase("scan");
     if (!readerRef.current) readerRef.current = new BrowserMultiFormatReader();
     try {
       controlsRef.current = await readerRef.current.decodeFromConstraints(
@@ -164,10 +164,11 @@ export default function Scanner({ approach, onClose, onAdd }) {
                     )}
                   </div>
                 </div>
-                <button className="cm-outline" style={{ marginTop: 0, marginBottom: 10 }} disabled={added}
-                  onClick={() => { if (!added) { onAdd(product, { amount: Number(addAmount) || 0, unit: addUnit }); setAdded(true); } }}>
+                <button className="cm-outline" style={{ marginTop: 0, marginBottom: 6 }} disabled={added || !(Number(addAmount) > 0)}
+                  onClick={() => { const a = Number(addAmount) || 0; if (!added && a > 0) { onAdd(product, { amount: a, unit: addUnit }); setAdded(true); } }}>
                   {added ? "✓ Agregado a tu compra" : "➕ Agregar a mi compra"}
                 </button>
+                {!added && !(Number(addAmount) > 0) && <p className="cm-hint" style={{ marginTop: 0, marginBottom: 10 }}>Indica la cantidad para agregarlo.</p>}
               </>
             );
           })()}
