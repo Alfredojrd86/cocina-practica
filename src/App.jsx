@@ -8,7 +8,7 @@ import { usePantry } from "./hooks/usePantry.js";
 import { supabase, supabaseReady } from "./lib/supabase.js";
 import { suggestN, buildWeek, names, fmtQty } from "./lib/suggest.js";
 import { analyzeSuggestion, TIPO_INFO } from "./data/foodTypes.js";
-import { CATALOG, PANTRY_CATS, PANTRY_INFO, statusOf, nextStatus, extractItems, itemsFromNames, splitByPantry, applyCooked } from "./data/pantry.js";
+import { CATALOG, PANTRY_CATS, PANTRY_INFO, statusOf, qtyOf, restockAll, adjustQty, stepFor, servingFor, extractItems, itemsFromNames, splitByPantry, applyCooked } from "./data/pantry.js";
 
 // Ingredientes disponibles, derivados de la lista de compras (sin paréntesis ni duplicados).
 const INGREDIENTS = [...new Set(SHOPPING.map((s) => s.item.replace(/\s*\(.*?\)/g, "").trim()))];
@@ -36,10 +36,10 @@ function TypeFeedback({ sug, approach }) {
   );
 }
 
-function PantryMatch({ sug, pantry }) {
+function PantryMatch({ sug, pantry, people }) {
   const items = sug.ingredientes && sug.ingredientes.length ? itemsFromNames(sug.ingredientes) : extractItems(sug);
   if (!items.length) return null;
-  const { have, missing } = splitByPantry(items, pantry);
+  const { have, missing } = splitByPantry(items, pantry, people);
   return (
     <div className="cm-pantry-match">
       {have.length > 0 && (
@@ -52,7 +52,7 @@ function PantryMatch({ sug, pantry }) {
   );
 }
 
-function SuggestionCard({ sug, approach, pantry, isOpen, onToggle, isFav, onFav, onCook }) {
+function SuggestionCard({ sug, approach, pantry, people, isOpen, onToggle, isFav, onFav, onCook }) {
   return (
     <div className={"cm-sug" + (isOpen ? " open" : "")} onClick={onToggle}>
       <div className="cm-sug-top">
@@ -64,7 +64,7 @@ function SuggestionCard({ sug, approach, pantry, isOpen, onToggle, isFav, onFav,
         >★</button>
       </div>
       <TypeFeedback sug={sug} approach={approach} />
-      <PantryMatch sug={sug} pantry={pantry} />
+      <PantryMatch sug={sug} pantry={pantry} people={people} />
       {isOpen ? (
         <>
           <div className="cm-sug-steps">
@@ -126,7 +126,7 @@ export default function App() {
     if (cookWith) {
       const pool = suggestN(approach, meal, 12, { practical: quick });
       const ranked = pool
-        .map((s) => { const { have, missing } = splitByPantry(extractItems(s), pantry); return { s, miss: missing.length, have: have.length }; })
+        .map((s) => { const { have, missing } = splitByPantry(extractItems(s), pantry, people); return { s, miss: missing.length, have: have.length }; })
         .sort((a, b) => a.miss - b.miss || b.have - a.have)
         .slice(0, 3)
         .map((x) => x.s);
@@ -143,7 +143,7 @@ export default function App() {
     try {
       const token = session?.access_token;
       const ingredients = cookWith
-        ? CATALOG.filter((c) => statusOf(c.key, pantry) !== "agotado").map((c) => c.label)
+        ? CATALOG.filter((c) => statusOf(c.key, pantry, people) !== "agotado").map((c) => c.label)
         : INGREDIENTS;
       const r = await fetch("/.netlify/functions/sugerir", {
         method: "POST",
@@ -181,9 +181,11 @@ export default function App() {
   };
   const onCook = (sug) => {
     const items = sug.ingredientes && sug.ingredientes.length ? itemsFromNames(sug.ingredientes) : extractItems(sug);
-    if (!items.length) { showToast("No detecté ingredientes para descontar", "rm"); return; }
-    setPantry(applyCooked(items, pantry));
-    showToast("🍳 Despensa actualizada", "ok");
+    const used = items.filter((it) => !it.condiment);
+    if (!used.length) { showToast("No detecté ingredientes para descontar", "rm"); return; }
+    setPantry(applyCooked(items, pantry, people));
+    const resumen = used.slice(0, 3).map((it) => `${servingFor(it, people)} ${it.unit} ${it.label.toLowerCase()}`).join(", ");
+    showToast(`🍳 Desconté ${resumen}${used.length > 3 ? "…" : ""}`, "ok");
   };
 
   const sendMagicLink = async () => {
@@ -215,7 +217,7 @@ export default function App() {
     showToast("Sesión cerrada · tu correo quedó guardado", "rm");
   };
   const cats = [...new Set(SHOPPING.map((s) => s.cat))];
-  const agotadosLabels = CATALOG.filter((c) => statusOf(c.key, pantry) === "agotado").map((c) => c.label);
+  const agotadosLabels = CATALOG.filter((c) => statusOf(c.key, pantry, people) === "agotado").map((c) => c.label);
 
   const Slot = ({ dk, slot, label, prepItems }) => {
     const key = dk + slot;
@@ -279,7 +281,7 @@ export default function App() {
           ) : sugs && sugs.length ? (
             <div className="cm-cards">
               {sugs.map((s, k) => (
-                <SuggestionCard key={s.titulo + k} sug={s} approach={approach} pantry={pantry}
+                <SuggestionCard key={s.titulo + k} sug={s} approach={approach} pantry={pantry} people={people}
                   isOpen={!!openSug[s.titulo + k]} onToggle={() => toggleSug(s.titulo + k)}
                   isFav={isFav(s)} onFav={() => toggleFav(s)} onCook={onCook} />
               ))}
@@ -355,20 +357,31 @@ export default function App() {
       {tab === "despensa" && (
         <div className="cm-section" style={{ marginTop: 20 }}>
           <h2 className="cm-h2">Mi despensa</h2>
-          <p className="cm-p">Marca lo que te queda. Las sugerencias muestran qué tienes y qué falta. Toca para cambiar: Tengo → Poco → Agotado.</p>
+          <p className="cm-p">Cantidad real de cada ingrediente. Al cocinar se descuenta la porción según las personas. El estado (Tengo/Poco/Agotado) se calcula solo.</p>
+          <p className="cm-mini">¿Para cuántas personas?</p>
+          <div className="cm-seg" style={{ marginBottom: 14 }}>
+            {PEOPLE.map(([lab, n]) => (<button key={n} className={"cm-pill" + (people === n ? " on" : "")} onClick={() => setPeople(n)}>{lab}</button>))}
+          </div>
           <div className="cm-pantry-actions">
-            <button className="cm-outline" style={{ marginTop: 0 }} onClick={() => setPantry({})}>↺ Reiniciar (todo: Tengo)</button>
+            <button className="cm-outline" style={{ marginTop: 0 }} onClick={() => setPantry(restockAll(people))}>🛒 Reabastecer al mes (base × {people})</button>
           </div>
           <div className="cm-card">
             {PANTRY_CATS.map((cat) => (
               <div key={cat}>
                 <p className="cm-shop-cat-h">{cat}</p>
                 {CATALOG.filter((c) => c.cat === cat).map((c) => {
-                  const st = statusOf(c.key, pantry);
+                  const st = statusOf(c.key, pantry, people);
                   const info = PANTRY_INFO[st];
+                  const qty = qtyOf(c.key, pantry, people);
+                  const step = stepFor(c);
                   return (
-                    <div key={c.key} className="cm-pantry-item" onClick={() => setPantry({ ...pantry, [c.key]: nextStatus(st) })}>
-                      <span className="cm-pantry-name">{c.label}</span>
+                    <div key={c.key} className="cm-pantry-item">
+                      <span className="cm-pantry-name">{c.label}{c.condiment && <span className="cm-pantry-cond">básico</span>}</span>
+                      <div className="cm-qty">
+                        <button className="cm-qty-btn" aria-label="Restar" onClick={() => setPantry({ ...pantry, [c.key]: adjustQty(c.key, pantry, people, -step) })}>−</button>
+                        <span className="cm-qty-val">{qty} <i>{c.unit}</i></span>
+                        <button className="cm-qty-btn" aria-label="Sumar" onClick={() => setPantry({ ...pantry, [c.key]: adjustQty(c.key, pantry, people, step) })}>+</button>
+                      </div>
                       <span className="cm-pantry-badge" style={{ background: info.bg, color: info.color }}>
                         <span className="dot" style={{ background: info.color }} />{info.label}
                       </span>
@@ -378,6 +391,7 @@ export default function App() {
               </div>
             ))}
           </div>
+          <p className="cm-foot">Los <b>básicos</b> (aceite, sal, ajo, miel, mantequilla) no se descuentan al cocinar: duran mucho.</p>
         </div>
       )}
 
