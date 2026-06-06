@@ -8,7 +8,7 @@ import { usePantry } from "./hooks/usePantry.js";
 import { supabase, supabaseReady } from "./lib/supabase.js";
 import { suggestN, buildWeek, names, fmtQty } from "./lib/suggest.js";
 import { analyzeSuggestion, TIPO_INFO } from "./data/foodTypes.js";
-import { CATALOG, PANTRY_CATS, PANTRY_INFO, statusOf, qtyOf, restockAll, adjustQty, stepFor, servingFor, extractItems, itemsFromNames, splitByPantry, applyCooked } from "./data/pantry.js";
+import { CATALOG, PANTRY_CATS, PANTRY_INFO, statusOf, qtyOf, restockAll, adjustQty, stepFor, servingFor, extractItems, itemsFromNames, splitByPantry, applyCooked, findItem } from "./data/pantry.js";
 const Scanner = lazy(() => import("./Scanner.jsx"));
 
 // Ingredientes disponibles, derivados de la lista de compras (sin paréntesis ni duplicados).
@@ -252,6 +252,26 @@ export default function App() {
   // Cantidad simple para ítems personalizados (no escala por personas).
   const customQty = (key, map) => (typeof map[key] === "number" ? map[key] : 0);
   const adjCustomBuy = (key, d) => setBuy({ ...buy, [key]: Math.max(0, customQty(key, buy) + d) });
+
+  // Agrega un producto escaneado a la lista de compras (mapea al catálogo o crea uno propio).
+  const addScannedToBuy = (product) => {
+    const item = findItem(`${product.name} ${product.ingredients}`);
+    if (item) {
+      setBuy({ ...buy, [item.key]: adjustQty(item.key, buy, people, stepFor(item)) });
+      showToast(`➕ ${item.label} agregado a tu compra`, "ok");
+      return;
+    }
+    const label = (product.brand ? `${product.name} (${product.brand})` : product.name).slice(0, 40);
+    const existing = custom.find((c) => c.label === label);
+    if (existing) {
+      setBuy({ ...buy, [existing.key]: customQty(existing.key, buy) + 1 });
+    } else {
+      const key = "c_" + label.toLowerCase().replace(/[^a-z0-9]+/g, "_") + "_" + (custom.length + 1);
+      setCustom([...custom, { key, label, unit: "unid.", cat: "Otros" }]);
+      setBuy({ ...buy, [key]: 1 });
+    }
+    showToast(`➕ ${label} agregado a tu compra`, "ok");
+  };
 
   const Slot = ({ dk, slot, label, prepItems }) => {
     const key = dk + slot;
@@ -570,7 +590,7 @@ export default function App() {
       )}
       {showScanner && (
         <Suspense fallback={<div className="cm-scan"><p className="cm-scan-hint">Abriendo escáner…</p></div>}>
-          <Scanner approach={approach} onClose={() => setShowScanner(false)} />
+          <Scanner approach={approach} onClose={() => setShowScanner(false)} onAdd={addScannedToBuy} />
         </Suspense>
       )}
 

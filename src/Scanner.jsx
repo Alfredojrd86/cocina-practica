@@ -3,7 +3,8 @@ import { BrowserMultiFormatReader } from "@zxing/browser";
 import { fetchProduct } from "./lib/scan.js";
 import { evaluateProduct, VERDICT_INFO } from "./data/diets.js";
 
-export default function Scanner({ approach, onClose }) {
+export default function Scanner({ approach, onClose, onAdd }) {
+  const [added, setAdded] = useState(false);
   const videoRef = useRef(null);
   const readerRef = useRef(null);
   const controlsRef = useRef(null);
@@ -17,6 +18,7 @@ export default function Scanner({ approach, onClose }) {
   const stop = () => { try { controlsRef.current?.stop(); } catch {} };
 
   const lookup = async (code) => {
+    setAdded(false);
     setPhase("loading");
     const p = await fetchProduct(code);
     if (!p) { setErr("Producto no encontrado en Open Food Facts. Prueba otro código."); setPhase("error"); return; }
@@ -94,6 +96,12 @@ export default function Scanner({ approach, onClose }) {
               {product.proteins != null && <>Proteína {product.proteins}g</>}
               <span className="per"> /100g</span>
             </p>
+          )}
+          {onAdd && (
+            <button className="cm-outline" style={{ marginTop: 0, marginBottom: 10 }} disabled={added}
+              onClick={() => { if (!added) { onAdd(product); setAdded(true); } }}>
+              {added ? "✓ Agregado a tu compra" : "➕ Agregar a mi compra"}
+            </button>
           )}
           <button className="cm-roll" onClick={start}>📷 Escanear otro</button>
         </div>
