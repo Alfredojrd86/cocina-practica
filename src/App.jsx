@@ -88,6 +88,7 @@ export default function App() {
   const [week, setWeek] = useLocalStorage("cm_week", null);
   const [open, setOpen] = useLocalStorage("cm_open", {});
   const [checked, setChecked] = useLocalStorage("cm_checked", {});
+  const [buy, setBuy] = useLocalStorage("cm_buy", {});
   const { favs, add: addFav, remove: removeFav, session, syncing } = useFavorites();
   const { pantry, setPantry } = usePantry(session);
   const [openSug, setOpenSug] = useState({});
@@ -216,8 +217,16 @@ export default function App() {
     setConfirmOut(false);
     showToast("Sesión cerrada · tu correo quedó guardado", "rm");
   };
-  const cats = [...new Set(SHOPPING.map((s) => s.cat))];
   const agotadosLabels = CATALOG.filter((c) => statusOf(c.key, pantry, people) === "agotado").map((c) => c.label);
+
+  // Carga la despensa con las cantidades de la compra (lo que realmente compraste).
+  const loadPantryFromBuy = () => {
+    const next = {};
+    for (const c of CATALOG) next[c.key] = qtyOf(c.key, buy, people);
+    setPantry(next);
+    showToast("🧺 Despensa cargada con tu compra", "ok");
+    setTab("despensa");
+  };
 
   const Slot = ({ dk, slot, label, prepItems }) => {
     const key = dk + slot;
@@ -363,7 +372,7 @@ export default function App() {
             {PEOPLE.map(([lab, n]) => (<button key={n} className={"cm-pill" + (people === n ? " on" : "")} onClick={() => setPeople(n)}>{lab}</button>))}
           </div>
           <div className="cm-pantry-actions">
-            <button className="cm-outline" style={{ marginTop: 0 }} onClick={() => setPantry(restockAll(people))}>🛒 Reabastecer al mes (base × {people})</button>
+            <button className="cm-outline" style={{ marginTop: 0 }} onClick={() => setTab("compras")}>🛒 Editar y cargar desde mis compras</button>
           </div>
           <div className="cm-card">
             {PANTRY_CATS.map((cat) => (
@@ -415,28 +424,29 @@ export default function App() {
       {tab === "compras" && (
         <div className="cm-section" style={{ marginTop: 20 }}>
           <h2 className="cm-h2">Lista de compras</h2>
-          <p className="cm-p">Cantidades del mes — tócalas para tacharlas.</p>
+          <p className="cm-p">Ajusta con +/− lo que vas a comprar este mes. Marca lo que ya echaste al carrito. Al terminar, cárgalo a tu despensa.</p>
           <p className="cm-mini">¿Para cuántas personas?</p>
-          <div className="cm-seg" style={{ marginBottom: 16 }}>
+          <div className="cm-seg" style={{ marginBottom: 14 }}>
             {PEOPLE.map(([lab, n]) => (<button key={n} className={"cm-pill" + (people === n ? " on" : "")} onClick={() => setPeople(n)}>{lab}</button>))}
           </div>
-          <div className="cm-card">
-            {cats.map((cat) => (<div key={cat}>
+          <button className="cm-roll" onClick={loadPantryFromBuy}>🧺 Cargar esta compra a mi despensa</button>
+          <p className="cm-hint" style={{ marginTop: 8 }}>Sustituye el stock actual por estas cantidades.</p>
+          <div className="cm-card" style={{ marginTop: 12 }}>
+            {PANTRY_CATS.map((cat) => (<div key={cat}>
               <p className="cm-shop-cat-h">{cat}</p>
-              {SHOPPING.filter((s) => s.cat === cat).map((s, k) => {
-                const key = cat + k;
-                const on = !!checked[key];
-                const mod = s.flag === "moderar" || s.item.includes("moderar");
-                const nuevo = s.flag === "nuevo";
-                const clean = s.item.replace(" (moderar)", "");
+              {CATALOG.filter((c) => c.cat === cat).map((c) => {
+                const on = !!checked[c.key];
+                const qty = qtyOf(c.key, buy, people);
+                const step = stepFor(c);
                 return (
-                  <div key={k} className="cm-shop-item" onClick={() => setChecked({ ...checked, [key]: !on })}>
-                    <span className={"cm-shop-box" + (on ? " on" : "")}>{on ? "✓" : ""}</span>
-                    <span className={"cm-shop-name" + (on ? " done" : "")}>{clean}
-                      {mod && <span className="cm-tag">moderar</span>}
-                      {nuevo && <span className="cm-tag nuevo">nuevo</span>}
-                    </span>
-                    <span className="cm-shop-qty">{fmtQty(s.base, people, s.unit)}</span>
+                  <div key={c.key} className="cm-shop-item">
+                    <span className={"cm-shop-box" + (on ? " on" : "")} onClick={() => setChecked({ ...checked, [c.key]: !on })}>{on ? "✓" : ""}</span>
+                    <span className={"cm-shop-name" + (on ? " done" : "")} onClick={() => setChecked({ ...checked, [c.key]: !on })}>{c.label}</span>
+                    <div className="cm-qty">
+                      <button className="cm-qty-btn" aria-label="Restar" onClick={() => setBuy({ ...buy, [c.key]: adjustQty(c.key, buy, people, -step) })}>−</button>
+                      <span className="cm-qty-val">{qty} <i>{c.unit}</i></span>
+                      <button className="cm-qty-btn" aria-label="Sumar" onClick={() => setBuy({ ...buy, [c.key]: adjustQty(c.key, buy, people, step) })}>+</button>
+                    </div>
                   </div>);
               })}
             </div>))}
@@ -449,7 +459,7 @@ export default function App() {
             <p className="cm-shop-cat-h">Con moderación (más dulces)</p>
             <p className="list" style={{ color: "var(--muted)" }}>{FRUTAS.moderar.join("  ·  ")}</p>
           </div>
-          <p className="cm-foot"><b>Funciona sola</b>, sin internet ni costo. Tu lista y semana quedan guardadas en este teléfono.<br /><br />Solo educativa; no reemplaza a un médico o nutricionista.</p>
+          <p className="cm-foot">Compras → cargas a despensa → al cocinar se descuenta solo. Tu lista queda guardada.<br /><br />Solo educativa; no reemplaza a un médico o nutricionista.</p>
         </div>
       )}
 
