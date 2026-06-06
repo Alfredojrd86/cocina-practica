@@ -402,6 +402,7 @@ export const STYLES = `
 .cm-scan-wrow{ display:flex; align-items:center; gap:8px; }
 .cm-scan-wrow .cm-input{ flex:1; }
 .cm-scan-wrow .u{ font-weight:700; color:var(--muted); font-size:14px; }
+.cm-photo-link{ display:block; width:100%; margin-top:14px; border:none; background:none; color:var(--muted); font-family:'Karla'; font-size:13px; cursor:pointer; text-decoration:underline; text-align:center; padding:6px; -webkit-tap-highlight-color:transparent; }
 .cm-scan-manual{ display:flex; gap:8px; margin-top:14px; }
 .cm-scan-manual .cm-input{ flex:1; }
 .cm-textarea{ width:100%; min-height:90px; padding:10px 12px; font-family:'Karla'; font-size:14px; line-height:1.4; resize:vertical; }

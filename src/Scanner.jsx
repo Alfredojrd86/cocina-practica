@@ -150,7 +150,7 @@ export default function Scanner({ approach, onClose, onAdd, onReadLabel, hasSess
       </div>
 
       {phase === "scan" && (
-        <p className="cm-scan-hint">Apunta al código de barras. Enfoque actual: <b>{verdictApproachLabel(approach)}</b></p>
+        <p className="cm-scan-hint">📷 Apunta al <b>código de barras</b> del producto</p>
       )}
 
       {phase === "result" && product && v && (
@@ -262,12 +262,12 @@ export default function Scanner({ approach, onClose, onAdd, onReadLabel, hasSess
 
       {phase === "scan" && (
         <>
-          <button className="cm-outline" style={{ marginTop: 12 }} onClick={() => fileRef.current?.click()}>📸 Leer etiqueta con foto</button>
           <div className="cm-scan-manual">
             <input className="cm-input" inputMode="numeric" placeholder="o ingresa el código…" value={manual}
               onChange={(e) => setManual(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") submitManual(); }} />
             <button className="cm-auth-send" onClick={submitManual}>Buscar</button>
           </div>
+          <button className="cm-photo-link" onClick={() => fileRef.current?.click()}>¿Sin código de barras? 📸 Leer la etiqueta con foto</button>
         </>
       )}
     </div>
