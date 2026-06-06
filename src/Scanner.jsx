@@ -79,9 +79,10 @@ export default function Scanner({ approach, onClose, onAdd }) {
   return (
     <div className="cm-scan">
       <div className="cm-scan-top">
-        <span className="cm-scan-title">Escanear producto</span>
+        <span className="cm-scan-title">🧾 Escanear producto</span>
         <button className="cm-scan-close" onClick={close} aria-label="Cerrar">✕</button>
       </div>
+      <div className="cm-rcpt-rule" />
 
       <div className="cm-scan-stage">
         <video ref={videoRef} className="cm-scan-video" muted playsInline />
@@ -94,7 +95,7 @@ export default function Scanner({ approach, onClose, onAdd }) {
       )}
 
       {phase === "result" && product && v && (
-        <div className="cm-scan-result">
+        <div className="cm-scan-result cm-scan-card">
           <div className="cm-scan-verdict" style={{ background: v.bg, color: v.color }}>
             <span className="big">{v.emoji}</span>
             <div>

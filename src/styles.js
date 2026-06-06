@@ -165,6 +165,37 @@ export const STYLES = `
 .cm-rcpt-foot.end{ justify-content:center; color:var(--muted); font-weight:400; letter-spacing:2px; margin-top:4px; }
 .theme-paper .cm-receipt::before{ display:none; }
 .theme-paper .cm-receipt{ padding-left:16px; }
+
+/* Escáner con detalle papel */
+.theme-paper .cm-scan{
+  background-color:var(--cream);
+  background-image:
+    radial-gradient(circle at 15% 0%, rgba(126,139,82,0.10), transparent 42%),
+    radial-gradient(circle at 88% 8%, rgba(178,58,46,0.08), transparent 40%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+}
+.theme-paper .cm-scan-title{ font-size:26px; }
+.theme-paper .cm-scan-stage{ border:2px solid var(--ink); box-shadow:2px 3px 0 rgba(57,50,42,0.2); }
+/* Panel de resultado como ficha de receta */
+.theme-paper .cm-scan-card{
+  background-image:repeating-linear-gradient(180deg, transparent 0 30px, rgba(60,74,46,0.07) 30px 31px);
+  background-color:var(--paper);
+  border:1px solid var(--line); border-radius:8px; padding:16px 16px 16px 30px;
+  box-shadow:2px 3px 0 rgba(57,50,42,0.07), 0 14px 30px -22px rgba(57,50,42,0.5);
+  position:relative;
+}
+.theme-paper .cm-scan-card::before{ content:""; position:absolute; left:14px; top:8px; bottom:8px; width:1.5px; background:rgba(178,58,46,0.35); }
+/* Veredicto tipo sello */
+.theme-paper .cm-scan-verdict{
+  background:transparent !important; border:2.5px dashed currentColor; border-radius:12px;
+  transform:rotate(-1.2deg); padding:12px 16px;
+}
+.theme-paper .cm-scan-verdict .vl{ font-family:'Caveat',cursive; font-size:30px; text-transform:uppercase; letter-spacing:1px; line-height:1; }
+.theme-paper .cm-scan-verdict .vd{ font-family:'Courier Prime',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; }
+.theme-paper .cm-scan-pname{ font-family:'Caveat',cursive; font-size:21px; color:var(--green); }
+.theme-paper .cm-scan-reasons li{ font-family:'Karla',sans-serif; }
+.theme-paper .cm-scan-nutri{ font-family:'Courier Prime',monospace; font-size:11.5px; letter-spacing:0.3px; }
+.theme-paper .cm-scan-hint b{ font-family:'Caveat',cursive; font-size:16px; }
 .cm-shop-item{ display:flex; align-items:center; gap:13px; padding:13px 0; border-bottom:1px dashed var(--line); cursor:pointer; -webkit-tap-highlight-color:transparent; }
 .cm-shop-box{ width:24px; height:24px; border:1.6px solid var(--sage); border-radius:7px; flex-shrink:0; display:grid; place-items:center; font-size:14px; color:#fff; transition:all .12s; }
 .cm-shop-box.on{ background:var(--sage); }
