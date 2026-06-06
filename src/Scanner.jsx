@@ -4,8 +4,9 @@ import { fetchProduct } from "./lib/scan.js";
 import { evaluateProduct, VERDICT_INFO } from "./data/diets.js";
 import { findItem } from "./data/pantry.js";
 
-export default function Scanner({ approach, onClose, onAdd }) {
+export default function Scanner({ approach, onClose, onAdd, onReadLabel, hasSession }) {
   const [added, setAdded] = useState(false);
+  const fileRef = useRef(null);
   const videoRef = useRef(null);
   const readerRef = useRef(null);
   const controlsRef = useRef(null);
@@ -37,7 +38,7 @@ export default function Scanner({ approach, onClose, onAdd }) {
     setAdded(false);
     setPhase("loading");
     const p = await fetchProduct(code);
-    if (!p) { setErr("Producto no encontrado en Open Food Facts. Prueba otro código."); setPhase("error"); return; }
+    if (!p) { setManual(code); setErr("No está en la base. Toma una foto de la etiqueta o ingresa los datos."); setPhase("error"); return; }
     setProduct(p);
     initAdd(p);
     const vd = evaluateProduct(approach, p);
@@ -76,6 +77,50 @@ export default function Scanner({ approach, onClose, onAdd }) {
   const close = () => { stop(); onClose(); };
   const submitManual = () => { const c = manual.trim(); if (c) { stop(); lookup(c); } };
 
+  // Foto de la etiqueta -> IA visión -> rellena datos.
+  const compress = (file) => new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const max = 900;
+      const scale = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement("canvas");
+      c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      resolve(c.toDataURL("image/jpeg", 0.6));
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+  const numOrNull = (v) => (typeof v === "number" && !Number.isNaN(v) ? Math.round(v * 100) / 100 : null);
+  const handlePhoto = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    e.target.value = "";
+    if (!hasSession) { setErr("Inicia sesión (en ★ Favoritos) para leer etiquetas con foto."); setPhase("error"); return; }
+    stop(); setErr(null); setPhase("loading");
+    try {
+      const dataUrl = await compress(file);
+      const d = await onReadLabel(dataUrl);
+      const p = {
+        name: d.nombre || "Producto", brand: "",
+        ingredients: (d.ingredientes || "").toLowerCase(),
+        sugars: numOrNull(d.sugars), carbs: numOrNull(d.carbs), proteins: numOrNull(d.proteins), fat: numOrNull(d.fat),
+        additives: [], nova: null, nutriscore: null, image: dataUrl, quantity: "", grams: null,
+        seals: Array.isArray(d.sellos) ? d.sellos : [],
+      };
+      setProduct(p); setAdded(false); initAdd(p);
+      setVerdict({ ...evaluateProduct(approach, p), foto: true });
+      setPhase("result");
+    } catch (err) {
+      if (err && (err.code === "login" || err.code === 401)) setErr("Inicia sesión (en ★ Favoritos) para leer etiquetas con foto.");
+      else if (err && err.code === 429) setErr(err.message);
+      else setErr("No se pudo leer la etiqueta. Prueba con buena luz y enfoque.");
+      setPhase("error");
+    }
+  };
+
   // Evaluación manual por etiqueta (cuando el producto no está en la base).
   const evalManual = () => {
     const p = {
@@ -96,6 +141,7 @@ export default function Scanner({ approach, onClose, onAdd }) {
         <button className="cm-scan-close" onClick={close} aria-label="Cerrar">✕</button>
       </div>
       <div className="cm-rcpt-rule" />
+      <input type="file" accept="image/*" capture="environment" hidden ref={fileRef} onChange={handlePhoto} />
 
       <div className="cm-scan-stage">
         <video ref={videoRef} className="cm-scan-video" muted playsInline />
@@ -193,6 +239,7 @@ export default function Scanner({ approach, onClose, onAdd }) {
       {phase === "error" && (
         <div className="cm-scan-result">
           <p className="cm-scan-err">{err}</p>
+          <button className="cm-roll" style={{ marginBottom: 8 }} onClick={() => fileRef.current?.click()}>📸 Foto de la etiqueta</button>
           <button className="cm-outline" style={{ marginTop: 0 }} onClick={start}>📷 Reintentar cámara</button>
           <div className="cm-scan-manual">
             <input className="cm-input" inputMode="numeric" placeholder="o ingresa el código…" value={manual}
@@ -214,11 +261,14 @@ export default function Scanner({ approach, onClose, onAdd }) {
       )}
 
       {phase === "scan" && (
-        <div className="cm-scan-manual">
-          <input className="cm-input" inputMode="numeric" placeholder="o ingresa el código…" value={manual}
-            onChange={(e) => setManual(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") submitManual(); }} />
-          <button className="cm-auth-send" onClick={submitManual}>Buscar</button>
-        </div>
+        <>
+          <button className="cm-outline" style={{ marginTop: 12 }} onClick={() => fileRef.current?.click()}>📸 Leer etiqueta con foto</button>
+          <div className="cm-scan-manual">
+            <input className="cm-input" inputMode="numeric" placeholder="o ingresa el código…" value={manual}
+              onChange={(e) => setManual(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") submitManual(); }} />
+            <button className="cm-auth-send" onClick={submitManual}>Buscar</button>
+          </div>
+        </>
       )}
     </div>
   );

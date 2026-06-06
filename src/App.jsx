@@ -230,6 +230,19 @@ export default function App() {
     const r = await removeFav(titulo);
     showToast(session && r.error ? "Quitado local · no sincronizó" : "Quitado de favoritos", "rm");
   };
+  // Lee una foto de etiqueta vía la función de visión (requiere sesión).
+  const readLabel = async (image) => {
+    if (!session) { const e = new Error("login"); e.code = "login"; throw e; }
+    const r = await fetch("/.netlify/functions/etiqueta", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ image }),
+    });
+    const d = await r.json();
+    if (!r.ok) { const e = new Error(d.error || "error"); e.code = r.status; throw e; }
+    return d;
+  };
+
   const onCook = (sug) => {
     const items = sug.ingredientes && sug.ingredientes.length ? itemsFromNames(sug.ingredientes) : extractItems(sug);
     const used = items.filter((it) => !it.condiment);
@@ -755,7 +768,7 @@ export default function App() {
           </div>
         }>
           <Suspense fallback={<div className="cm-scan"><p className="cm-scan-hint">Abriendo escáner…</p></div>}>
-            <Scanner approach={approach} onClose={() => setShowScanner(false)} onAdd={addScannedToBuy} />
+            <Scanner approach={approach} onClose={() => setShowScanner(false)} onAdd={addScannedToBuy} onReadLabel={readLabel} hasSession={!!session} />
           </Suspense>
         </ScannerBoundary>
       )}
