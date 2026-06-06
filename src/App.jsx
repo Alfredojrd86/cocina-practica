@@ -317,30 +317,28 @@ export default function App() {
   };
 
   // Agrega un producto escaneado a la compra usando su peso neto real.
-  const addScannedToBuy = (product, gramsOverride) => {
+  const addScannedToBuy = (product, { amount = 1, unit = "unid." } = {}) => {
     buzz(14);
-    const g = gramsOverride != null ? gramsOverride : product.grams; // peso neto en g/ml (editable)
     const item = findItem(`${product.name} ${product.ingredients}`);
     if (item) {
-      // kg/L => convierte gramos a la unidad; envases (latas/unid) => suma 1.
-      const amt = (item.unit === "kg" || item.unit === "L")
-        ? (g ? Math.max(0.05, +(g / 1000).toFixed(2)) : stepFor(item))
-        : 1;
+      // A la unidad del ítem: peso (g/ml) -> kg/L; resto, la cantidad tal cual.
+      let amt = (unit === "g" || unit === "ml") ? amount / 1000 : amount;
+      amt = Math.max(0, Math.round(amt * 100) / 100);
       setBuy({ ...buy, [item.key]: adjustQty(item.key, buy, people, amt) });
       showToast(`➕ ${amt} ${item.unit} de ${item.label}`, "ok");
       return;
     }
     const baseName = product.brand ? `${product.name} (${product.brand})` : product.name;
-    const label = ((g ? `${baseName} ${g} g` : baseName) || "Producto").slice(0, 40);
+    const label = (baseName || "Producto").slice(0, 40);
     const existing = custom.find((c) => c.label === label);
     if (existing) {
-      setBuy({ ...buy, [existing.key]: customQty(existing.key, buy) + 1 });
+      setBuy({ ...buy, [existing.key]: customQty(existing.key, buy) + amount });
     } else {
       const key = "c_" + label.toLowerCase().replace(/[^a-z0-9]+/g, "_") + "_" + (custom.length + 1);
-      setCustom([...custom, { key, label, unit: "unid.", cat: "Otros" }]);
-      setBuy({ ...buy, [key]: 1 });
+      setCustom([...custom, { key, label, unit, cat: "Otros" }]);
+      setBuy({ ...buy, [key]: amount });
     }
-    showToast(`➕ ${label} a tu compra`, "ok");
+    showToast(`➕ ${amount} ${unit} · ${label}`, "ok");
   };
 
   const Slot = ({ dk, slot, label, prepItems }) => {

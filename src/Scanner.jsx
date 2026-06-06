@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { BrowserMultiFormatReader } from "@zxing/browser";
 import { fetchProduct } from "./lib/scan.js";
 import { evaluateProduct, VERDICT_INFO } from "./data/diets.js";
+import { findItem } from "./data/pantry.js";
 
 export default function Scanner({ approach, onClose, onAdd }) {
   const [added, setAdded] = useState(false);
@@ -17,7 +18,15 @@ export default function Scanner({ approach, onClose, onAdd }) {
   const [mName, setMName] = useState("");
   const [mIng, setMIng] = useState("");
   const [mSeals, setMSeals] = useState([]);
-  const [addGrams, setAddGrams] = useState("");
+  const [addAmount, setAddAmount] = useState("");
+  const [addUnit, setAddUnit] = useState("unid.");
+
+  const initAdd = (p) => {
+    const m = findItem(`${p.name} ${p.ingredients}`);
+    if (m && (m.unit === "kg" || m.unit === "L")) { setAddUnit("g"); setAddAmount(p.grams != null ? String(p.grams) : ""); }
+    else if (m) { setAddUnit(m.unit); setAddAmount("1"); }
+    else { setAddUnit("unid."); setAddAmount("1"); }
+  };
   const toggleSeal = (s) => setMSeals((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]));
 
   const stop = () => { try { controlsRef.current?.stop(); } catch {} };
@@ -28,7 +37,7 @@ export default function Scanner({ approach, onClose, onAdd }) {
     const p = await fetchProduct(code);
     if (!p) { setErr("Producto no encontrado en Open Food Facts. Prueba otro código."); setPhase("error"); return; }
     setProduct(p);
-    setAddGrams(p.grams != null ? String(p.grams) : "");
+    initAdd(p);
     const vd = evaluateProduct(approach, p);
     setVerdict(vd);
     setPhase("result");
@@ -73,7 +82,7 @@ export default function Scanner({ approach, onClose, onAdd }) {
       sugars: null, carbs: null, proteins: null, fat: null, additives: [], nova: null,
       seals: mSeals,
     };
-    setProduct(p); setVerdict({ ...evaluateProduct(approach, p), manual: true }); setAdded(false); setAddGrams(""); setPhase("result");
+    setProduct(p); setVerdict({ ...evaluateProduct(approach, p), manual: true }); setAdded(false); initAdd(p); setPhase("result");
   };
 
   const v = verdict ? VERDICT_INFO[verdict.verdict] : null;
@@ -131,21 +140,37 @@ export default function Scanner({ approach, onClose, onAdd }) {
               <span className="per"> /100g</span>
             </p>
           )}
-          {onAdd && (
-            <>
-              <div className="cm-scan-weight">
-                <label>Peso del envase</label>
-                <div className="cm-scan-wrow">
-                  <input className="cm-input" inputMode="numeric" placeholder="g" value={addGrams} onChange={(e) => { setAddGrams(e.target.value.replace(/[^0-9.]/g, "")); setAdded(false); }} />
-                  <span className="u">g</span>
+          {onAdd && (() => {
+            const matched = findItem(`${product.name} ${product.ingredients}`);
+            const isWeight = matched && (matched.unit === "kg" || matched.unit === "L");
+            return (
+              <>
+                <div className="cm-scan-weight">
+                  <label>{isWeight ? "Peso que compraste" : "Cantidad"}</label>
+                  <div className="cm-scan-wrow">
+                    <input className="cm-input" inputMode="decimal" placeholder={isWeight ? "g" : "1"} value={addAmount}
+                      onChange={(e) => { setAddAmount(e.target.value.replace(/[^0-9.]/g, "")); setAdded(false); }} />
+                    {matched ? (
+                      <span className="u">{isWeight ? "g" : matched.unit}</span>
+                    ) : (
+                      <select className="cm-add-unit" value={addUnit} onChange={(e) => { setAddUnit(e.target.value); setAdded(false); }}>
+                        <option value="unid.">unid.</option>
+                        <option value="paquete">paquete</option>
+                        <option value="latas">latas</option>
+                        <option value="kg">kg</option>
+                        <option value="g">g</option>
+                        <option value="L">L</option>
+                      </select>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <button className="cm-outline" style={{ marginTop: 0, marginBottom: 10 }} disabled={added}
-                onClick={() => { if (!added) { onAdd(product, Number(addGrams) || null); setAdded(true); } }}>
-                {added ? "✓ Agregado a tu compra" : "➕ Agregar a mi compra"}
-              </button>
-            </>
-          )}
+                <button className="cm-outline" style={{ marginTop: 0, marginBottom: 10 }} disabled={added}
+                  onClick={() => { if (!added) { onAdd(product, { amount: Number(addAmount) || 0, unit: addUnit }); setAdded(true); } }}>
+                  {added ? "✓ Agregado a tu compra" : "➕ Agregar a mi compra"}
+                </button>
+              </>
+            );
+          })()}
           <button className="cm-roll" onClick={start}>📷 Escanear otro</button>
         </div>
       )}
