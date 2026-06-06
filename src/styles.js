@@ -9,9 +9,11 @@ ${rootVars}
   padding:calc(env(safe-area-inset-top) + 18px) 0 0; -webkit-font-smoothing:antialiased;
   background-color:var(--cream);
   background-image:
-    radial-gradient(circle at 15% 0%, rgba(126,139,82,0.10), transparent 42%),
-    radial-gradient(circle at 88% 8%, rgba(178,58,46,0.08), transparent 40%),
+    radial-gradient(ellipse at 50% 35%, transparent 52%, rgba(58,45,30,0.13) 100%),
+    radial-gradient(circle at 15% 0%, rgba(86,106,44,0.12), transparent 42%),
+    radial-gradient(circle at 88% 8%, rgba(164,56,42,0.10), transparent 40%),
     var(--paper-noise);
+  background-attachment:fixed;
 }
 .cm-app{ max-width:620px; margin:0 auto; padding:0 16px calc(env(safe-area-inset-bottom) + 96px); }
 @media(min-width:640px){ .cm-root{ padding-top:36px; } }
@@ -55,7 +57,7 @@ ${rootVars}
 .cm-section{ margin-bottom:22px; animation:cm-fade .35s both; }
 @keyframes cm-fade{ from{ opacity:0; transform:translateY(8px) } to{ opacity:1; transform:none } }
 .cm-h2{ font-family:var(--font-serif); font-weight:900; font-size:23px; color:var(--green); margin:0 0 3px; }
-.cm-p{ color:var(--muted); font-size:13.5px; margin:0 0 16px; line-height:1.45; }
+.cm-p{ color:var(--muted); font-size:13.5px; margin:0 0 16px; line-height:1.45; font-style:italic; }
 
 .cm-card{ background:var(--paper); border:1px solid var(--line); border-radius:18px; padding:18px; box-shadow:0 1px 0 rgba(0,0,0,0.02),0 16px 36px -28px rgba(47,61,46,0.35); }
 
@@ -128,7 +130,7 @@ ${rootVars}
 .cm-auth,
 .cm-sheet-card,
 .cm-skel{
-  background-image:repeating-linear-gradient(180deg, transparent 0 30px, rgba(60,74,46,0.07) 30px 31px);
+  background-image:repeating-linear-gradient(180deg, transparent 0 30px, rgba(120,92,48,0.13) 30px 31px);
   background-color:var(--paper);
   border:1px solid var(--line);
   border-radius:8px;
@@ -183,7 +185,7 @@ ${rootVars}
 .cm-scan-stage{ border:2px solid var(--ink); box-shadow:2px 3px 0 rgba(57,50,42,0.2); }
 /* Panel de resultado como ficha de receta */
 .cm-scan-card{
-  background-image:repeating-linear-gradient(180deg, transparent 0 30px, rgba(60,74,46,0.07) 30px 31px);
+  background-image:repeating-linear-gradient(180deg, transparent 0 30px, rgba(120,92,48,0.13) 30px 31px);
   background-color:var(--paper);
   border:1px solid var(--line); border-radius:8px; padding:16px 16px 16px 30px;
   box-shadow:2px 3px 0 rgba(57,50,42,0.07), 0 14px 30px -22px rgba(57,50,42,0.5);

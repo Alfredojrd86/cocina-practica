@@ -3,28 +3,29 @@
 // (Las fuentes se cargan con @import en styles.js; si cambias una familia, ajusta también ese @import.)
 
 export const THEME = {
+  // Paleta vintage — recetario de abuela italiana (pergamino envejecido, sepia, tomate y oliva).
   colors: {
-    cream: "#EFE6D2",   // fondo
-    paper: "#FCF7EC",   // tarjetas
-    ink: "#39322A",     // texto principal
-    muted: "#6B5E49",   // texto secundario
-    green: "#3C4A2E",   // acento títulos
-    terra: "#B23A2E",   // acento / acciones
-    sage: "#7E8B52",    // acento suave
-    line: "#D9C8A6",    // bordes / líneas
+    cream: "#E7D8B6",   // fondo pergamino envejecido
+    paper: "#F3E8CC",   // tarjetas / ficha
+    ink: "#3A2D1E",     // sepia oscuro (texto)
+    muted: "#7A6647",   // sepia suave (secundario)
+    green: "#566A2C",   // oliva / albahaca (títulos)
+    terra: "#A4382A",   // tomate / vino (acciones)
+    sage: "#9C7A3C",    // ocre / mostaza (acento)
+    line: "#C7AE82",    // línea envejecida
   },
   fonts: {
-    head: "'Caveat', cursive",         // títulos manuscritos
-    serif: "'Fraunces', serif",        // títulos serif / botones
-    body: "'Karla', sans-serif",       // texto general
-    mono: "'Courier Prime', monospace", // boletas / datos
+    head: "'Caveat', cursive",          // títulos manuscritos
+    serif: "'Fraunces', serif",         // serif vintage / botones
+    body: "'Karla', sans-serif",        // texto general (legible)
+    mono: "'Courier Prime', monospace", // boletas / máquina de escribir
   },
-  radius: "14px",
-  radiusSm: "8px",
-  shadowCard: "2px 3px 0 rgba(57,50,42,0.07), 0 14px 30px -22px rgba(57,50,42,0.5)",
-  shadowPress: "2px 3px 0 rgba(57,50,42,0.25)",
+  radius: "7px",
+  radiusSm: "4px",
+  shadowCard: "2px 3px 0 rgba(58,45,30,0.10), 0 14px 28px -22px rgba(58,45,30,0.55)",
+  shadowPress: "2px 3px 0 rgba(58,45,30,0.3)",
   // Textura de papel (ruido SVG) reutilizable en fondos.
-  paperNoise: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E\")",
+  paperNoise: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E\")",
 };
 
 // Variables CSS generadas desde los tokens (se inyectan en :root).
