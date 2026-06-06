@@ -100,7 +100,7 @@ export default function Scanner({ approach, onClose, onAdd }) {
               <div className="vd">según tu enfoque {verdict.dietLabel}</div>
             </div>
           </div>
-          <p className="cm-scan-pname">{product.name}{product.brand ? ` · ${product.brand}` : ""}</p>
+          <p className="cm-scan-pname">{product.name}{product.brand ? ` · ${product.brand}` : ""}{product.quantity ? ` · ${product.quantity}` : ""}</p>
           <ul className="cm-scan-reasons">
             {verdict.reasons.map((r, k) => (<li key={k}>{r}</li>))}
           </ul>

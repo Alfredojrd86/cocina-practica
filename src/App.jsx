@@ -253,15 +253,21 @@ export default function App() {
   const customQty = (key, map) => (typeof map[key] === "number" ? map[key] : 0);
   const adjCustomBuy = (key, d) => setBuy({ ...buy, [key]: Math.max(0, customQty(key, buy) + d) });
 
-  // Agrega un producto escaneado a la lista de compras (mapea al catálogo o crea uno propio).
+  // Agrega un producto escaneado a la compra usando su peso neto real.
   const addScannedToBuy = (product) => {
+    const g = product.grams; // peso neto en g/ml
     const item = findItem(`${product.name} ${product.ingredients}`);
     if (item) {
-      setBuy({ ...buy, [item.key]: adjustQty(item.key, buy, people, stepFor(item)) });
-      showToast(`➕ ${item.label} agregado a tu compra`, "ok");
+      // kg/L => convierte gramos a la unidad; envases (latas/unid) => suma 1.
+      const amt = (item.unit === "kg" || item.unit === "L")
+        ? (g ? Math.max(0.05, +(g / 1000).toFixed(2)) : stepFor(item))
+        : 1;
+      setBuy({ ...buy, [item.key]: adjustQty(item.key, buy, people, amt) });
+      showToast(`➕ ${amt} ${item.unit} de ${item.label}`, "ok");
       return;
     }
-    const label = (product.brand ? `${product.name} (${product.brand})` : product.name).slice(0, 40);
+    const baseName = product.brand ? `${product.name} (${product.brand})` : product.name;
+    const label = ((g && product.quantity ? `${baseName} ${product.quantity}` : baseName) || "Producto").slice(0, 40);
     const existing = custom.find((c) => c.label === label);
     if (existing) {
       setBuy({ ...buy, [existing.key]: customQty(existing.key, buy) + 1 });
@@ -270,7 +276,7 @@ export default function App() {
       setCustom([...custom, { key, label, unit: "unid.", cat: "Otros" }]);
       setBuy({ ...buy, [key]: 1 });
     }
-    showToast(`➕ ${label} agregado a tu compra`, "ok");
+    showToast(`➕ ${label} a tu compra`, "ok");
   };
 
   const Slot = ({ dk, slot, label, prepItems }) => {

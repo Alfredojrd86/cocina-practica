@@ -3,7 +3,7 @@ const num = (v) => (typeof v === "number" && !Number.isNaN(v) ? v : null);
 
 export async function fetchProduct(barcode) {
   try {
-    const fields = "product_name,product_name_es,brands,ingredients_text,ingredients_text_es,nutriments,additives_tags,nova_group,nutriscore_grade,image_front_small_url";
+    const fields = "product_name,product_name_es,brands,ingredients_text,ingredients_text_es,nutriments,additives_tags,nova_group,nutriscore_grade,image_front_small_url,quantity,product_quantity";
     const url = `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(barcode)}.json?fields=${fields}`;
     const r = await fetch(url);
     if (!r.ok) return null;
@@ -24,6 +24,8 @@ export async function fetchProduct(barcode) {
       nova: p.nova_group || null,
       nutriscore: p.nutriscore_grade || null,
       image: p.image_front_small_url || null,
+      quantity: p.quantity || "",          // texto del envase, ej "200 g"
+      grams: num(p.product_quantity),       // peso neto numérico en g/ml
     };
   } catch {
     return null;
