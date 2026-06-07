@@ -701,23 +701,48 @@ export default function App() {
         />
       )}
 
-      {tab === "inicio" && (
+      {tab === "inicio" && (() => {
+        const topCook = topCookedFor(null, 1)[0];
+        return (
         <div className="cm-section" style={{ marginTop: 20 }}>
-          <div className="cm-home-enfoque">
+          {/* Enfoque actual: tócalo para cambiarlo */}
+          <button className="cm-home-enfoque cm-home-enfoque-btn" onClick={() => setEnfPicker(true)}>
             <span className="emo">{metaOf(approach)?.emoji}</span>
-            <div>
+            <div className="txt">
               <div className="lbl">Enfoque: {metaOf(approach)?.name}</div>
               <div className="sub">{metaOf(approach)?.desc}</div>
             </div>
+            <span className="chev">Cambiar ▸</span>
+          </button>
+
+          {/* Acción principal de la app */}
+          <button className="cm-roll" style={{ marginTop: 16 }} onClick={() => setTab("ahora")}>🍽 ¿Qué como ahora?</button>
+
+          {/* Estado de un vistazo + accesos que no están en la barra */}
+          <div className="cm-home-stats">
+            <button className={"cm-home-stat" + (agotadosLabels.length ? " warn" : "")} onClick={() => goDespensa(agotadosLabels.length ? "comprar" : "tengo")}>
+              <span className="n">{agotadosLabels.length || "✓"}</span>
+              <span className="l">{agotadosLabels.length ? "por reponer" : "despensa ok"}</span>
+            </button>
+            <button className="cm-home-stat" onClick={() => setTab("favoritos")}>
+              <span className="n">⭐ {favs.length}</span>
+              <span className="l">favoritas</span>
+            </button>
+            <button className="cm-home-stat" onClick={() => setEnfCreate(true)}>
+              <span className="n">✨</span>
+              <span className="l">crear enfoque</span>
+            </button>
           </div>
-          <div className="cm-home-grid">
-            <button className="cm-home-btn" onClick={() => setTab("ahora")}><span className="ic">🍽</span><span className="t">¿Qué como?</span><span className="d">Ideas para tu próxima comida</span></button>
-            <button className="cm-home-btn" onClick={() => setTab("despensa")}><span className="ic">🧺</span><span className="t">Mi despensa</span><span className="d">{agotadosLabels.length ? `${agotadosLabels.length} por reponer` : "Lo que tienes en casa"}</span></button>
-            <button className="cm-home-btn" onClick={openScanner}><span className="ic">📷</span><span className="t">Escanear</span><span className="d">¿Este producto me sirve?</span></button>
-            <button className="cm-home-btn" onClick={() => goDespensa("comprar")}><span className="ic">🛒</span><span className="t">Comprar</span><span className="d">Tu lista del mes</span></button>
-          </div>
+
+          {topCook && (
+            <button className="cm-home-lastcook" onClick={() => setTab("favoritos")}>
+              <span className="ic">🔁</span>
+              <span className="txt"><b>Lo que más cocinas:</b> {topCook.titulo}</span>
+            </button>
+          )}
         </div>
-      )}
+        );
+      })()}
 
       {tab === "ahora" && (
         <div className="cm-section" style={{ marginTop: 20 }}>

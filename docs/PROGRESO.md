@@ -65,6 +65,8 @@ flowchart LR
 - [x] Macros aproximadas por plato (P/G/C + kcal) en card abierta (`macros.js`)
 - [x] Historial "lo más cocinado" (sección en Favoritos) + priorización en sugerencias (`history.js`, `cooked` en Supabase)
 - [x] **Navegación 4 pilares** (Ahora · Despensa · Semana · Captura); Compras fusionado en Despensa (segment Tengo/Comprar); Favoritos ⭐ en topbar; Inicio vía logo; sin FAB
+- [x] Topbar responsiva (marca sin wrap vía clamp; chips compactos/icon-only en pantallas angostas)
+- [x] **Inicio rediseñado** (dashboard): enfoque tappable + hero "¿Qué como ahora?" + estado de un vistazo (despensa/favoritas/crear enfoque) + "lo que más cocinas"; sin duplicar la barra
 
 **Diseño**
 - [x] Tema único "recetario vintage" centralizado en `src/theme.js`
