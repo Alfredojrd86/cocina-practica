@@ -615,10 +615,10 @@ export default function App() {
         <div className="cm-topbar-actions">
           <button className={"cm-iconbtn" + (tab === "favoritos" ? " on" : "")} onClick={() => setTab("favoritos")} aria-label="Tus favoritos">⭐</button>
           <button className={"cm-enfchip cm-acctchip" + (session ? " in" : "")} onClick={() => { setConfirmOut(false); setAuthMsg(null); setAcctSheet(true); }} aria-label="Tu cuenta">
-            <span className="e">{session ? "✓" : "👤"}</span>{session ? "Cuenta" : "Entrar"}
+            <span className="e">{session ? "✓" : "👤"}</span><span className="lbl">{session ? "Cuenta" : "Entrar"}</span>
           </button>
           <button className="cm-enfchip" onClick={() => setEnfPicker(true)} aria-label="Cambiar enfoque">
-            <span className="e">{metaOf(approach)?.emoji}</span>{metaOf(approach)?.name}<span className="cv">▾</span>
+            <span className="e">{metaOf(approach)?.emoji}</span><span className="lbl">{metaOf(approach)?.name}</span><span className="cv">▾</span>
           </button>
         </div>
       </div>

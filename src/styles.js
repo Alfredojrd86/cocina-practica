@@ -573,4 +573,21 @@ html, body{ background-color:var(--cream); }
   .cm-sug.open{ border-color:transparent; }
   .cm-sug.open::before{ border-color:var(--sage); }
 }
+
+/* ---- Topbar responsiva (pantallas compactas) ----
+   La marca nunca hace wrap y escala con el ancho; los chips se achican; en
+   muy angosto quedan icon-only (se ocultan los textos, no el icono/emoji). */
+.cm-brand{ white-space:nowrap; flex-shrink:1; min-width:0; }
+.cm-topbar-actions{ flex-wrap:nowrap; }
+@media (max-width:430px){
+  .cm-brand{ font-size:clamp(15px,5.2vw,22px); }
+  .cm-topbar{ gap:6px; }
+  .cm-enfchip, .cm-acctchip{ padding:6px 11px; font-size:12px; }
+  .cm-iconbtn{ width:34px; height:34px; font-size:16px; }
+}
+@media (max-width:360px){
+  /* Solo icono/emoji: se ocultan etiquetas para que todo entre en una fila */
+  .cm-acctchip .lbl, .cm-enfchip .lbl, .cm-enfchip .cv{ display:none; }
+  .cm-enfchip, .cm-acctchip{ padding:7px 9px; }
+}
 `;
