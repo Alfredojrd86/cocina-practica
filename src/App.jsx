@@ -11,6 +11,7 @@ import { suggestN, suggestPool, buildWeek, names, fmtQty } from "./lib/suggest.j
 import { analyzeSuggestion, TIPO_INFO } from "./data/foodTypes.js";
 import { CATALOG, PANTRY_CATS, PANTRY_INFO, statusOf, qtyOf, restockAll, adjustQty, stepFor, servingFor, extractItems, itemsFromNames, splitByPantry, applyCooked, findItem, getItem, missingToCook } from "./data/pantry.js";
 import { getTemplate } from "./data/templates.js";
+import { checkHealthy } from "./data/health.js";
 // Carga el escáner; si el chunk falla (service worker viejo tras deploy), recarga una vez.
 const importScanner = () => import("./Scanner.jsx").catch((e) => {
   if (!sessionStorage.getItem("cm_reload_scanner")) {
@@ -113,9 +114,20 @@ function EnfoqueCreator({ onClose, onCreate }) {
   const [emoji, setEmoji] = useState("🍴");
   const [base, setBase] = useState("balanceado");
   const [foods, setFoods] = useState(() => new Set(getTemplate("balanceado").sugeridos));
+  const [extras, setExtras] = useState([]);
+  const [newFood, setNewFood] = useState("");
+  const [foodMsg, setFoodMsg] = useState(null);
   const changeBase = (b) => { setBase(b); setFoods(new Set(getTemplate(b).sugeridos)); };
   const toggleFood = (k) => setFoods((prev) => { const n = new Set(prev); n.has(k) ? n.delete(k) : n.add(k); return n; });
-  const save = () => { if (nombre.trim()) onCreate({ nombre: nombre.trim().slice(0, 30), emoji: (emoji.trim() || "🍴").slice(0, 4), base, sugeridos: [...foods] }); };
+  const addFood = () => {
+    const name = newFood.trim();
+    if (!name) return;
+    const r = checkHealthy(name);
+    if (!r.ok) { setFoodMsg({ bad: true, text: `"${name}" no se puede agregar: ${r.reason}.` }); return; }
+    if (extras.some((x) => x.toLowerCase() === name.toLowerCase())) { setNewFood(""); return; }
+    setExtras([...extras, name]); setNewFood(""); setFoodMsg({ bad: false, text: `✓ ${name} agregado` });
+  };
+  const save = () => { if (nombre.trim()) onCreate({ nombre: nombre.trim().slice(0, 30), emoji: (emoji.trim() || "🍴").slice(0, 4), base, sugeridos: [...foods], extras }); };
   return (
     <div className="cm-scan">
       <div className="cm-scan-top">
@@ -134,6 +146,20 @@ function EnfoqueCreator({ onClose, onCreate }) {
           <button key={id} className={"cm-pill" + (base === id ? " on" : "")} onClick={() => changeBase(id)}>{APPROACH_META[id].emoji} {APPROACH_META[id].name}</button>
         ))}
       </div>
+      <p className="cm-mini" style={{ marginTop: 14 }}>Agregar un alimento (saludable)</p>
+      <div className="cm-scan-manual" style={{ marginTop: 0 }}>
+        <input className="cm-input" placeholder="Ej. coliflor, salmón…" value={newFood}
+          onChange={(e) => { setNewFood(e.target.value); setFoodMsg(null); }} onKeyDown={(e) => { if (e.key === "Enter") addFood(); }} />
+        <button className="cm-auth-send" onClick={addFood}>＋</button>
+      </div>
+      {foodMsg && <p className="cm-hint" style={{ marginTop: 6, color: foodMsg.bad ? "var(--terra)" : "var(--green)" }}>{foodMsg.text}</p>}
+      {extras.length > 0 && (
+        <div className="cm-hidden-list" style={{ marginTop: 8 }}>
+          {extras.map((x, i) => (
+            <button key={i} className="cm-chip-restore" onClick={() => setExtras(extras.filter((_, j) => j !== i))}>{x} ✕</button>
+          ))}
+        </div>
+      )}
       <p className="cm-mini" style={{ marginTop: 14 }}>Alimentos sugeridos</p>
       <div className="cm-card" style={{ marginBottom: 14 }}>
         {PANTRY_CATS.map((cat) => (
@@ -543,7 +569,19 @@ export default function App() {
           onClose={() => setEnfCreate(false)}
           onCreate={async (e) => {
             const id = await addEnfoque(e);
-            if (id) { setApproach(id); applyTemplate(id); setWeek(null); setSugs(null); showToast("✨ Enfoque creado", "ok"); }
+            if (id) {
+              setApproach(id); applyTemplate(id);
+              if (e.extras && e.extras.length) {
+                const nc = [...custom];
+                e.extras.forEach((label, idx) => {
+                  if (!nc.some((c) => c.label.toLowerCase() === label.toLowerCase())) {
+                    nc.push({ key: "c_" + label.toLowerCase().replace(/[^a-z0-9]+/g, "_") + "_" + (nc.length + idx + 1), label, unit: "unid.", cat: "Otros" });
+                  }
+                });
+                setCustom(nc);
+              }
+              setWeek(null); setSugs(null); showToast("✨ Enfoque creado", "ok");
+            }
             setEnfCreate(false);
           }}
         />
