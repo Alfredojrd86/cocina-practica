@@ -1054,7 +1054,7 @@ export default function App() {
               {PEOPLE.map(([lab, n]) => (<button key={n} className={"cm-pill" + (people === n ? " on" : "")} onClick={() => setPeople(n)}>{lab}</button>))}
             </div>
             <p className="cm-onb-p" style={{ marginTop: 18, marginBottom: 8 }}>¿Cómo quieres empezar?</p>
-            <button className="cm-roll" onClick={() => { applyTemplate(approach); setOnboarded(true); goDespensa("comprar"); showToast("🧺 Cargué los alimentos sugeridos", "ok"); }}>Usar la lista sugerida →</button>
+            <button className="cm-roll" onClick={() => { applyTemplate(approach); setOnboarded(true); setDespensaView("comprar"); setTab("inicio"); showToast("🧺 Cargué los alimentos sugeridos", "ok"); }}>Usar la lista sugerida →</button>
             <button className="cm-outline" onClick={() => { setHidden([]); setOnboarded(true); setTab("inicio"); }}>Armar la mía desde cero</button>
           </div>
         </div>
