@@ -38,6 +38,10 @@ const APPROACH_LABEL = {
     "la dieta animal-based de Paul Saladino: carnes, vísceras (hígado), huevos, lácteos, pescado, fruta y miel; evita granos y legumbres",
   balanceado:
     "una mezcla equilibrada del enfoque 3x1 de Frank Suárez y el animal-based de Paul Saladino",
+  keto:
+    "la dieta Keto: muy baja en carbohidratos y alta en grasa; sin azúcar, granos, legumbres ni almidones",
+  mediterraneo:
+    "la dieta Mediterránea: pescado, aceite de oliva, vegetales, legumbres, fruta y poca carne roja",
 };
 
 function json(statusCode, obj) {

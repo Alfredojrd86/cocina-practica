@@ -7,6 +7,7 @@ const SUGAR = ["azúcar", "azucar", "jarabe", "sirope", "glucosa", "fructosa", "
 const SEED_OILS = ["girasol", "canola", "colza", "soya", "soja", "maíz", "maiz", "palma", "sunflower", "rapeseed", "soybean", "palm oil", "vegetal"];
 const GRAINS = ["trigo", "harina", "arroz", "avena", "cebada", "centeno", "wheat", "flour", "rice", "oat", "barley", "maicena"];
 const LEGUMES = ["lenteja", "garbanzo", "frijol", "caraota", "poroto", "soya", "soja", "lentil", "bean", "chickpea"];
+const STARCH = ["batata", "plátano", "platano", "yuca", "papa", "patata", "arepa", "maíz", "maiz", "pan", "pasta", "tortilla"];
 
 function signals(p) {
   return {
@@ -73,6 +74,39 @@ export const DIETS = {
       if (s.includes("calorias")) { v = worst(v, "moderar"); r.push("Sello: ALTO EN CALORÍAS"); }
       if (s.includes("sodio")) { v = worst(v, "moderar"); r.push("Sello: ALTO EN SODIO"); }
       if (v === "ok") r.push("Comida real y equilibrada");
+      return { verdict: v, reasons: r };
+    },
+  },
+  keto: {
+    label: "Keto",
+    evaluate(p) {
+      const b = signals(p); let v = "ok"; const r = [];
+      if (b.sugarIng || b.sugarHigh) { v = worst(v, "evita"); r.push("Azúcar (saca de cetosis)"); }
+      if (p.carbs != null && p.carbs > 10) { v = worst(v, "evita"); r.push(`Alto en carbohidratos (${p.carbs} g/100g)`); }
+      if (has(p.ingredients, GRAINS)) { v = worst(v, "evita"); r.push("Granos / harinas"); }
+      if (has(p.ingredients, LEGUMES)) { v = worst(v, "evita"); r.push("Legumbres"); }
+      if (has(p.ingredients, STARCH)) { v = worst(v, "evita"); r.push("Almidones"); }
+      const s = p.seals || [];
+      if (s.includes("azucar")) { v = worst(v, "evita"); r.push("Sello: ALTO EN AZÚCARES"); }
+      if (b.ultra) { v = worst(v, "moderar"); r.push("Ultraprocesado (NOVA 4)"); }
+      if (v === "ok") r.push("Bajo en carbohidratos: keto-friendly");
+      return { verdict: v, reasons: r };
+    },
+  },
+  mediterraneo: {
+    label: "Mediterráneo",
+    evaluate(p) {
+      const b = signals(p); let v = "ok"; const r = [];
+      if (b.sugarHigh) { v = worst(v, "evita"); r.push(`Alto en azúcar (${p.sugars} g/100g)`); }
+      else if (b.sugarIng || b.sugarMod) { v = worst(v, "moderar"); r.push("Tiene algo de azúcar"); }
+      // Penaliza aceites de semilla pero NO el de oliva.
+      if (has(p.ingredients, SEED_OILS) && !p.ingredients.includes("oliva")) { v = worst(v, "moderar"); r.push("Aceites de semilla (prefiere oliva)"); }
+      if (has(p.ingredients, GRAINS) && !p.ingredients.includes("integral")) { v = worst(v, "moderar"); r.push("Granos refinados (prefiere integral)"); }
+      const s = p.seals || [];
+      if (s.includes("azucar")) { v = worst(v, "evita"); r.push("Sello: ALTO EN AZÚCARES"); }
+      if (s.includes("sodio")) { v = worst(v, "moderar"); r.push("Sello: ALTO EN SODIO"); }
+      if (b.ultra) { v = worst(v, "moderar"); r.push("Ultraprocesado (NOVA 4)"); }
+      if (v === "ok") r.push("Comida real estilo mediterráneo");
       return { verdict: v, reasons: r };
     },
   },

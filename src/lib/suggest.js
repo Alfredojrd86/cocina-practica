@@ -1,6 +1,10 @@
 import { DB } from "../data/recipes.js";
 import { DAYS } from "../data/config.js";
 
+// Enfoques sin recetario propio reusan uno existente.
+const RECIPE_FALLBACK = { keto: "animal", mediterraneo: "balanceado" };
+const recipesFor = (approach) => DB[approach] || DB[RECIPE_FALLBACK[approach]] || DB.balanceado;
+
 export const rnd = (a) => a[Math.floor(Math.random() * a.length)];
 
 export function shuffle(a) {
@@ -18,7 +22,7 @@ export const names = (arr) => arr.map((x) => x.n).join("  ·  ");
 
 // Una sugerencia: { titulo, pasos:[{n,p}] }
 export function suggest(approach, type) {
-  const d = DB[approach];
+  const d = recipesFor(approach);
   if (type === "Desayuno") { const x = rnd(d.desayunos); return { titulo: x.n, pasos: [x] }; }
   if (type === "Snack") { const x = rnd(d.snacks); return { titulo: x.n, pasos: [x] }; }
   const items = [rnd(d.proteinas)];
@@ -59,7 +63,7 @@ export function suggestN(approach, type, n = 3, { practical = false } = {}) {
 }
 
 export function buildWeek(approach) {
-  const d = DB[approach];
+  const d = recipesFor(approach);
   const P = shuffle(d.proteinas), C = shuffle(d.carbos), V = shuffle(d.vegetales), F = shuffle(d.grasas), B = shuffle(d.desayunos);
   return DAYS.map((day, k) => ({
     dia: day,

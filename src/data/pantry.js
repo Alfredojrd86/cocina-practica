@@ -42,6 +42,18 @@ export const CATALOG = [
   { key: "frutos_secos", label: "Frutos secos", cat: "Grasas y otros", unit: "kg", base: 0.5, serving: 0.03, kw: ["fruto seco", "frutos secos", "nuez", "nueces", "almendra"] },
   { key: "miel", label: "Miel", cat: "Grasas y otros", unit: "frasco", base: 1, serving: 0.05, condiment: true, kw: ["miel"] },
   { key: "sal", label: "Sal marina", cat: "Grasas y otros", unit: "paquete", base: 1, serving: 0.01, condiment: true, kw: ["sal marina", "sal"] },
+  // Alimentos sugeridos por los autores (Saladino / Frank / Mediterráneo)
+  { key: "salmon", label: "Salmón", cat: "Proteínas", unit: "kg", base: 0.5, serving: 0.15, kw: ["salmón", "salmon"] },
+  { key: "mariscos", label: "Mariscos", cat: "Proteínas", unit: "kg", base: 0.5, serving: 0.15, kw: ["marisco", "camar", "langostino", "shrimp"] },
+  { key: "tuetano", label: "Tuétano / médula", cat: "Proteínas", unit: "kg", base: 0.3, serving: 0.05, kw: ["tuétano", "tuetano", "médula", "medula"] },
+  { key: "lechuga", label: "Lechuga", cat: "Vegetales", unit: "unid.", base: 4, serving: 0.25, kw: ["lechuga"] },
+  { key: "pepino", label: "Pepino", cat: "Vegetales", unit: "unid.", base: 4, serving: 0.5, kw: ["pepino"] },
+  { key: "calabacin", label: "Calabacín", cat: "Vegetales", unit: "unid.", base: 4, serving: 0.5, kw: ["calabac", "zapallo italiano", "zucchini"] },
+  { key: "coliflor", label: "Coliflor", cat: "Vegetales", unit: "unid.", base: 2, serving: 0.25, kw: ["coliflor"] },
+  { key: "esparragos", label: "Espárragos", cat: "Vegetales", unit: "kg", base: 0.5, serving: 0.1, kw: ["espárrago", "esparrago"] },
+  { key: "apio", label: "Apio", cat: "Vegetales", unit: "unid.", base: 2, serving: 0.2, kw: ["apio"] },
+  { key: "garbanzos", label: "Garbanzos", cat: "Carbohidratos", unit: "kg", base: 0.5, serving: 0.1, kw: ["garbanzo"] },
+  { key: "aceitunas", label: "Aceitunas", cat: "Grasas y otros", unit: "kg", base: 0.3, serving: 0.03, kw: ["aceituna"] },
 ];
 
 export const PANTRY_CATS = [...new Set(CATALOG.map((c) => c.cat))];

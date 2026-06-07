@@ -23,7 +23,8 @@ flowchart LR
 - [x] PWA instalable + offline (vite-plugin-pwa)
 
 **Contenido / lógica**
-- [x] 3 enfoques (3x1 / Animal / Balanceado) + recetas
+- [x] 5 enfoques de fábrica (3x1 / Animal / Balanceado / Keto / Mediterráneo) + recetas
+- [x] Catálogo ampliado (salmón, mariscos, tuétano, verdes Tipo A, aceitunas, garbanzos)
 - [x] Feedback Tipo A/E + consejos por enfoque
 - [x] 3 sugerencias, "Solo rápidas", "Cocinar con lo que tengo"
 - [x] Semana rotada
