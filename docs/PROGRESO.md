@@ -64,6 +64,7 @@ flowchart LR
 - [x] Compartir receta: `navigator.share` nativo + fallback copiar/WhatsApp
 - [x] Macros aproximadas por plato (P/G/C + kcal) en card abierta (`macros.js`)
 - [x] Historial "lo más cocinado" (sección en Favoritos) + priorización en sugerencias (`history.js`, `cooked` en Supabase)
+- [x] **Navegación 4 pilares** (Ahora · Despensa · Semana · Captura); Compras fusionado en Despensa (segment Tengo/Comprar); Favoritos ⭐ en topbar; Inicio vía logo; sin FAB
 
 **Diseño**
 - [x] Tema único "recetario vintage" centralizado en `src/theme.js`
