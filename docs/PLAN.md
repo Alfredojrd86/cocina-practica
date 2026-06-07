@@ -59,7 +59,7 @@ git push -u origin feat/undo          # abrir PR hacia dev en GitHub
 ## Estado
 
 - [x] `dev` creada + branch deploys Netlify
-- [ ] Fase 0: `feat/tests-core`
+- [x] Fase 0: `feat/tests-core` — Vitest + 76 tests (suggest/foodTypes/pantry/diets)
 - [ ] Fase 1: `feat/undo`, `feat/compartir-receta`, `feat/bordes-rasgados`
 - [ ] Fase 2: `feat/macros`, `feat/historial-cocinado`, `feat/semana-combinada`
 - [ ] Fase 3: `feat/cache-escaneo`, `feat/contrib-off`, `feat/smtp-email`
