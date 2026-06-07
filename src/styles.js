@@ -238,7 +238,7 @@ html, body{ background-color:var(--cream); }
 .cm-sug:active{ transform:scale(0.995); }
 .cm-sug.open{ border-color:var(--sage); }
 .cm-sug-top{ display:flex; align-items:flex-start; gap:10px; }
-.cm-sug-title{ font-family:var(--font-serif); font-weight:600; font-size:16.5px; line-height:1.3; color:var(--green); flex:1; }
+.cm-sug-title{ font-family:var(--font-head); font-weight:700; font-size:21px; line-height:1.2; color:var(--green); flex:1; }
 .cm-fav{ border:none; background:none; font-size:21px; line-height:1; cursor:pointer; padding:0; flex-shrink:0; -webkit-tap-highlight-color:transparent; filter:grayscale(1) opacity(0.45); transition:filter .14s, transform .12s; }
 .cm-fav.on{ filter:none; }
 .cm-fav:active{ transform:scale(1.2); }
