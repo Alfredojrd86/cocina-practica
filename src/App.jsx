@@ -617,22 +617,9 @@ export default function App() {
           ) : (
             <div className="cm-cards">
               {favs.map((s, k) => (
-                <div key={favKey(s) + k} className="cm-sug open">
-                  <div className="cm-sug-top">
-                    <span className="cm-sug-title">{s.titulo}</span>
-                    <button className="cm-fav on" aria-label="Quitar de favoritos" onClick={() => removeFavWithToast(s.titulo)}>★</button>
-                  </div>
-                  <p className="cm-fav-meta">{APPROACHES.find((a) => a[0] === s.approach)?.[1] || s.approach} · {s.meal}</p>
-                  <TypeFeedback sug={s} approach={baseOf(s.approach)} />
-                  <div className="cm-sug-steps">
-                    {s.pasos.map((p, i) => (<div key={i} className="st"><b>{p.n}:</b> {p.p}</div>))}
-                  </div>
-                  {(() => { const miss = missingToCook(s, pantry, people, hidden); return (
-                    <button className="cm-cooked" disabled={miss.length > 0} onClick={() => onCook(s)}>
-                      {miss.length ? `Te falta: ${miss.map((i) => i.label).join(", ")}` : "🍳 Lo cociné — descontar de mi despensa"}
-                    </button>
-                  ); })()}
-                </div>
+                <SuggestionCard key={favKey(s) + k} sug={s} approach={baseOf(s.approach)} pantry={pantry} people={people} hidden={hidden}
+                  isOpen={!!openSug["fav" + favKey(s)]} onToggle={() => toggleSug("fav" + favKey(s))}
+                  isFav={true} onFav={() => toggleFav(s)} onCook={onCook} />
               ))}
             </div>
           )}
