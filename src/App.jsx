@@ -800,7 +800,7 @@ export default function App() {
           <div className="cm-seg" style={{ marginBottom: 14 }}>
             {PEOPLE.map(([lab, n]) => (<button key={n} className={"cm-pill" + (people === n ? " on" : "")} onClick={() => setPeople(n)}>{lab}</button>))}
           </div>
-          <button className="cm-outline" style={{ marginTop: 0 }} onClick={() => { applyTemplate(approach); showToast("✨ Lista sugerida del enfoque cargada", "ok"); }}>✨ Cargar sugeridos de {metaOf(approach)?.name}</button>
+          <button className="cm-outline" style={{ marginTop: 0, marginBottom: 10 }} onClick={() => { applyTemplate(approach); showToast("✨ Lista sugerida del enfoque cargada", "ok"); }}>✨ Cargar sugeridos de {metaOf(approach)?.name}</button>
           <button className="cm-roll" onClick={loadPantryFromBuy}>🧺 Cargar esta compra a mi despensa</button>
           <p className="cm-hint" style={{ marginTop: 8 }}>Sustituye el stock actual por estas cantidades.</p>
           <div className="cm-card cm-receipt" style={{ marginTop: 12 }}>
