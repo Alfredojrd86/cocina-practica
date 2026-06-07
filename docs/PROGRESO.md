@@ -27,7 +27,7 @@ flowchart LR
 - [x] Catálogo ampliado (salmón, mariscos, tuétano, verdes Tipo A, aceitunas, garbanzos)
 - [x] Feedback Tipo A/E + consejos por enfoque
 - [x] 3 sugerencias, "Solo rápidas", "Cocinar con lo que tengo"
-- [x] Semana rotada
+- [x] Semana rotada + **semana combinada** (rota los 5 enfoques por día)
 
 **Despensa / compras**
 - [x] Despensa por **cantidades reales** (kg/unid/latas), estado derivado
@@ -62,6 +62,8 @@ flowchart LR
 **UX**
 - [x] **Undo** al quitar favorito y al "Lo cociné" (toast "Deshacer", 4s)
 - [x] Compartir receta: `navigator.share` nativo + fallback copiar/WhatsApp
+- [x] Macros aproximadas por plato (P/G/C + kcal) en card abierta (`macros.js`)
+- [x] Historial "lo más cocinado" (sección en Favoritos) + priorización en sugerencias (`history.js`, `cooked` en Supabase)
 
 **Diseño**
 - [x] Tema único "recetario vintage" centralizado en `src/theme.js`
@@ -80,9 +82,6 @@ flowchart LR
 
 ## Pendiente / ideas 💡
 
-- [ ] Macros aproximadas por plato (proteína/grasa/carbo)
-- [ ] Semana que combine enfoques
-- [ ] Historial "lo más cocinado" + priorizar en sugerencias
 - [ ] Caché de productos escaneados (que salgan sin re-consultar)
 - [ ] Contribuir productos a Open Food Facts desde la app
 - [ ] SMTP propio (Resend/Brevo) para reactivar magic-link por email

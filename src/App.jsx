@@ -6,9 +6,12 @@ import { useLocalStorage } from "./hooks/useLocalStorage.js";
 import { useFavorites } from "./hooks/useFavorites.js";
 import { usePantry } from "./hooks/usePantry.js";
 import { useEnfoques } from "./hooks/useEnfoques.js";
+import { useCookedHistory } from "./hooks/useCookedHistory.js";
 import { supabase, supabaseReady } from "./lib/supabase.js";
-import { suggestN, suggestPool, buildWeek, names, fmtQty } from "./lib/suggest.js";
+import { suggestN, suggestPool, buildWeek, buildWeekMixed, names, fmtQty } from "./lib/suggest.js";
 import { buildShareText, whatsappUrl } from "./lib/share.js";
+import { macrosForSuggestion } from "./data/macros.js";
+import { prioritize } from "./lib/history.js";
 import { analyzeSuggestion, TIPO_INFO } from "./data/foodTypes.js";
 import { CATALOG, PANTRY_CATS, PANTRY_INFO, statusOf, qtyOf, restockAll, adjustQty, stepFor, servingFor, extractItems, itemsFromNames, splitByPantry, applyCooked, findItem, getItem, missingToCook } from "./data/pantry.js";
 import { getTemplate } from "./data/templates.js";
@@ -74,13 +77,31 @@ function PantryMatch({ sug, pantry, people }) {
   );
 }
 
+// Fila de macros aproximadas del plato (proteína / grasa / carbo + kcal).
+function MacrosRow({ sug }) {
+  const m = macrosForSuggestion(sug);
+  if (!m) return null;
+  return (
+    <div className="cm-macros" title="Estimación aproximada por porción">
+      <span className="cm-macros-kcal">≈ {m.kcal} kcal</span>
+      <span className="cm-macro p">P {m.p}</span>
+      <span className="cm-macro g">G {m.f}</span>
+      <span className="cm-macro c">C {m.c}</span>
+      <span className="cm-macros-unit">g · aprox</span>
+    </div>
+  );
+}
+
 function SuggestionCard({ sug, approach, pantry, people, hidden, isOpen, onToggle, isFav, onFav, onCook, onShare }) {
   const { badges } = analyzeSuggestion(sug.pasos, approach);
   const miss = missingToCook(sug, pantry, people, hidden);
   return (
     <div className={"cm-sug" + (isOpen ? " open" : "") + (miss.length ? " miss" : " ok")} onClick={onToggle}>
       <div className="cm-sug-top">
-        <span className="cm-sug-title">{sug.titulo}</span>
+        <span className="cm-sug-title">
+          {sug.cookedCount ? <span className="cm-cooked-tag">🔁 ×{sug.cookedCount}</span> : null}
+          {sug.titulo}
+        </span>
         <button
           className={"cm-fav" + (isFav ? " on" : "")}
           aria-label={isFav ? "Quitar de favoritos" : "Guardar en favoritos"}
@@ -96,6 +117,7 @@ function SuggestionCard({ sug, approach, pantry, people, hidden, isOpen, onToggl
       ) : (
         <>
           <TypeFeedback sug={sug} approach={approach} />
+          <MacrosRow sug={sug} />
           <PantryMatch sug={sug} pantry={pantry} people={people} />
           <div className="cm-sug-steps">
             {sug.pasos.map((s, k) => (<div key={k} className="st"><b>{s.n}:</b> {s.p}</div>))}
@@ -219,6 +241,7 @@ export default function App() {
   const [cookWith, setCookWith] = useLocalStorage("cm_cookwith", false);
   const [sugs, setSugs] = useLocalStorage("cm_sugs", null);
   const [week, setWeek] = useLocalStorage("cm_week", null);
+  const [weekMixed, setWeekMixed] = useLocalStorage("cm_week_mixed", false);
   const [open, setOpen] = useLocalStorage("cm_open", {});
   const [checked, setChecked] = useLocalStorage("cm_checked", {});
   const [buy, setBuy] = useLocalStorage("cm_buy", {});
@@ -241,6 +264,7 @@ export default function App() {
   const templateOf = (id) => { const c = getCustom(id); return c ? { sugeridos: c.sugeridos || [] } : getTemplate(id); };
   const { favs, add: addFav, remove: removeFav, session, syncing } = useFavorites();
   const { pantry, setPantry } = usePantry(session);
+  const { history: cooked, record: recordCooked, topFor: topCookedFor } = useCookedHistory(session);
   const { enfoques: customEnfoques, add: addEnfoque, remove: removeEnfoque } = useEnfoques(session);
   const [openSug, setOpenSug] = useState({});
   const [aiLoading, setAiLoading] = useState(false);
@@ -282,7 +306,7 @@ export default function App() {
 
   // Al entrar a "Ahora" sin ideas, genera 3 automáticamente (pantalla nunca vacía).
   useEffect(() => {
-    if (tab === "ahora" && !sugs) setSugs(suggestN(baseOf(approach), meal, 3, { practical: quick }));
+    if (tab === "ahora" && !sugs) setSugs(prioritize(suggestN(baseOf(approach), meal, 3, { practical: quick }), cooked, meal));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
@@ -299,7 +323,8 @@ export default function App() {
         .map((x) => x.s);
       setSugs(ranked.length ? ranked : suggestPool(meal, 3, { practical: quick }));
     } else {
-      setSugs(suggestN(baseOf(approach), meal, 3, { practical: quick }));
+      // Antepone tu receta más cocinada de esta comida (si la cocinaste ≥2 veces).
+      setSugs(prioritize(suggestN(baseOf(approach), meal, 3, { practical: quick }), cooked, meal));
     }
   };
 
@@ -395,6 +420,7 @@ export default function App() {
     const miss = missingToCook(sug, pantry, people, hidden);
     if (miss.length) { showToast(`Te falta: ${miss.map((i) => i.label).join(", ")}`, "rm"); return; }
     buzz(18);
+    recordCooked(sug, meal, approach); // historial "lo más cocinado"
     const prevPantry = pantry; // snapshot para deshacer
     setPantry(applyCooked(items, pantry, people));
     const resumen = used.slice(0, 3).map((it) => `${servingFor(it, people)} ${it.unit} ${it.label.toLowerCase()}`).join(", ");
@@ -736,6 +762,22 @@ export default function App() {
 
       {tab === "favoritos" && (
         <div className="cm-section" style={{ marginTop: 20 }}>
+          {topCookedFor(null, 5).length > 0 && (
+            <div style={{ marginBottom: 26 }}>
+              <h2 className="cm-h2">🔁 Lo más cocinado</h2>
+              <p className="cm-p">Tus recetas más repetidas. Vuelve a cocinarlas o compártelas.</p>
+              <div className="cm-cards">
+                {topCookedFor(null, 5).map((c, k) => {
+                  const s = { ...c, cookedCount: c.count };
+                  return (
+                    <SuggestionCard key={"cooked" + c.titulo + k} sug={s} approach={baseOf(c.approach || approach)} pantry={pantry} people={people} hidden={hidden}
+                      isOpen={!!openSug["cooked" + c.titulo]} onToggle={() => toggleSug("cooked" + c.titulo)}
+                      isFav={isFav(s)} onFav={() => toggleFav(s)} onCook={onCook} onShare={onShare} />
+                  );
+                })}
+              </div>
+            </div>
+          )}
           <h2 className="cm-h2">Tus favoritos</h2>
           <p className="cm-p">{session ? "Sincronizados en tu cuenta: los ves en cualquier dispositivo." : "Guardados en este equipo. Entra (arriba) para verlos en todos tus dispositivos."}</p>
 
@@ -815,17 +857,24 @@ export default function App() {
 
       {tab === "semana" && (
         <div className="cm-section" style={{ marginTop: 20 }}>
-          <h2 className="cm-h2">Tu semana rotada</h2>
-          <p className="cm-p">7 días combinados sin repetir, desde la misma base.</p>
-          {!week && <button className="cm-roll" onClick={() => { setWeek(buildWeek(baseOf(approach))); setOpen({}); }}>📋 Generar la semana</button>}
+          <h2 className="cm-h2">Tu semana</h2>
+          <p className="cm-p">{weekMixed ? "7 días combinando varios enfoques." : "7 días sin repetir, desde tu enfoque actual."}</p>
+          {!week && (
+            <>
+              <button className="cm-roll" onClick={() => { setWeek(buildWeek(baseOf(approach))); setWeekMixed(false); setOpen({}); }}>📋 Semana de {metaOf(approach)?.name}</button>
+              <button className="cm-outline" onClick={() => { setWeek(buildWeekMixed()); setWeekMixed(true); setOpen({}); }}>🎲 Combinar enfoques</button>
+            </>
+          )}
           {week && (<>
             <p className="cm-hint">Toca cualquier comida para ver cómo se prepara.</p>
-            {week.map((d, k) => (<div key={k} className="cm-day"><p className="cm-day-h">{d.dia}</p>
+            {week.map((d, k) => (<div key={k} className="cm-day">
+              <p className="cm-day-h">{d.dia}{weekMixed && d.approach ? <span className="cm-day-enf">{APPROACH_META[d.approach]?.emoji} {APPROACH_META[d.approach]?.name}</span> : null}</p>
               <Slot dk={k} slot="d" label="Desayuno" prepItems={[d.desayuno]} />
               <Slot dk={k} slot="a" label="Almuerzo" prepItems={d.almuerzo} />
               <Slot dk={k} slot="c" label="Cena" prepItems={d.cena} />
             </div>))}
-            <button className="cm-outline" onClick={() => { setWeek(buildWeek(baseOf(approach))); setOpen({}); }}>↻ Mezclar otra vez</button>
+            <button className="cm-outline" onClick={() => { setWeek(weekMixed ? buildWeekMixed() : buildWeek(baseOf(approach))); setOpen({}); }}>↻ Mezclar otra vez</button>
+            <button className="cm-outline" onClick={() => { setWeek(weekMixed ? buildWeek(baseOf(approach)) : buildWeekMixed()); setWeekMixed(!weekMixed); setOpen({}); }}>{weekMixed ? `📋 Cambiar a semana de ${metaOf(approach)?.name}` : "🎲 Cambiar a combinada"}</button>
           </>)}
         </div>
       )}

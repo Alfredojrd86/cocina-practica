@@ -86,6 +86,7 @@ html, body{ background-color:var(--cream); }
 
 .cm-day{ background:var(--paper); border:1px solid var(--line); border-radius:16px; padding:13px 16px; margin-bottom:10px; }
 .cm-day-h{ font-family:var(--font-serif); font-weight:600; font-size:16px; color:var(--terra); margin:0 0 6px; }
+.cm-day-enf{ float:right; font-family:var(--font-body); font-weight:700; font-size:11px; color:var(--green); background:rgba(138,154,91,0.16); border-radius:999px; padding:2px 9px; }
 .cm-slot{ display:flex; gap:10px; padding:11px 0; border-top:1px solid var(--line); cursor:pointer; align-items:flex-start; -webkit-tap-highlight-color:transparent; }
 .cm-slot:first-of-type{ border-top:none; }
 .cm-slot .sl{ font-size:11px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:var(--sage); min-width:68px; padding-top:2px; }
@@ -267,6 +268,18 @@ html, body{ background-color:var(--cream); }
 .cm-cooked:disabled:active{ transform:none; }
 .cm-share{ width:100%; margin-top:8px; border:1.5px solid var(--ink-soft,#b9ab97); background:transparent; color:var(--ink,#39322a); border-radius:12px; min-height:42px; font-family:var(--font-body); font-weight:600; font-size:13px; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform .12s,background .12s; }
 .cm-share:active{ transform:scale(.98); background:rgba(57,50,42,0.06); }
+
+/* Macros aproximadas del plato */
+.cm-macros{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-top:10px; font-family:var(--font-body); font-size:12px; }
+.cm-macros-kcal{ font-weight:800; color:var(--green); }
+.cm-macro{ font-weight:700; border-radius:999px; padding:2px 8px; }
+.cm-macro.p{ color:#2F7D32; background:rgba(47,125,50,0.13); }
+.cm-macro.g{ color:#B8860B; background:rgba(184,134,11,0.15); }
+.cm-macro.c{ color:var(--terra); background:rgba(178,58,46,0.13); }
+.cm-macros-unit{ color:var(--muted); font-style:italic; }
+
+/* Etiqueta "lo más cocinado" (veces que cocinaste la receta) */
+.cm-cooked-tag{ display:inline-block; margin-right:7px; font-family:var(--font-body); font-weight:800; font-size:11px; color:var(--terra); background:rgba(178,58,46,0.12); border-radius:999px; padding:1px 8px; vertical-align:middle; }
 
 /* Skeleton de carga IA */
 .cm-skel{ background:var(--paper); border:1px solid var(--line); border-radius:18px; padding:16px; }

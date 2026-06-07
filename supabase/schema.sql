@@ -38,6 +38,22 @@ create policy "pantry select propio" on pantry for select using (auth.uid() = us
 create policy "pantry insert propio" on pantry for insert with check (auth.uid() = user_id);
 create policy "pantry update propio" on pantry for update using (auth.uid() = user_id);
 
+-- ============ Historial de lo cocinado (un registro JSON por usuario) ============
+-- Array de { titulo, pasos, meal, approach, count, last }. Alimenta "Lo más cocinado".
+create table if not exists cooked (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  data jsonb not null default '[]',
+  updated_at timestamptz default now()
+);
+
+alter table cooked enable row level security;
+drop policy if exists "cooked select propio" on cooked;
+drop policy if exists "cooked insert propio" on cooked;
+drop policy if exists "cooked update propio" on cooked;
+create policy "cooked select propio" on cooked for select using (auth.uid() = user_id);
+create policy "cooked insert propio" on cooked for insert with check (auth.uid() = user_id);
+create policy "cooked update propio" on cooked for update using (auth.uid() = user_id);
+
 -- ============ Enfoques propios (creados por el usuario) ============
 -- Cada enfoque propio hereda recetas/reglas de un 'base' (metabolismo|animal|balanceado)
 -- y tiene su propia lista de alimentos sugeridos.
