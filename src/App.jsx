@@ -251,7 +251,7 @@ export default function App() {
   };
 
   const rollAI = async () => {
-    if (!session) { setTab("favoritos"); showToast("Inicia sesión para usar la IA", "rm"); return; }
+    if (!session) { setAcctSheet(true); showToast("Inicia sesión para usar la IA", "rm"); return; }
     setAiLoading(true);
     setAiErr(null);
     try {
@@ -265,7 +265,7 @@ export default function App() {
         body: JSON.stringify({ approach: baseOf(approach), meal, ingredients, people, quick }),
       });
       const d = await r.json();
-      if (r.status === 401) { setTab("favoritos"); showToast("Inicia sesión para usar la IA", "rm"); return; }
+      if (r.status === 401) { setAcctSheet(true); showToast("Inicia sesión para usar la IA", "rm"); return; }
       if (r.status === 429) { setAiErr(d.error || "Llegaste a tu límite diario de IA. Vuelve mañana."); if (d.max) setAiUsage({ used: d.used, max: d.max }); return; }
       if (!r.ok) throw new Error(d.error || "Error");
       const arr = Array.isArray(d.sugerencias) ? d.sugerencias : [d];
@@ -287,7 +287,7 @@ export default function App() {
     buzz(14);
     const r = await addFav({ titulo: s.titulo, pasos: s.pasos, approach, meal });
     if (session) showToast(r.error ? "Guardado local · no sincronizó" : "★ Guardado y sincronizado", r.error ? "rm" : "ok");
-    else if (supabaseReady) showToast("Guardado en este equipo", "ok", { label: "Iniciar sesión", fn: () => setTab("favoritos") });
+    else if (supabaseReady) showToast("Guardado en este equipo", "ok", { label: "Iniciar sesión", fn: () => setAcctSheet(true) });
     else showToast("★ Guardado en favoritos", "ok");
   };
   const removeFavWithToast = async (titulo) => {
@@ -296,7 +296,7 @@ export default function App() {
   };
   // Abrir escáner solo con sesión (feature para registrados).
   const openScanner = () => {
-    if (!session) { setTab("favoritos"); showToast("Inicia sesión para escanear productos", "rm"); return; }
+    if (!session) { setAcctSheet(true); showToast("Inicia sesión para escanear productos", "rm"); return; }
     setShowScanner(true);
   };
 
