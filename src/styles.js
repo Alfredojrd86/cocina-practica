@@ -15,7 +15,11 @@ html, body{ background-color:var(--cream); }
 @media(min-width:640px){ .cm-root{ padding-top:36px; } }
 
 /* Barra superior compacta */
-.cm-topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:18px; }
+.cm-topbar{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:18px; }
+.cm-topbar-actions{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.cm-acctchip .e{ font-size:14px; }
+.cm-acctchip.in{ color:#2F7D32; }
+.cm-acctchip.in .e{ color:#2F7D32; }
 .cm-brand{ font-family:var(--font-serif); font-weight:900; font-size:20px; color:var(--green); cursor:pointer; line-height:1; }
 .cm-brand em{ font-style:italic; font-weight:500; color:var(--terra); }
 .cm-enfchip{ display:inline-flex; align-items:center; gap:6px; background:#fff; border:1.5px solid var(--line); border-radius:999px; padding:7px 13px; font-family:var(--font-body); font-weight:700; font-size:13px; color:var(--green); cursor:pointer; -webkit-tap-highlight-color:transparent; }

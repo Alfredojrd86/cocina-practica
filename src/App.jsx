@@ -178,6 +178,7 @@ export default function App() {
   const [pantryFilter, setPantryFilter] = useState("all");
   const [enfPicker, setEnfPicker] = useState(false);
   const [enfCreate, setEnfCreate] = useState(false);
+  const [acctSheet, setAcctSheet] = useState(false);
   const [optsOpen, setOptsOpen] = useState(false);
 
   // Resolución de enfoque (de fábrica o propio).
@@ -473,9 +474,14 @@ export default function App() {
     <div className="cm-root"><div className="cm-app">
       <div className="cm-topbar">
         <span className="cm-brand" onClick={() => setTab("inicio")}>¿Qué <em>comemos</em>?</span>
-        <button className="cm-enfchip" onClick={() => setEnfPicker(true)} aria-label="Cambiar enfoque">
-          <span className="e">{metaOf(approach)?.emoji}</span>{metaOf(approach)?.name}<span className="cv">▾</span>
-        </button>
+        <div className="cm-topbar-actions">
+          <button className={"cm-enfchip cm-acctchip" + (session ? " in" : "")} onClick={() => { setConfirmOut(false); setAuthMsg(null); setAcctSheet(true); }} aria-label="Tu cuenta">
+            <span className="e">{session ? "✓" : "👤"}</span>{session ? "Cuenta" : "Entrar"}
+          </button>
+          <button className="cm-enfchip" onClick={() => setEnfPicker(true)} aria-label="Cambiar enfoque">
+            <span className="e">{metaOf(approach)?.emoji}</span>{metaOf(approach)?.name}<span className="cv">▾</span>
+          </button>
+        </div>
       </div>
 
       {enfPicker && (
@@ -498,6 +504,36 @@ export default function App() {
               </button>
             ))}
             <button className="cm-outline" style={{ marginTop: 4 }} onClick={() => { setEnfPicker(false); setEnfCreate(true); }}>➕ Crear mi enfoque</button>
+          </div>
+        </div>
+      )}
+
+      {acctSheet && (
+        <div className="cm-sheet" onClick={() => setAcctSheet(false)}>
+          <div className="cm-sheet-card" onClick={(e) => e.stopPropagation()}>
+            <p className="cm-mini" style={{ marginBottom: 10 }}>Tu cuenta</p>
+            {session ? (
+              <>
+                <p className="cm-auth-mail" style={{ marginBottom: 12 }}>✓ {session.user.email}{syncing ? " · sincronizando…" : ""}</p>
+                {confirmOut ? (
+                  <div className="cm-auth-row">
+                    <button className="cm-outline" style={{ marginTop: 0, borderColor: "var(--terra)", color: "var(--terra)" }} onClick={() => { signOut(); setAcctSheet(false); }}>Confirmar salida</button>
+                    <button className="cm-outline" style={{ marginTop: 0 }} onClick={() => setConfirmOut(false)}>Cancelar</button>
+                  </div>
+                ) : (
+                  <button className="cm-outline" style={{ marginTop: 0 }} onClick={() => setConfirmOut(true)}>Salir</button>
+                )}
+              </>
+            ) : (
+              <>
+                <button className="cm-google" onClick={signInGoogle}>
+                  <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.71-1.57 2.68-3.89 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.95H.96a9 9 0 0 0 0 8.1l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>
+                  Continuar con Google
+                </button>
+                <p className="cm-hint" style={{ marginTop: 8 }}>Entra para sincronizar favoritos, despensa y enfoques en todos tus dispositivos. Solo la primera vez en este equipo.</p>
+              </>
+            )}
+            {authMsg && <p className="cm-hint" style={{ marginTop: 8 }}>{authMsg}</p>}
           </div>
         </div>
       )}
@@ -584,33 +620,7 @@ export default function App() {
       {tab === "favoritos" && (
         <div className="cm-section" style={{ marginTop: 20 }}>
           <h2 className="cm-h2">Tus favoritos</h2>
-          <p className="cm-p">{session ? "Sincronizados en tu cuenta: los ves en cualquier dispositivo." : "Guardados en este teléfono. Inicia sesión para verlos en todos tus dispositivos."}</p>
-
-          <div className="cm-auth">
-            {session ? (
-              <div className="cm-auth-row">
-                <span className="cm-auth-mail">✓ {session.user.email}{syncing ? " · sincronizando…" : ""}</span>
-                {confirmOut ? (
-                  <>
-                    <button className="cm-auth-out" style={{ borderColor: "var(--terra)", color: "var(--terra)" }} onClick={signOut}>Confirmar</button>
-                    <button className="cm-auth-out" onClick={() => setConfirmOut(false)}>Cancelar</button>
-                  </>
-                ) : (
-                  <button className="cm-auth-out" onClick={() => setConfirmOut(true)}>Salir</button>
-                )}
-              </div>
-            ) : (
-              <>
-                <p className="cm-mini" style={{ margin: "0 0 8px" }}>Sincronizar mis favoritos</p>
-                <button className="cm-google" onClick={signInGoogle}>
-                  <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.71-1.57 2.68-3.89 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.95H.96a9 9 0 0 0 0 8.1l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>
-                  Continuar con Google
-                </button>
-                <p className="cm-hint" style={{ marginTop: 8 }}>Solo la primera vez en este dispositivo. Después entras solo: este equipo te recuerda (salvo que toques “Salir”).</p>
-              </>
-            )}
-            {authMsg && <p className="cm-hint" style={{ marginTop: 8 }}>{authMsg}</p>}
-          </div>
+          <p className="cm-p">{session ? "Sincronizados en tu cuenta: los ves en cualquier dispositivo." : "Guardados en este equipo. Entra (arriba) para verlos en todos tus dispositivos."}</p>
 
           {favs.length === 0 ? (
             <p className="cm-empty">Aún no guardas recetas. Toca la ★ en cualquier sugerencia.</p>
