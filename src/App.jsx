@@ -620,6 +620,7 @@ export default function App() {
                   <div className="cm-sug-steps">
                     {s.pasos.map((p, i) => (<div key={i} className="st"><b>{p.n}:</b> {p.p}</div>))}
                   </div>
+                  <button className="cm-cooked" onClick={() => onCook(s)}>🍳 Lo cociné — descontar de mi despensa</button>
                 </div>
               ))}
             </div>
