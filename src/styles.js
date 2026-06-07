@@ -9,13 +9,13 @@ ${rootVars}
   padding:calc(env(safe-area-inset-top) + 18px) 0 0; -webkit-font-smoothing:antialiased;
   background-color:var(--cream);
   background-image:
-    radial-gradient(ellipse at 50% 35%, transparent 52%, rgba(58,45,30,0.14) 100%),
-    repeating-linear-gradient(180deg, transparent 0 31px, rgba(58,45,30,0.05) 31px 32px),
-    radial-gradient(circle at 15% 0%, rgba(86,106,44,0.10), transparent 42%),
-    radial-gradient(circle at 88% 8%, rgba(164,56,42,0.09), transparent 40%),
+    repeating-linear-gradient(180deg, transparent 0 31px, rgba(58,45,30,0.12) 31px 32px),
+    radial-gradient(ellipse at 50% 30%, transparent 62%, rgba(58,45,30,0.10) 100%),
+    radial-gradient(circle at 15% 0%, rgba(86,106,44,0.08), transparent 42%),
+    radial-gradient(circle at 88% 8%, rgba(164,56,42,0.07), transparent 40%),
     var(--paper-noise);
-  background-attachment:fixed;
 }
+html, body{ background-color:var(--cream); }
 .cm-app{ max-width:620px; margin:0 auto; padding:0 16px calc(env(safe-area-inset-bottom) + 96px); }
 @media(min-width:640px){ .cm-root{ padding-top:36px; } }
 
