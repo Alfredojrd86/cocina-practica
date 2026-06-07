@@ -8,6 +8,18 @@
 [functions]
   directory = "netlify/functions"
 
+# Produccion: rama main
+[context.production]
+  command = "npm run build"
+
+# Deploy de prueba: rama dev (URL propia, no toca produccion)
+[context.dev]
+  command = "npm run build"
+
+# Deploy previews de cada Pull Request
+[context.deploy-preview]
+  command = "npm run build"
+
 # Para que una app de una sola página funcione en cualquier ruta
 [[redirects]]
   from = "/*"

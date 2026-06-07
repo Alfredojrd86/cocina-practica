@@ -8,6 +8,7 @@ import { usePantry } from "./hooks/usePantry.js";
 import { useEnfoques } from "./hooks/useEnfoques.js";
 import { supabase, supabaseReady } from "./lib/supabase.js";
 import { suggestN, suggestPool, buildWeek, names, fmtQty } from "./lib/suggest.js";
+import { buildShareText, whatsappUrl } from "./lib/share.js";
 import { analyzeSuggestion, TIPO_INFO } from "./data/foodTypes.js";
 import { CATALOG, PANTRY_CATS, PANTRY_INFO, statusOf, qtyOf, restockAll, adjustQty, stepFor, servingFor, extractItems, itemsFromNames, splitByPantry, applyCooked, findItem, getItem, missingToCook } from "./data/pantry.js";
 import { getTemplate } from "./data/templates.js";
@@ -73,7 +74,7 @@ function PantryMatch({ sug, pantry, people }) {
   );
 }
 
-function SuggestionCard({ sug, approach, pantry, people, hidden, isOpen, onToggle, isFav, onFav, onCook }) {
+function SuggestionCard({ sug, approach, pantry, people, hidden, isOpen, onToggle, isFav, onFav, onCook, onShare }) {
   const { badges } = analyzeSuggestion(sug.pasos, approach);
   const miss = missingToCook(sug, pantry, people, hidden);
   return (
@@ -101,6 +102,9 @@ function SuggestionCard({ sug, approach, pantry, people, hidden, isOpen, onToggl
           </div>
           <button className="cm-cooked" disabled={miss.length > 0} onClick={(e) => { e.stopPropagation(); if (!miss.length) onCook(sug); }}>
             {miss.length ? `Te falta: ${miss.map((i) => i.label).join(", ")}` : "🍳 Lo cociné — descontar de mi despensa"}
+          </button>
+          <button className="cm-share" onClick={(e) => { e.stopPropagation(); onShare(sug); }}>
+            📤 Compartir receta
           </button>
         </>
       )}
@@ -340,8 +344,13 @@ export default function App() {
     else showToast("★ Guardado en favoritos", "ok");
   };
   const removeFavWithToast = async (titulo) => {
+    const prev = favs.find((f) => f.titulo === titulo); // para poder deshacer
     const r = await removeFav(titulo);
-    showToast(session && r.error ? "Quitado local · no sincronizó" : "Quitado de favoritos", "rm");
+    const msg = session && r.error ? "Quitado local · no sincronizó" : "Quitado de favoritos";
+    const undo = prev
+      ? { label: "Deshacer", fn: () => { addFav(prev); showToast("★ Restaurado en favoritos", "ok"); } }
+      : null;
+    showToast(msg, "rm", undo);
   };
   // Abrir escáner solo con sesión (feature para registrados).
   const openScanner = () => {
@@ -386,9 +395,31 @@ export default function App() {
     const miss = missingToCook(sug, pantry, people, hidden);
     if (miss.length) { showToast(`Te falta: ${miss.map((i) => i.label).join(", ")}`, "rm"); return; }
     buzz(18);
+    const prevPantry = pantry; // snapshot para deshacer
     setPantry(applyCooked(items, pantry, people));
     const resumen = used.slice(0, 3).map((it) => `${servingFor(it, people)} ${it.unit} ${it.label.toLowerCase()}`).join(", ");
-    showToast(`🍳 Desconté ${resumen}${used.length > 3 ? "…" : ""}`, "ok");
+    showToast(`🍳 Desconté ${resumen}${used.length > 3 ? "…" : ""}`, "ok", {
+      label: "Deshacer",
+      fn: () => { setPantry(prevPantry); showToast("↩️ Despensa restaurada", "ok"); },
+    });
+  };
+
+  // Compartir receta: usa el menú nativo (navigator.share) si existe;
+  // si no, copia al portapapeles y ofrece abrir WhatsApp.
+  const onShare = async (sug) => {
+    const text = buildShareText(sug);
+    buzz(12);
+    if (navigator.share) {
+      try { await navigator.share({ title: sug.titulo, text }); return; }
+      catch (e) { if (e && e.name === "AbortError") return; } // usuario canceló
+    }
+    const waOpen = () => window.open(whatsappUrl(text), "_blank", "noopener");
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast("📋 Receta copiada", "ok", { label: "WhatsApp", fn: waOpen });
+    } catch {
+      waOpen();
+    }
   };
 
   const sendMagicLink = async () => {
@@ -538,6 +569,13 @@ export default function App() {
 
   return (
     <div className="cm-root"><div className="cm-app">
+      {/* Filtro SVG para los bordes rasgados de las tarjetas (no afecta el texto). */}
+      <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true" focusable="false">
+        <filter id="torn-edge">
+          <feTurbulence type="fractalNoise" baseFrequency="0.012 0.016" numOctaves="2" seed="7" result="noise" />
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="4" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+      </svg>
       <div className="cm-topbar">
         <span className="cm-brand" onClick={() => setTab("inicio")}>¿Qué <em>comemos</em>?</span>
         <div className="cm-topbar-actions">
@@ -678,7 +716,7 @@ export default function App() {
               {sugs.map((s, k) => (
                 <SuggestionCard key={s.titulo + k} sug={s} approach={baseOf(approach)} pantry={pantry} people={people} hidden={hidden}
                   isOpen={!!openSug[s.titulo + k]} onToggle={() => toggleSug(s.titulo + k)}
-                  isFav={isFav(s)} onFav={() => toggleFav(s)} onCook={onCook} />
+                  isFav={isFav(s)} onFav={() => toggleFav(s)} onCook={onCook} onShare={onShare} />
               ))}
             </div>
           ) : (
@@ -708,7 +746,7 @@ export default function App() {
               {favs.map((s, k) => (
                 <SuggestionCard key={favKey(s) + k} sug={s} approach={baseOf(s.approach)} pantry={pantry} people={people} hidden={hidden}
                   isOpen={!!openSug["fav" + favKey(s)]} onToggle={() => toggleSug("fav" + favKey(s))}
-                  isFav={true} onFav={() => toggleFav(s)} onCook={onCook} />
+                  isFav={true} onFav={() => toggleFav(s)} onCook={onCook} onShare={onShare} />
               ))}
             </div>
           )}

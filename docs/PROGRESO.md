@@ -1,7 +1,7 @@
 # Progreso del proyecto
 
 > Dónde estamos, qué está hecho y qué sigue. Actualizar al cerrar cada sesión de trabajo.
-> Última actualización: 2026-06-06
+> Última actualización: 2026-06-07
 
 ## Estado actual
 
@@ -59,26 +59,33 @@ flowchart LR
 - [x] Login Google (Supabase Auth)
 - [x] Favoritos y despensa sincronizados (RLS por usuario)
 
+**UX**
+- [x] **Undo** al quitar favorito y al "Lo cociné" (toast "Deshacer", 4s)
+- [x] Compartir receta: `navigator.share` nativo + fallback copiar/WhatsApp
+
 **Diseño**
 - [x] Tema único "recetario vintage" centralizado en `src/theme.js`
 - [x] Fondo de hoja con renglones, tarjetas tipo nota (cinta), texto manuscrito
 - [x] Boleta blanca tipo factura; FAB sello; chip enfoque etiqueta
+- [x] Bordes rasgados (papel arrancado) en cards de receta: filtro SVG sobre `::before` (texto nítido)
 
 **Docs**
 - [x] README, `.env.example`, `supabase/schema.sql`, diagramas (`docs/`)
+- [x] `docs/PLAN.md`: roadmap de features en ramas `feat/*` por fases
+
+**Tests / calidad**
+- [x] Vitest configurado (`npm test`); 76 tests del core
+- [x] Tests de `suggest`, `foodTypes`, `pantry`, `diets`
+- [x] Flujo Git: rama `dev` + `feat/*`, branch deploys Netlify
 
 ## Pendiente / ideas 💡
 
-- [ ] **Undo** al quitar favorito / al "Lo cociné"
 - [ ] Macros aproximadas por plato (proteína/grasa/carbo)
-- [ ] Compartir receta (link / WhatsApp)
 - [ ] Semana que combine enfoques
 - [ ] Historial "lo más cocinado" + priorizar en sugerencias
 - [ ] Caché de productos escaneados (que salgan sin re-consultar)
 - [ ] Contribuir productos a Open Food Facts desde la app
 - [ ] SMTP propio (Resend/Brevo) para reactivar magic-link por email
-- [ ] Bordes rasgados reales en cards (filtro SVG)
-- [ ] Tests del core (`suggest`, `foodTypes`, `pantry`, `diets`)
 
 ## Decisiones clave (por qué)
 
