@@ -157,6 +157,14 @@ export function itemsFromNames(names) {
   return [...found.values()];
 }
 
+// Ingredientes (del catálogo, sin condimentos) que faltan para cocinar una sugerencia:
+// los que no están en tu despensa (ocultos) o no tienen cantidad suficiente para 1 porción × personas.
+export function missingToCook(sug, pantry, people, hidden) {
+  const hiddenSet = new Set(hidden || []);
+  const items = (sug.ingredientes && sug.ingredientes.length ? itemsFromNames(sug.ingredientes) : extractItems(sug)).filter((it) => !it.condiment);
+  return items.filter((it) => hiddenSet.has(it.key) || qtyOf(it.key, pantry, people) < servingFor(it, people) - 0.0001);
+}
+
 // Separa ítems en los que tienes (tengo/poco) y los que faltan (agotado). Ignora condimentos en "falta".
 export function splitByPantry(items, pantry, people) {
   const have = [], missing = [];

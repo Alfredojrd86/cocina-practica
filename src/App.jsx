@@ -9,7 +9,7 @@ import { useEnfoques } from "./hooks/useEnfoques.js";
 import { supabase, supabaseReady } from "./lib/supabase.js";
 import { suggestN, buildWeek, names, fmtQty } from "./lib/suggest.js";
 import { analyzeSuggestion, TIPO_INFO } from "./data/foodTypes.js";
-import { CATALOG, PANTRY_CATS, PANTRY_INFO, statusOf, qtyOf, restockAll, adjustQty, stepFor, servingFor, extractItems, itemsFromNames, splitByPantry, applyCooked, findItem, getItem } from "./data/pantry.js";
+import { CATALOG, PANTRY_CATS, PANTRY_INFO, statusOf, qtyOf, restockAll, adjustQty, stepFor, servingFor, extractItems, itemsFromNames, splitByPantry, applyCooked, findItem, getItem, missingToCook } from "./data/pantry.js";
 import { getTemplate } from "./data/templates.js";
 // Carga el escáner; si el chunk falla (service worker viejo tras deploy), recarga una vez.
 const importScanner = () => import("./Scanner.jsx").catch((e) => {
@@ -72,8 +72,9 @@ function PantryMatch({ sug, pantry, people }) {
   );
 }
 
-function SuggestionCard({ sug, approach, pantry, people, isOpen, onToggle, isFav, onFav, onCook }) {
+function SuggestionCard({ sug, approach, pantry, people, hidden, isOpen, onToggle, isFav, onFav, onCook }) {
   const { badges } = analyzeSuggestion(sug.pasos, approach);
+  const miss = missingToCook(sug, pantry, people, hidden);
   return (
     <div className={"cm-sug" + (isOpen ? " open" : "")} onClick={onToggle}>
       <div className="cm-sug-top">
@@ -96,7 +97,9 @@ function SuggestionCard({ sug, approach, pantry, people, isOpen, onToggle, isFav
           <div className="cm-sug-steps">
             {sug.pasos.map((s, k) => (<div key={k} className="st"><b>{s.n}:</b> {s.p}</div>))}
           </div>
-          <button className="cm-cooked" onClick={(e) => { e.stopPropagation(); onCook(sug); }}>🍳 Lo cociné — descontar de mi despensa</button>
+          <button className="cm-cooked" disabled={miss.length > 0} onClick={(e) => { e.stopPropagation(); if (!miss.length) onCook(sug); }}>
+            {miss.length ? `Te falta: ${miss.map((i) => i.label).join(", ")}` : "🍳 Lo cociné — descontar de mi despensa"}
+          </button>
         </>
       )}
     </div>
@@ -311,6 +314,8 @@ export default function App() {
     const items = sug.ingredientes && sug.ingredientes.length ? itemsFromNames(sug.ingredientes) : extractItems(sug);
     const used = items.filter((it) => !it.condiment);
     if (!used.length) { showToast("No detecté ingredientes para descontar", "rm"); return; }
+    const miss = missingToCook(sug, pantry, people, hidden);
+    if (miss.length) { showToast(`Te falta: ${miss.map((i) => i.label).join(", ")}`, "rm"); return; }
     buzz(18);
     setPantry(applyCooked(items, pantry, people));
     const resumen = used.slice(0, 3).map((it) => `${servingFor(it, people)} ${it.unit} ${it.label.toLowerCase()}`).join(", ");
@@ -554,7 +559,7 @@ export default function App() {
           ) : sugs && sugs.length ? (
             <div className="cm-cards">
               {sugs.map((s, k) => (
-                <SuggestionCard key={s.titulo + k} sug={s} approach={baseOf(approach)} pantry={pantry} people={people}
+                <SuggestionCard key={s.titulo + k} sug={s} approach={baseOf(approach)} pantry={pantry} people={people} hidden={hidden}
                   isOpen={!!openSug[s.titulo + k]} onToggle={() => toggleSug(s.titulo + k)}
                   isFav={isFav(s)} onFav={() => toggleFav(s)} onCook={onCook} />
               ))}
@@ -620,7 +625,11 @@ export default function App() {
                   <div className="cm-sug-steps">
                     {s.pasos.map((p, i) => (<div key={i} className="st"><b>{p.n}:</b> {p.p}</div>))}
                   </div>
-                  <button className="cm-cooked" onClick={() => onCook(s)}>🍳 Lo cociné — descontar de mi despensa</button>
+                  {(() => { const miss = missingToCook(s, pantry, people, hidden); return (
+                    <button className="cm-cooked" disabled={miss.length > 0} onClick={() => onCook(s)}>
+                      {miss.length ? `Te falta: ${miss.map((i) => i.label).join(", ")}` : "🍳 Lo cociné — descontar de mi despensa"}
+                    </button>
+                  ); })()}
                 </div>
               ))}
             </div>
