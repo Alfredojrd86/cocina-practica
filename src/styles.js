@@ -443,6 +443,34 @@ ${rootVars}
 .cm-shop-cat-h, .cm-acc-h .t{ font-family:var(--font-head); font-size:19px; }
 .cm-brand{ font-family:var(--font-head); }
 .cm-tab{ font-family:var(--font-head); font-size:13.5px; font-weight:700; gap:1px; }
+
+/* ===== Todo a mano (excepto la boleta de Compras y los números) ===== */
+.cm-roll, .cm-outline, .cm-auth-send, .cm-add-btn, .cm-auth-out,
+.cm-pill, .cm-mini, .cm-opts-toggle, .cm-enfchip,
+.cm-toggle .lbl, .cm-opts .lbl,
+.cm-hint, .cm-nudge, .cm-toast, .cm-empty,
+.cm-pantry-name, .cm-pantry-match .pm-line, .cm-badge,
+.cm-fav-meta, .cm-auth-mail, .cm-link, .cm-theme-toggle,
+.cm-scan-hint, .cm-scan-err{
+  font-family:var(--font-head);
+}
+.cm-roll{ font-size:22px; }
+.cm-outline{ font-size:19px; }
+.cm-pill{ font-size:17px; }
+.cm-mini{ text-transform:none; letter-spacing:0; font-size:15px; }
+.cm-toggle .lbl, .cm-opts .lbl{ font-size:16px; }
+.cm-opts-toggle, .cm-enfchip{ font-size:16px; }
+.cm-hint{ font-style:normal; font-size:14px; }
+.cm-nudge, .cm-toast, .cm-fav-meta, .cm-auth-mail{ font-size:16px; }
+.cm-empty{ font-size:18px; }
+.cm-pantry-name{ font-size:17px; }
+.cm-pantry-match .pm-line{ font-size:15px; }
+.cm-badge{ font-size:14px; }
+/* Números/datos siempre legibles (no manuscrita) */
+.cm-qty-val{ font-family:var(--font-body); }
+.cm-pantry-cond{ font-family:var(--font-body); }
+/* La boleta de Compras conserva su fuente de factura */
+.cm-receipt .cm-pill{ font-family:var(--font-body); }
 .cm-scan-reasons{ margin:0 0 10px; padding-left:18px; }
 .cm-scan-reasons li{ font-size:13.5px; color:var(--ink); line-height:1.5; }
 .cm-scan-nutri{ font-size:12.5px; color:var(--muted); margin:0 0 14px; }
