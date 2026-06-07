@@ -38,6 +38,11 @@ flowchart LR
 - [x] Plantillas de alimentos por enfoque (`templates.js`, DB-ready vía `getTemplate`)
 - [x] Onboarding: "lista sugerida vs armar la mía" + botón "Cargar sugeridos" en Compras
 - [x] **Enfoques propios** (crear/usar/borrar, sincronizados en Supabase, heredan un base)
+- [x] Crear enfoque: agregar alimentos con **validación saludable** (lista + IA Groq, con razón)
+- [x] "Cocinar con lo que tengo" orientado a la **despensa** (todos los enfoques), no al enfoque
+- [x] "Lo cociné" **bloqueado si faltan** ingredientes (no descuenta); cocinabilidad visible en cards (cinta + chip)
+- [x] Favoritos usan el mismo diseño que Ahora (plegado + indicador)
+- [x] **Login desde la barra superior** (chip de cuenta); acciones que piden sesión abren la hoja en sitio
 
 **IA**
 - [x] Sugerencias con Groq (texto) vía Netlify Function

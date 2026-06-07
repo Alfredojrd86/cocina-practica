@@ -38,7 +38,8 @@ vintage escrito a mano.
 - **Despensa** por cantidades reales (kg/unid/latas), estado Tengo/Poco/Agotado derivado del stock, "Lo cociné" descuenta porción × personas.
 - **Compras**: lista editable (boleta), agregar/quitar ingredientes, cargar a despensa.
 - **Escáner de productos** (código de barras → Open Food Facts; o foto de etiqueta → IA visión) con veredicto según el enfoque.
-- **Favoritos y despensa sincronizados** entre dispositivos (Supabase + login Google).
+- **Coherencia despensa↔comida**: "Cocinar con lo que tengo" se orienta por tu despensa; "Lo cociné" se bloquea si faltan ingredientes y muestra la cocinabilidad en cada card.
+- **Favoritos, despensa y enfoques sincronizados** entre dispositivos (Supabase + login Google, accesible desde la barra superior).
 - **PWA**: instalable y offline (el contenido local funciona sin red).
 
 ## Stack
@@ -92,6 +93,7 @@ src/
     shopping.js        # Frutas (guía) e ingredientes base
     diets.js           # Motor de reglas del escáner (veredicto por enfoque)
     templates.js       # Alimentos sugeridos por enfoque (getTemplate, DB-ready)
+    health.js          # checkHealthy: valida alimento saludable (lista local)
   hooks/
     useLocalStorage.js # Estado persistente
     useFavorites.js    # Favoritos offline + sync Supabase
@@ -104,6 +106,7 @@ src/
 netlify/functions/
   sugerir.js           # Proxy a Groq (texto) + auth + rate limit
   etiqueta.js          # Proxy a Groq (visión) + auth + rate limit
+  salud.js             # Valida alimento saludable con Groq + auth + rate limit
 supabase/
   schema.sql           # Tablas, RLS y RPC (versionado)
 netlify.toml           # Build, Node 20, carpeta de functions, redirects SPA
