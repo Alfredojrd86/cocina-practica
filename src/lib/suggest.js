@@ -62,6 +62,25 @@ export function suggestN(approach, type, n = 3, { practical = false } = {}) {
   return out;
 }
 
+// Pool de sugerencias de TODOS los enfoques con recetario (para "cocinar con lo que tengo",
+// orientado por la despensa y no por el enfoque seleccionado).
+const ALL_DBS = Object.keys(DB);
+export function suggestPool(type, n = 12, { practical = false } = {}) {
+  const out = [];
+  const seen = new Set();
+  let tries = 0;
+  while (out.length < n && tries < 240) {
+    tries++;
+    const ap = ALL_DBS[Math.floor(Math.random() * ALL_DBS.length)];
+    const s = suggest(ap, type);
+    if (seen.has(s.titulo)) continue;
+    if (practical && !isPractical(s)) continue;
+    seen.add(s.titulo);
+    out.push(s);
+  }
+  return out;
+}
+
 export function buildWeek(approach) {
   const d = recipesFor(approach);
   const P = shuffle(d.proteinas), C = shuffle(d.carbos), V = shuffle(d.vegetales), F = shuffle(d.grasas), B = shuffle(d.desayunos);

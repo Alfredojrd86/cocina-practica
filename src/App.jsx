@@ -7,7 +7,7 @@ import { useFavorites } from "./hooks/useFavorites.js";
 import { usePantry } from "./hooks/usePantry.js";
 import { useEnfoques } from "./hooks/useEnfoques.js";
 import { supabase, supabaseReady } from "./lib/supabase.js";
-import { suggestN, buildWeek, names, fmtQty } from "./lib/suggest.js";
+import { suggestN, suggestPool, buildWeek, names, fmtQty } from "./lib/suggest.js";
 import { analyzeSuggestion, TIPO_INFO } from "./data/foodTypes.js";
 import { CATALOG, PANTRY_CATS, PANTRY_INFO, statusOf, qtyOf, restockAll, adjustQty, stepFor, servingFor, extractItems, itemsFromNames, splitByPantry, applyCooked, findItem, getItem, missingToCook } from "./data/pantry.js";
 import { getTemplate } from "./data/templates.js";
@@ -236,13 +236,14 @@ export default function App() {
     setAiErr(null);
     setOpenSug({});
     if (cookWith) {
-      const pool = suggestN(baseOf(approach), meal, 12, { practical: quick });
+      // Orientado por la despensa: busca en TODOS los enfoques y rankea por lo que sí tienes.
+      const pool = suggestPool(meal, 20, { practical: quick });
       const ranked = pool
-        .map((s) => { const { have, missing } = splitByPantry(extractItems(s), pantry, people); return { s, miss: missing.length, have: have.length }; })
+        .map((s) => ({ s, miss: missingToCook(s, pantry, people, hidden).length, have: splitByPantry(extractItems(s), pantry, people).have.length }))
         .sort((a, b) => a.miss - b.miss || b.have - a.have)
         .slice(0, 3)
         .map((x) => x.s);
-      setSugs(ranked.length ? ranked : suggestN(baseOf(approach), meal, 3, { practical: quick }));
+      setSugs(ranked.length ? ranked : suggestPool(meal, 3, { practical: quick }));
     } else {
       setSugs(suggestN(baseOf(approach), meal, 3, { practical: quick }));
     }
@@ -255,7 +256,7 @@ export default function App() {
     try {
       const token = session?.access_token;
       const ingredients = cookWith
-        ? CATALOG.filter((c) => statusOf(c.key, pantry, people) !== "agotado").map((c) => c.label)
+        ? CATALOG.filter((c) => !hidden.includes(c.key) && qtyOf(c.key, pantry, people) > 0).map((c) => c.label)
         : INGREDIENTS;
       const r = await fetch("/.netlify/functions/sugerir", {
         method: "POST",
