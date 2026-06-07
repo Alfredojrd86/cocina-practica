@@ -109,7 +109,7 @@ function SuggestionCard({ sug, approach, pantry, people, hidden, isOpen, onToggl
 }
 
 // Formulario para crear un enfoque propio (nombre, emoji, base, alimentos sugeridos).
-function EnfoqueCreator({ onClose, onCreate }) {
+function EnfoqueCreator({ onClose, onCreate, verifyFood }) {
   const [nombre, setNombre] = useState("");
   const [emoji, setEmoji] = useState("🍴");
   const [base, setBase] = useState("balanceado");
@@ -117,14 +117,21 @@ function EnfoqueCreator({ onClose, onCreate }) {
   const [extras, setExtras] = useState([]);
   const [newFood, setNewFood] = useState("");
   const [foodMsg, setFoodMsg] = useState(null);
+  const [checking, setChecking] = useState(false);
   const changeBase = (b) => { setBase(b); setFoods(new Set(getTemplate(b).sugeridos)); };
   const toggleFood = (k) => setFoods((prev) => { const n = new Set(prev); n.has(k) ? n.delete(k) : n.add(k); return n; });
-  const addFood = () => {
+  const addFood = async () => {
     const name = newFood.trim();
-    if (!name) return;
-    const r = checkHealthy(name);
-    if (!r.ok) { setFoodMsg({ bad: true, text: `"${name}" no se puede agregar: ${r.reason}.` }); return; }
+    if (!name || checking) return;
     if (extras.some((x) => x.toLowerCase() === name.toLowerCase())) { setNewFood(""); return; }
+    // 1) lista local (instantánea)
+    const local = checkHealthy(name);
+    if (!local.ok) { setFoodMsg({ bad: true, text: `"${name}" no se puede agregar: ${local.reason}.` }); return; }
+    // 2) verificación IA (si hay)
+    setChecking(true); setFoodMsg({ bad: false, text: "Verificando…" });
+    const ai = verifyFood ? await verifyFood(name) : { ok: true };
+    setChecking(false);
+    if (!ai.ok) { setFoodMsg({ bad: true, text: `"${name}" no se puede agregar: ${ai.reason || "no es un alimento saludable"}.` }); return; }
     setExtras([...extras, name]); setNewFood(""); setFoodMsg({ bad: false, text: `✓ ${name} agregado` });
   };
   const save = () => { if (nombre.trim()) onCreate({ nombre: nombre.trim().slice(0, 30), emoji: (emoji.trim() || "🍴").slice(0, 4), base, sugeridos: [...foods], extras }); };
@@ -150,7 +157,7 @@ function EnfoqueCreator({ onClose, onCreate }) {
       <div className="cm-scan-manual" style={{ marginTop: 0 }}>
         <input className="cm-input" placeholder="Ej. coliflor, salmón…" value={newFood}
           onChange={(e) => { setNewFood(e.target.value); setFoodMsg(null); }} onKeyDown={(e) => { if (e.key === "Enter") addFood(); }} />
-        <button className="cm-auth-send" onClick={addFood}>＋</button>
+        <button className="cm-auth-send" onClick={addFood} disabled={checking}>＋</button>
       </div>
       {foodMsg && <p className="cm-hint" style={{ marginTop: 6, color: foodMsg.bad ? "var(--terra)" : "var(--green)" }}>{foodMsg.text}</p>}
       {extras.length > 0 && (
@@ -324,6 +331,23 @@ export default function App() {
   const openScanner = () => {
     if (!session) { setAcctSheet(true); showToast("Inicia sesión para escanear productos", "rm"); return; }
     setShowScanner(true);
+  };
+
+  // Verifica con IA si un alimento es saludable (si no hay sesión, no verifica y deja pasar).
+  const verifyFood = async (food) => {
+    if (!session) return { ok: true, skipped: true };
+    try {
+      const r = await fetch("/.netlify/functions/salud", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ food }),
+      });
+      const d = await r.json();
+      if (!r.ok) return { ok: true, skipped: true }; // ante error, no bloquea
+      return { ok: d.ok !== false, reason: d.reason };
+    } catch {
+      return { ok: true, skipped: true };
+    }
   };
 
   // Lee una foto de etiqueta vía la función de visión (requiere sesión).
@@ -566,6 +590,7 @@ export default function App() {
 
       {enfCreate && (
         <EnfoqueCreator
+          verifyFood={verifyFood}
           onClose={() => setEnfCreate(false)}
           onCreate={async (e) => {
             const id = await addEnfoque(e);
