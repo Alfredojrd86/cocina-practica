@@ -5,6 +5,7 @@ import { APPROACHES, APPROACH_META, CATEGORY_ICONS, MEALS, PEOPLE, DAYS } from "
 import { useLocalStorage } from "./hooks/useLocalStorage.js";
 import { useFavorites } from "./hooks/useFavorites.js";
 import { usePantry } from "./hooks/usePantry.js";
+import { useEnfoques } from "./hooks/useEnfoques.js";
 import { supabase, supabaseReady } from "./lib/supabase.js";
 import { suggestN, buildWeek, names, fmtQty } from "./lib/suggest.js";
 import { analyzeSuggestion, TIPO_INFO } from "./data/foodTypes.js";
@@ -102,6 +103,55 @@ function SuggestionCard({ sug, approach, pantry, people, isOpen, onToggle, isFav
   );
 }
 
+// Formulario para crear un enfoque propio (nombre, emoji, base, alimentos sugeridos).
+function EnfoqueCreator({ onClose, onCreate }) {
+  const [nombre, setNombre] = useState("");
+  const [emoji, setEmoji] = useState("🍴");
+  const [base, setBase] = useState("balanceado");
+  const [foods, setFoods] = useState(() => new Set(getTemplate("balanceado").sugeridos));
+  const changeBase = (b) => { setBase(b); setFoods(new Set(getTemplate(b).sugeridos)); };
+  const toggleFood = (k) => setFoods((prev) => { const n = new Set(prev); n.has(k) ? n.delete(k) : n.add(k); return n; });
+  const save = () => { if (nombre.trim()) onCreate({ nombre: nombre.trim().slice(0, 30), emoji: (emoji.trim() || "🍴").slice(0, 4), base, sugeridos: [...foods] }); };
+  return (
+    <div className="cm-scan">
+      <div className="cm-scan-top">
+        <span className="cm-scan-title">Crear mi enfoque</span>
+        <button className="cm-scan-close" onClick={onClose} aria-label="Cerrar">✕</button>
+      </div>
+      <div className="cm-rcpt-rule" />
+      <p className="cm-mini" style={{ marginTop: 6 }}>Nombre y símbolo</p>
+      <div className="cm-scan-manual" style={{ marginTop: 0 }}>
+        <input className="cm-input" style={{ width: 64, textAlign: "center" }} value={emoji} onChange={(e) => setEmoji(e.target.value)} aria-label="Emoji" />
+        <input className="cm-input" style={{ flex: 1 }} placeholder="Ej. Mi keto" value={nombre} onChange={(e) => setNombre(e.target.value)} />
+      </div>
+      <p className="cm-mini" style={{ marginTop: 14 }}>Basado en (recetas y reglas)</p>
+      <div className="cm-pills">
+        {APPROACHES.map(([id]) => (
+          <button key={id} className={"cm-pill" + (base === id ? " on" : "")} onClick={() => changeBase(id)}>{APPROACH_META[id].emoji} {APPROACH_META[id].name}</button>
+        ))}
+      </div>
+      <p className="cm-mini" style={{ marginTop: 14 }}>Alimentos sugeridos</p>
+      <div className="cm-card" style={{ marginBottom: 14 }}>
+        {PANTRY_CATS.map((cat) => (
+          <div key={cat}>
+            <p className="cm-shop-cat-h">{CATEGORY_ICONS[cat] ? CATEGORY_ICONS[cat] + " " : ""}{cat}</p>
+            {CATALOG.filter((c) => c.cat === cat).map((c) => {
+              const on = foods.has(c.key);
+              return (
+                <div key={c.key} className="cm-shop-item" onClick={() => toggleFood(c.key)}>
+                  <span className={"cm-shop-box" + (on ? " on" : "")}>{on ? "✓" : ""}</span>
+                  <span className={"cm-shop-name" + (on ? "" : " done")}>{c.label}</span>
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+      <button className="cm-roll" onClick={save} disabled={!nombre.trim()}>Crear enfoque</button>
+    </div>
+  );
+}
+
 export default function App() {
   const [tab, setTab] = useLocalStorage("cm_tab", "inicio");
   const [onboarded, setOnboarded] = useLocalStorage("cm_onboarded", false);
@@ -123,9 +173,17 @@ export default function App() {
   const [catOpen, setCatOpen] = useLocalStorage("cm_catopen", {});
   const [pantryFilter, setPantryFilter] = useState("all");
   const [enfPicker, setEnfPicker] = useState(false);
+  const [enfCreate, setEnfCreate] = useState(false);
   const [optsOpen, setOptsOpen] = useState(false);
+
+  // Resolución de enfoque (de fábrica o propio).
+  const getCustom = (id) => customEnfoques.find((e) => e.id === id);
+  const baseOf = (id) => getCustom(id)?.base || id; // built-in usado para recetas/reglas
+  const metaOf = (id) => { const c = getCustom(id); return c ? { emoji: c.emoji || "🍴", name: c.nombre, desc: "Tu enfoque" } : (APPROACH_META[id] || APPROACH_META.balanceado); };
+  const templateOf = (id) => { const c = getCustom(id); return c ? { sugeridos: c.sugeridos || [] } : getTemplate(id); };
   const { favs, add: addFav, remove: removeFav, session, syncing } = useFavorites();
   const { pantry, setPantry } = usePantry(session);
+  const { enfoques: customEnfoques, add: addEnfoque, remove: removeEnfoque } = useEnfoques(session);
   const [openSug, setOpenSug] = useState({});
   const [aiLoading, setAiLoading] = useState(false);
   const [aiErr, setAiErr] = useState(null);
@@ -166,7 +224,7 @@ export default function App() {
 
   // Al entrar a "Ahora" sin ideas, genera 3 automáticamente (pantalla nunca vacía).
   useEffect(() => {
-    if (tab === "ahora" && !sugs) setSugs(suggestN(approach, meal, 3, { practical: quick }));
+    if (tab === "ahora" && !sugs) setSugs(suggestN(baseOf(approach), meal, 3, { practical: quick }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
@@ -174,15 +232,15 @@ export default function App() {
     setAiErr(null);
     setOpenSug({});
     if (cookWith) {
-      const pool = suggestN(approach, meal, 12, { practical: quick });
+      const pool = suggestN(baseOf(approach), meal, 12, { practical: quick });
       const ranked = pool
         .map((s) => { const { have, missing } = splitByPantry(extractItems(s), pantry, people); return { s, miss: missing.length, have: have.length }; })
         .sort((a, b) => a.miss - b.miss || b.have - a.have)
         .slice(0, 3)
         .map((x) => x.s);
-      setSugs(ranked.length ? ranked : suggestN(approach, meal, 3, { practical: quick }));
+      setSugs(ranked.length ? ranked : suggestN(baseOf(approach), meal, 3, { practical: quick }));
     } else {
-      setSugs(suggestN(approach, meal, 3, { practical: quick }));
+      setSugs(suggestN(baseOf(approach), meal, 3, { practical: quick }));
     }
   };
 
@@ -198,7 +256,7 @@ export default function App() {
       const r = await fetch("/.netlify/functions/sugerir", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ approach, meal, ingredients, people, quick }),
+        body: JSON.stringify({ approach: baseOf(approach), meal, ingredients, people, quick }),
       });
       const d = await r.json();
       if (r.status === 401) { setTab("favoritos"); showToast("Inicia sesión para usar la IA", "rm"); return; }
@@ -302,7 +360,7 @@ export default function App() {
 
   // Carga los alimentos sugeridos del enfoque: muestra solo esos en compras/despensa.
   const applyTemplate = (id) => {
-    const sug = new Set(getTemplate(id).sugeridos);
+    const sug = new Set(templateOf(id).sugeridos);
     setHidden(CATALOG.filter((c) => !sug.has(c.key)).map((c) => c.key));
   };
 
@@ -409,7 +467,7 @@ export default function App() {
       <div className="cm-topbar">
         <span className="cm-brand" onClick={() => setTab("inicio")}>¿Qué <em>comemos</em>?</span>
         <button className="cm-enfchip" onClick={() => setEnfPicker(true)} aria-label="Cambiar enfoque">
-          <span className="e">{APPROACH_META[approach]?.emoji}</span>{APPROACH_META[approach]?.name}<span className="cv">▾</span>
+          <span className="e">{metaOf(approach)?.emoji}</span>{metaOf(approach)?.name}<span className="cv">▾</span>
         </button>
       </div>
 
@@ -424,17 +482,37 @@ export default function App() {
                 <span className="d">{APPROACH_META[id].desc}</span>
               </button>
             ))}
+            {customEnfoques.map((e) => (
+              <button key={e.id} className={"cm-onb-opt" + (approach === e.id ? " on" : "")} onClick={() => { setApproach(e.id); setWeek(null); setSugs(null); setEnfPicker(false); }}>
+                <span className="emo">{e.emoji || "🍴"}</span>
+                <span className="t">{e.nombre}</span>
+                <span className="d">Tu enfoque · base {APPROACH_META[e.base]?.name || e.base}</span>
+                <span className="cm-enf-del" onClick={(ev) => { ev.stopPropagation(); if (approach === e.id) setApproach("balanceado"); removeEnfoque(e.id); }}>✕</span>
+              </button>
+            ))}
+            <button className="cm-outline" style={{ marginTop: 4 }} onClick={() => { setEnfPicker(false); setEnfCreate(true); }}>➕ Crear mi enfoque</button>
           </div>
         </div>
+      )}
+
+      {enfCreate && (
+        <EnfoqueCreator
+          onClose={() => setEnfCreate(false)}
+          onCreate={async (e) => {
+            const id = await addEnfoque(e);
+            if (id) { setApproach(id); applyTemplate(id); setWeek(null); setSugs(null); showToast("✨ Enfoque creado", "ok"); }
+            setEnfCreate(false);
+          }}
+        />
       )}
 
       {tab === "inicio" && (
         <div className="cm-section" style={{ marginTop: 20 }}>
           <div className="cm-home-enfoque">
-            <span className="emo">{APPROACH_META[approach]?.emoji}</span>
+            <span className="emo">{metaOf(approach)?.emoji}</span>
             <div>
-              <div className="lbl">Enfoque: {APPROACH_META[approach]?.name}</div>
-              <div className="sub">{APPROACH_META[approach]?.desc}</div>
+              <div className="lbl">Enfoque: {metaOf(approach)?.name}</div>
+              <div className="sub">{metaOf(approach)?.desc}</div>
             </div>
           </div>
           <div className="cm-home-grid">
@@ -476,7 +554,7 @@ export default function App() {
           ) : sugs && sugs.length ? (
             <div className="cm-cards">
               {sugs.map((s, k) => (
-                <SuggestionCard key={s.titulo + k} sug={s} approach={approach} pantry={pantry} people={people}
+                <SuggestionCard key={s.titulo + k} sug={s} approach={baseOf(approach)} pantry={pantry} people={people}
                   isOpen={!!openSug[s.titulo + k]} onToggle={() => toggleSug(s.titulo + k)}
                   isFav={isFav(s)} onFav={() => toggleFav(s)} onCook={onCook} />
               ))}
@@ -538,7 +616,7 @@ export default function App() {
                     <button className="cm-fav on" aria-label="Quitar de favoritos" onClick={() => removeFavWithToast(s.titulo)}>★</button>
                   </div>
                   <p className="cm-fav-meta">{APPROACHES.find((a) => a[0] === s.approach)?.[1] || s.approach} · {s.meal}</p>
-                  <TypeFeedback sug={s} approach={s.approach} />
+                  <TypeFeedback sug={s} approach={baseOf(s.approach)} />
                   <div className="cm-sug-steps">
                     {s.pasos.map((p, i) => (<div key={i} className="st"><b>{p.n}:</b> {p.p}</div>))}
                   </div>
@@ -613,7 +691,7 @@ export default function App() {
         <div className="cm-section" style={{ marginTop: 20 }}>
           <h2 className="cm-h2">Tu semana rotada</h2>
           <p className="cm-p">7 días combinados sin repetir, desde la misma base.</p>
-          {!week && <button className="cm-roll" onClick={() => { setWeek(buildWeek(approach)); setOpen({}); }}>📋 Generar la semana</button>}
+          {!week && <button className="cm-roll" onClick={() => { setWeek(buildWeek(baseOf(approach))); setOpen({}); }}>📋 Generar la semana</button>}
           {week && (<>
             <p className="cm-hint">Toca cualquier comida para ver cómo se prepara.</p>
             {week.map((d, k) => (<div key={k} className="cm-day"><p className="cm-day-h">{d.dia}</p>
@@ -621,7 +699,7 @@ export default function App() {
               <Slot dk={k} slot="a" label="Almuerzo" prepItems={d.almuerzo} />
               <Slot dk={k} slot="c" label="Cena" prepItems={d.cena} />
             </div>))}
-            <button className="cm-outline" onClick={() => { setWeek(buildWeek(approach)); setOpen({}); }}>↻ Mezclar otra vez</button>
+            <button className="cm-outline" onClick={() => { setWeek(buildWeek(baseOf(approach))); setOpen({}); }}>↻ Mezclar otra vez</button>
           </>)}
         </div>
       )}
@@ -634,7 +712,7 @@ export default function App() {
           <div className="cm-seg" style={{ marginBottom: 14 }}>
             {PEOPLE.map(([lab, n]) => (<button key={n} className={"cm-pill" + (people === n ? " on" : "")} onClick={() => setPeople(n)}>{lab}</button>))}
           </div>
-          <button className="cm-outline" style={{ marginTop: 0 }} onClick={() => { applyTemplate(approach); showToast("✨ Lista sugerida del enfoque cargada", "ok"); }}>✨ Cargar sugeridos de {APPROACH_META[approach]?.name}</button>
+          <button className="cm-outline" style={{ marginTop: 0 }} onClick={() => { applyTemplate(approach); showToast("✨ Lista sugerida del enfoque cargada", "ok"); }}>✨ Cargar sugeridos de {metaOf(approach)?.name}</button>
           <button className="cm-roll" onClick={loadPantryFromBuy}>🧺 Cargar esta compra a mi despensa</button>
           <p className="cm-hint" style={{ marginTop: 8 }}>Sustituye el stock actual por estas cantidades.</p>
           <div className="cm-card cm-receipt" style={{ marginTop: 12 }}>
@@ -780,7 +858,7 @@ export default function App() {
           </div>
         }>
           <Suspense fallback={<div className="cm-scan"><p className="cm-scan-hint">Abriendo escáner…</p></div>}>
-            <Scanner approach={approach} onClose={() => setShowScanner(false)} onAdd={addScannedToBuy} onReadLabel={readLabel} hasSession={!!session} />
+            <Scanner approach={baseOf(approach)} onClose={() => setShowScanner(false)} onAdd={addScannedToBuy} onReadLabel={readLabel} hasSession={!!session} />
           </Suspense>
         </ScannerBoundary>
       )}

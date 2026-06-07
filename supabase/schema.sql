@@ -38,6 +38,26 @@ create policy "pantry select propio" on pantry for select using (auth.uid() = us
 create policy "pantry insert propio" on pantry for insert with check (auth.uid() = user_id);
 create policy "pantry update propio" on pantry for update using (auth.uid() = user_id);
 
+-- ============ Enfoques propios (creados por el usuario) ============
+-- Cada enfoque propio hereda recetas/reglas de un 'base' (metabolismo|animal|balanceado)
+-- y tiene su propia lista de alimentos sugeridos.
+create table if not exists enfoques (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  nombre text not null,
+  emoji text,
+  base text not null default 'balanceado',
+  sugeridos jsonb not null default '[]',
+  created_at timestamptz default now()
+);
+alter table enfoques enable row level security;
+drop policy if exists "enfoques select propio" on enfoques;
+drop policy if exists "enfoques insert propio" on enfoques;
+drop policy if exists "enfoques delete propio" on enfoques;
+create policy "enfoques select propio" on enfoques for select using (auth.uid() = user_id);
+create policy "enfoques insert propio" on enfoques for insert with check (auth.uid() = user_id);
+create policy "enfoques delete propio" on enfoques for delete using (auth.uid() = user_id);
+
 -- ============ Uso diario de IA (rate limit) ============
 -- Solo la escribe el servidor con service_role (que omite RLS). RLS activo sin políticas
 -- = los usuarios no la leen directamente.

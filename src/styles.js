@@ -478,6 +478,12 @@ html, body{ background-color:var(--cream); }
 .cm-enfchip{ background:#FCFCFA; border:1.5px dashed var(--line); border-radius:10px; transform:rotate(-1.5deg); box-shadow:1px 2px 0 rgba(57,50,42,0.18); padding:7px 14px 7px 11px; }
 .cm-enfchip::before{ content:""; width:7px; height:7px; border-radius:50%; border:1.5px solid var(--line); background:var(--cream); flex-shrink:0; }
 .cm-enfchip:active{ transform:rotate(-1.5deg) scale(.96); }
+
+/* Enfoques propios */
+.cm-onb-opt{ position:relative; }
+.cm-enf-del{ position:absolute; top:6px; right:8px; color:var(--muted); font-size:13px; padding:6px; line-height:1; }
+.cm-enf-del:active{ color:var(--terra); }
+.cm-roll:disabled{ opacity:0.5; cursor:default; box-shadow:none; }
 .cm-scan-reasons{ margin:0 0 10px; padding-left:18px; }
 .cm-scan-reasons li{ font-size:13.5px; color:var(--ink); line-height:1.5; }
 .cm-scan-nutri{ font-size:12.5px; color:var(--muted); margin:0 0 14px; }

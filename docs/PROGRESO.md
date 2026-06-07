@@ -36,6 +36,7 @@ flowchart LR
 - [x] Acordeón + filtro "Por reponer" (sin scroll infinito)
 - [x] Plantillas de alimentos por enfoque (`templates.js`, DB-ready vía `getTemplate`)
 - [x] Onboarding: "lista sugerida vs armar la mía" + botón "Cargar sugeridos" en Compras
+- [x] **Enfoques propios** (crear/usar/borrar, sincronizados en Supabase, heredan un base)
 
 **IA**
 - [x] Sugerencias con Groq (texto) vía Netlify Function
@@ -70,7 +71,6 @@ flowchart LR
 - [ ] Caché de productos escaneados (que salgan sin re-consultar)
 - [ ] Contribuir productos a Open Food Facts desde la app
 - [ ] SMTP propio (Resend/Brevo) para reactivar magic-link por email
-- [ ] Tabla `profiles` (preferencias sincronizadas)
 - [ ] Bordes rasgados reales en cards (filtro SVG)
 - [ ] Tests del core (`suggest`, `foodTypes`, `pantry`, `diets`)
 
