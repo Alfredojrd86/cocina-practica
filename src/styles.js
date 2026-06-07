@@ -466,6 +466,8 @@ html, body{ background-color:var(--cream); }
 .cm-pantry-cond{ font-family:var(--font-body); }
 /* La boleta de Compras conserva su fuente de factura */
 .cm-receipt .cm-pill{ font-family:var(--font-body); }
+/* Boleta blanca tipo ticket (sin renglones ni papel crema) */
+.cm-receipt{ background-color:#FCFCFA; background-image:none; border:1px solid #E6E0D2; box-shadow:0 8px 22px -12px rgba(57,50,42,0.45); }
 .cm-scan-reasons{ margin:0 0 10px; padding-left:18px; }
 .cm-scan-reasons li{ font-size:13.5px; color:var(--ink); line-height:1.5; }
 .cm-scan-nutri{ font-size:12.5px; color:var(--muted); margin:0 0 14px; }
