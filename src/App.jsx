@@ -242,6 +242,8 @@ export default function App() {
   const [sugs, setSugs] = useLocalStorage("cm_sugs", null);
   const [week, setWeek] = useLocalStorage("cm_week", null);
   const [weekMixed, setWeekMixed] = useLocalStorage("cm_week_mixed", false);
+  const [despensaView, setDespensaView] = useLocalStorage("cm_despensa_view", "tengo"); // "tengo" | "comprar"
+  const goDespensa = (view = "tengo") => { setDespensaView(view); setTab("despensa"); };
   const [open, setOpen] = useLocalStorage("cm_open", {});
   const [checked, setChecked] = useLocalStorage("cm_checked", {});
   const [buy, setBuy] = useLocalStorage("cm_buy", {});
@@ -283,6 +285,12 @@ export default function App() {
   const [toast, setToast] = useState(null);
   const [showScanner, setShowScanner] = useState(false);
   const toastTimer = useRef(null);
+
+  // Migración: el tab "compras" se fusionó dentro de "Despensa" (vista Comprar).
+  useEffect(() => {
+    if (tab === "compras") { setDespensaView("comprar"); setTab("despensa"); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const showToast = (msg, kind = "ok", action = null) => {
     setToast({ msg, kind, action, id: Date.now() });
@@ -605,6 +613,7 @@ export default function App() {
       <div className="cm-topbar">
         <span className="cm-brand" onClick={() => setTab("inicio")}>¿Qué <em>comemos</em>?</span>
         <div className="cm-topbar-actions">
+          <button className={"cm-iconbtn" + (tab === "favoritos" ? " on" : "")} onClick={() => setTab("favoritos")} aria-label="Tus favoritos">⭐</button>
           <button className={"cm-enfchip cm-acctchip" + (session ? " in" : "")} onClick={() => { setConfirmOut(false); setAuthMsg(null); setAcctSheet(true); }} aria-label="Tu cuenta">
             <span className="e">{session ? "✓" : "👤"}</span>{session ? "Cuenta" : "Entrar"}
           </button>
@@ -705,7 +714,7 @@ export default function App() {
             <button className="cm-home-btn" onClick={() => setTab("ahora")}><span className="ic">🍽</span><span className="t">¿Qué como?</span><span className="d">Ideas para tu próxima comida</span></button>
             <button className="cm-home-btn" onClick={() => setTab("despensa")}><span className="ic">🧺</span><span className="t">Mi despensa</span><span className="d">{agotadosLabels.length ? `${agotadosLabels.length} por reponer` : "Lo que tienes en casa"}</span></button>
             <button className="cm-home-btn" onClick={openScanner}><span className="ic">📷</span><span className="t">Escanear</span><span className="d">¿Este producto me sirve?</span></button>
-            <button className="cm-home-btn" onClick={() => setTab("compras")}><span className="ic">🛒</span><span className="t">Comprar</span><span className="d">Tu lista del mes</span></button>
+            <button className="cm-home-btn" onClick={() => goDespensa("comprar")}><span className="ic">🛒</span><span className="t">Comprar</span><span className="d">Tu lista del mes</span></button>
           </div>
         </div>
       )}
@@ -795,16 +804,17 @@ export default function App() {
         </div>
       )}
 
-      {tab === "despensa" && (
+      {tab === "despensa" && despensaView === "tengo" && (
         <div className="cm-section" style={{ marginTop: 20 }}>
+          <div className="cm-seg cm-despseg" style={{ marginBottom: 14 }}>
+            <button className={"cm-pill on"}>🧺 Tengo</button>
+            <button className="cm-pill" onClick={() => setDespensaView("comprar")}>🛒 Comprar</button>
+          </div>
           <h2 className="cm-h2">Mi despensa</h2>
           <p className="cm-p">Lo que tienes en casa. Al cocinar se descuenta solo.</p>
           <p className="cm-mini">¿Para cuántas personas?</p>
           <div className="cm-seg" style={{ marginBottom: 14 }}>
             {PEOPLE.map(([lab, n]) => (<button key={n} className={"cm-pill" + (people === n ? " on" : "")} onClick={() => setPeople(n)}>{lab}</button>))}
-          </div>
-          <div className="cm-pantry-actions">
-            <button className="cm-outline" style={{ marginTop: 0 }} onClick={() => setTab("compras")}>🛒 Editar y cargar desde mis compras</button>
           </div>
           {Object.keys(pantry).length === 0 && (
             <p className="cm-hint" style={{ marginBottom: 8 }}>Aún no cargas tu despensa. Ajusta tu compra y tócala para llenarla.</p>
@@ -879,8 +889,12 @@ export default function App() {
         </div>
       )}
 
-      {tab === "compras" && (
+      {tab === "despensa" && despensaView === "comprar" && (
         <div className="cm-section" style={{ marginTop: 20 }}>
+          <div className="cm-seg cm-despseg" style={{ marginBottom: 14 }}>
+            <button className="cm-pill" onClick={() => setDespensaView("tengo")}>🧺 Tengo</button>
+            <button className={"cm-pill on"}>🛒 Comprar</button>
+          </div>
           <h2 className="cm-h2">Lista de compras</h2>
           <p className="cm-p">Ajusta lo que vas a comprar y cárgalo a tu despensa.</p>
           <p className="cm-mini">¿Para cuántas personas?</p>
@@ -1015,15 +1029,12 @@ export default function App() {
               {PEOPLE.map(([lab, n]) => (<button key={n} className={"cm-pill" + (people === n ? " on" : "")} onClick={() => setPeople(n)}>{lab}</button>))}
             </div>
             <p className="cm-onb-p" style={{ marginTop: 18, marginBottom: 8 }}>¿Cómo quieres empezar?</p>
-            <button className="cm-roll" onClick={() => { applyTemplate(approach); setOnboarded(true); setTab("compras"); showToast("🧺 Cargué los alimentos sugeridos", "ok"); }}>Usar la lista sugerida →</button>
+            <button className="cm-roll" onClick={() => { applyTemplate(approach); setOnboarded(true); goDespensa("comprar"); showToast("🧺 Cargué los alimentos sugeridos", "ok"); }}>Usar la lista sugerida →</button>
             <button className="cm-outline" onClick={() => { setHidden([]); setOnboarded(true); setTab("inicio"); }}>Armar la mía desde cero</button>
           </div>
         </div>
       )}
 
-      {!showScanner && onboarded && (
-        <button className="cm-fab" onClick={openScanner} aria-label="Escanear producto">📷</button>
-      )}
       {showScanner && (
         <ScannerBoundary fallback={
           <div className="cm-scan">
@@ -1048,12 +1059,10 @@ export default function App() {
       )}
 
       <nav className="cm-tabs"><div className="cm-tabs-inner">
-        <button className={"cm-tab" + (tab === "inicio" ? " on" : "")} onClick={() => setTab("inicio")}><span className="ic">🏠</span>Inicio</button>
         <button className={"cm-tab" + (tab === "ahora" ? " on" : "")} onClick={() => setTab("ahora")}><span className="ic">🍽</span>Ahora</button>
-        <button className={"cm-tab" + (tab === "favoritos" ? " on" : "")} onClick={() => setTab("favoritos")}><span className="ic">⭐</span>Favoritos</button>
         <button className={"cm-tab" + (tab === "despensa" ? " on" : "")} onClick={() => setTab("despensa")}><span className="ic">🧺</span>Despensa</button>
         <button className={"cm-tab" + (tab === "semana" ? " on" : "")} onClick={() => setTab("semana")}><span className="ic">📋</span>Semana</button>
-        <button className={"cm-tab" + (tab === "compras" ? " on" : "")} onClick={() => setTab("compras")}><span className="ic">🛒</span>Compras</button>
+        <button className="cm-tab" onClick={openScanner} aria-label="Escanear o evaluar producto"><span className="ic">📷</span>Captura</button>
       </div></nav>
     </div></div>
   );
