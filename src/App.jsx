@@ -6,10 +6,12 @@ import { useLocalStorage } from "./hooks/useLocalStorage.js";
 import { useFavorites } from "./hooks/useFavorites.js";
 import { usePantry } from "./hooks/usePantry.js";
 import { useEnfoques } from "./hooks/useEnfoques.js";
+import { useCookedHistory } from "./hooks/useCookedHistory.js";
 import { supabase, supabaseReady } from "./lib/supabase.js";
 import { suggestN, suggestPool, buildWeek, names, fmtQty } from "./lib/suggest.js";
 import { buildShareText, whatsappUrl } from "./lib/share.js";
 import { macrosForSuggestion } from "./data/macros.js";
+import { prioritize } from "./lib/history.js";
 import { analyzeSuggestion, TIPO_INFO } from "./data/foodTypes.js";
 import { CATALOG, PANTRY_CATS, PANTRY_INFO, statusOf, qtyOf, restockAll, adjustQty, stepFor, servingFor, extractItems, itemsFromNames, splitByPantry, applyCooked, findItem, getItem, missingToCook } from "./data/pantry.js";
 import { getTemplate } from "./data/templates.js";
@@ -96,7 +98,10 @@ function SuggestionCard({ sug, approach, pantry, people, hidden, isOpen, onToggl
   return (
     <div className={"cm-sug" + (isOpen ? " open" : "") + (miss.length ? " miss" : " ok")} onClick={onToggle}>
       <div className="cm-sug-top">
-        <span className="cm-sug-title">{sug.titulo}</span>
+        <span className="cm-sug-title">
+          {sug.cookedCount ? <span className="cm-cooked-tag">🔁 ×{sug.cookedCount}</span> : null}
+          {sug.titulo}
+        </span>
         <button
           className={"cm-fav" + (isFav ? " on" : "")}
           aria-label={isFav ? "Quitar de favoritos" : "Guardar en favoritos"}
@@ -258,6 +263,7 @@ export default function App() {
   const templateOf = (id) => { const c = getCustom(id); return c ? { sugeridos: c.sugeridos || [] } : getTemplate(id); };
   const { favs, add: addFav, remove: removeFav, session, syncing } = useFavorites();
   const { pantry, setPantry } = usePantry(session);
+  const { history: cooked, record: recordCooked, topFor: topCookedFor } = useCookedHistory(session);
   const { enfoques: customEnfoques, add: addEnfoque, remove: removeEnfoque } = useEnfoques(session);
   const [openSug, setOpenSug] = useState({});
   const [aiLoading, setAiLoading] = useState(false);
@@ -299,7 +305,7 @@ export default function App() {
 
   // Al entrar a "Ahora" sin ideas, genera 3 automáticamente (pantalla nunca vacía).
   useEffect(() => {
-    if (tab === "ahora" && !sugs) setSugs(suggestN(baseOf(approach), meal, 3, { practical: quick }));
+    if (tab === "ahora" && !sugs) setSugs(prioritize(suggestN(baseOf(approach), meal, 3, { practical: quick }), cooked, meal));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
@@ -316,7 +322,8 @@ export default function App() {
         .map((x) => x.s);
       setSugs(ranked.length ? ranked : suggestPool(meal, 3, { practical: quick }));
     } else {
-      setSugs(suggestN(baseOf(approach), meal, 3, { practical: quick }));
+      // Antepone tu receta más cocinada de esta comida (si la cocinaste ≥2 veces).
+      setSugs(prioritize(suggestN(baseOf(approach), meal, 3, { practical: quick }), cooked, meal));
     }
   };
 
@@ -412,6 +419,7 @@ export default function App() {
     const miss = missingToCook(sug, pantry, people, hidden);
     if (miss.length) { showToast(`Te falta: ${miss.map((i) => i.label).join(", ")}`, "rm"); return; }
     buzz(18);
+    recordCooked(sug, meal, approach); // historial "lo más cocinado"
     const prevPantry = pantry; // snapshot para deshacer
     setPantry(applyCooked(items, pantry, people));
     const resumen = used.slice(0, 3).map((it) => `${servingFor(it, people)} ${it.unit} ${it.label.toLowerCase()}`).join(", ");
@@ -753,6 +761,22 @@ export default function App() {
 
       {tab === "favoritos" && (
         <div className="cm-section" style={{ marginTop: 20 }}>
+          {topCookedFor(null, 5).length > 0 && (
+            <div style={{ marginBottom: 26 }}>
+              <h2 className="cm-h2">🔁 Lo más cocinado</h2>
+              <p className="cm-p">Tus recetas más repetidas. Vuelve a cocinarlas o compártelas.</p>
+              <div className="cm-cards">
+                {topCookedFor(null, 5).map((c, k) => {
+                  const s = { ...c, cookedCount: c.count };
+                  return (
+                    <SuggestionCard key={"cooked" + c.titulo + k} sug={s} approach={baseOf(c.approach || approach)} pantry={pantry} people={people} hidden={hidden}
+                      isOpen={!!openSug["cooked" + c.titulo]} onToggle={() => toggleSug("cooked" + c.titulo)}
+                      isFav={isFav(s)} onFav={() => toggleFav(s)} onCook={onCook} onShare={onShare} />
+                  );
+                })}
+              </div>
+            </div>
+          )}
           <h2 className="cm-h2">Tus favoritos</h2>
           <p className="cm-p">{session ? "Sincronizados en tu cuenta: los ves en cualquier dispositivo." : "Guardados en este equipo. Entra (arriba) para verlos en todos tus dispositivos."}</p>
 

@@ -277,6 +277,9 @@ html, body{ background-color:var(--cream); }
 .cm-macro.c{ color:var(--terra); background:rgba(178,58,46,0.13); }
 .cm-macros-unit{ color:var(--muted); font-style:italic; }
 
+/* Etiqueta "lo más cocinado" (veces que cocinaste la receta) */
+.cm-cooked-tag{ display:inline-block; margin-right:7px; font-family:var(--font-body); font-weight:800; font-size:11px; color:var(--terra); background:rgba(178,58,46,0.12); border-radius:999px; padding:1px 8px; vertical-align:middle; }
+
 /* Skeleton de carga IA */
 .cm-skel{ background:var(--paper); border:1px solid var(--line); border-radius:18px; padding:16px; }
 .cm-skel-line{ height:13px; border-radius:7px; background:linear-gradient(90deg,var(--line) 25%,#efe7d6 37%,var(--line) 63%); background-size:400% 100%; animation:cm-shimmer 1.3s infinite; margin-bottom:10px; }
