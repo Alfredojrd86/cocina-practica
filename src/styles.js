@@ -86,6 +86,7 @@ html, body{ background-color:var(--cream); }
 
 .cm-day{ background:var(--paper); border:1px solid var(--line); border-radius:16px; padding:13px 16px; margin-bottom:10px; }
 .cm-day-h{ font-family:var(--font-serif); font-weight:600; font-size:16px; color:var(--terra); margin:0 0 6px; }
+.cm-day-enf{ float:right; font-family:var(--font-body); font-weight:700; font-size:11px; color:var(--green); background:rgba(138,154,91,0.16); border-radius:999px; padding:2px 9px; }
 .cm-slot{ display:flex; gap:10px; padding:11px 0; border-top:1px solid var(--line); cursor:pointer; align-items:flex-start; -webkit-tap-highlight-color:transparent; }
 .cm-slot:first-of-type{ border-top:none; }
 .cm-slot .sl{ font-size:11px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:var(--sage); min-width:68px; padding-top:2px; }

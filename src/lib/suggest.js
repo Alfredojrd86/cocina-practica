@@ -92,6 +92,31 @@ export function buildWeek(approach) {
   }));
 }
 
+// Enfoques de fábrica (con recetario propio o fallback) para la semana combinada.
+export const WEEK_APPROACHES = ["metabolismo", "animal", "balanceado", "keto", "mediterraneo"];
+
+// Semana que COMBINA enfoques: cada día toma un enfoque distinto (rotando), para
+// variar el estilo a lo largo de la semana. Cada día lleva su `approach`.
+export function buildWeekMixed(approaches = WEEK_APPROACHES) {
+  const aps = approaches && approaches.length ? approaches : WEEK_APPROACHES;
+  const pools = {};
+  for (const ap of aps) {
+    const d = recipesFor(ap);
+    pools[ap] = { P: shuffle(d.proteinas), C: shuffle(d.carbos || []), V: shuffle(d.vegetales), F: shuffle(d.grasas), B: shuffle(d.desayunos) };
+  }
+  return DAYS.map((day, k) => {
+    const ap = aps[k % aps.length];
+    const p = pools[ap];
+    return {
+      dia: day,
+      approach: ap,
+      desayuno: pick(p.B, k),
+      almuerzo: [pick(p.P, k), pick(p.C, k), pick(p.V, k), pick(p.F, k)].filter(Boolean),
+      cena: [pick(p.P, k + 2), pick(p.C, k + 1), pick(p.V, k + 3), pick(p.F, k + 1)].filter(Boolean),
+    };
+  });
+}
+
 export function fmtQty(base, n, unit) {
   const v = base * n;
   const s = Number.isInteger(v) ? v : v.toFixed(1);
