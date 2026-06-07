@@ -63,6 +63,7 @@ flowchart LR
 - [x] **Undo** al quitar favorito y al "Lo cociné" (toast "Deshacer", 4s)
 - [x] Compartir receta: `navigator.share` nativo + fallback copiar/WhatsApp
 - [x] Macros aproximadas por plato (P/G/C + kcal) en card abierta (`macros.js`)
+- [x] Historial "lo más cocinado" (sección en Favoritos) + priorización en sugerencias (`history.js`, `cooked` en Supabase)
 
 **Diseño**
 - [x] Tema único "recetario vintage" centralizado en `src/theme.js`
@@ -82,7 +83,6 @@ flowchart LR
 ## Pendiente / ideas 💡
 
 - [ ] Semana que combine enfoques
-- [ ] Historial "lo más cocinado" + priorizar en sugerencias
 - [ ] Caché de productos escaneados (que salgan sin re-consultar)
 - [ ] Contribuir productos a Open Food Facts desde la app
 - [ ] SMTP propio (Resend/Brevo) para reactivar magic-link por email
