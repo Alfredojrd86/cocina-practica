@@ -717,6 +717,7 @@ export default function App() {
 
           {/* Acción principal de la app */}
           <button className="cm-roll" style={{ marginTop: 16 }} onClick={() => setTab("ahora")}>🍽 ¿Qué como ahora?</button>
+          <button className="cm-outline" style={{ marginTop: 10 }} onClick={() => setTab("semana")}>📋 Planear mi semana</button>
 
           {/* Estado de un vistazo + accesos que no están en la barra */}
           <div className="cm-home-stats">
@@ -1084,9 +1085,9 @@ export default function App() {
       )}
 
       <nav className="cm-tabs"><div className="cm-tabs-inner">
+        <button className={"cm-tab" + (tab === "inicio" ? " on" : "")} onClick={() => setTab("inicio")}><span className="ic">🏠</span>Inicio</button>
         <button className={"cm-tab" + (tab === "ahora" ? " on" : "")} onClick={() => setTab("ahora")}><span className="ic">🍽</span>Ahora</button>
         <button className={"cm-tab" + (tab === "despensa" ? " on" : "")} onClick={() => setTab("despensa")}><span className="ic">🧺</span>Despensa</button>
-        <button className={"cm-tab" + (tab === "semana" ? " on" : "")} onClick={() => setTab("semana")}><span className="ic">📋</span>Semana</button>
         <button className="cm-tab" onClick={openScanner} aria-label="Escanear o evaluar producto"><span className="ic">📷</span>Captura</button>
       </div></nav>
     </div></div>
