@@ -26,6 +26,11 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // El SW nuevo toma control de inmediato y limpia cachés viejas:
+        // así los cambios se ven al reabrir, sin tener que vaciar caché a mano.
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
         // No cachear la función de IA: siempre debe ir a la red.
         navigateFallbackDenylist: [/^\/\.netlify\//],
         runtimeCaching: [
