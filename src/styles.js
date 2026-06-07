@@ -265,6 +265,8 @@ html, body{ background-color:var(--cream); }
 .cm-cooked:active{ transform:scale(.98); background:rgba(138,154,91,0.18); }
 .cm-cooked:disabled{ opacity:0.6; cursor:default; border-style:dashed; color:var(--terra); border-color:var(--terra); background:rgba(178,58,46,0.06); }
 .cm-cooked:disabled:active{ transform:none; }
+.cm-share{ width:100%; margin-top:8px; border:1.5px solid var(--ink-soft,#b9ab97); background:transparent; color:var(--ink,#39322a); border-radius:12px; min-height:42px; font-family:var(--font-body); font-weight:600; font-size:13px; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform .12s,background .12s; }
+.cm-share:active{ transform:scale(.98); background:rgba(57,50,42,0.06); }
 
 /* Skeleton de carga IA */
 .cm-skel{ background:var(--paper); border:1px solid var(--line); border-radius:18px; padding:16px; }
