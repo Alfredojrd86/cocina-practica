@@ -118,6 +118,7 @@ function EnfoqueCreator({ onClose, onCreate, verifyFood }) {
   const [newFood, setNewFood] = useState("");
   const [foodMsg, setFoodMsg] = useState(null);
   const [checking, setChecking] = useState(false);
+  const [catOpen, setCatOpen] = useState({});
   const changeBase = (b) => { setBase(b); setFoods(new Set(getTemplate(b).sugeridos)); };
   const toggleFood = (k) => setFoods((prev) => { const n = new Set(prev); n.has(k) ? n.delete(k) : n.add(k); return n; });
   const addFood = async () => {
@@ -159,7 +160,12 @@ function EnfoqueCreator({ onClose, onCreate, verifyFood }) {
           onChange={(e) => { setNewFood(e.target.value); setFoodMsg(null); }} onKeyDown={(e) => { if (e.key === "Enter") addFood(); }} />
         <button className="cm-auth-send" onClick={addFood} disabled={checking}>＋</button>
       </div>
-      {foodMsg && <p className="cm-hint" style={{ marginTop: 6, color: foodMsg.bad ? "var(--terra)" : "var(--green)" }}>{foodMsg.text}</p>}
+      {foodMsg && (
+        <div className={"cm-foodmsg " + (foodMsg.bad ? "bad" : "ok")}>
+          <span className="ic">{foodMsg.bad ? "⛔" : checking ? "⏳" : "✓"}</span>
+          <span>{foodMsg.text}</span>
+        </div>
+      )}
       {extras.length > 0 && (
         <div className="cm-hidden-list" style={{ marginTop: 8 }}>
           {extras.map((x, i) => (
@@ -169,20 +175,30 @@ function EnfoqueCreator({ onClose, onCreate, verifyFood }) {
       )}
       <p className="cm-mini" style={{ marginTop: 14 }}>Alimentos sugeridos</p>
       <div className="cm-card" style={{ marginBottom: 14 }}>
-        {PANTRY_CATS.map((cat) => (
-          <div key={cat}>
-            <p className="cm-shop-cat-h">{CATEGORY_ICONS[cat] ? CATEGORY_ICONS[cat] + " " : ""}{cat}</p>
-            {CATALOG.filter((c) => c.cat === cat).map((c) => {
-              const on = foods.has(c.key);
-              return (
-                <div key={c.key} className="cm-shop-item" onClick={() => toggleFood(c.key)}>
-                  <span className={"cm-shop-box" + (on ? " on" : "")}>{on ? "✓" : ""}</span>
-                  <span className={"cm-shop-name" + (on ? "" : " done")}>{c.label}</span>
-                </div>
-              );
-            })}
-          </div>
-        ))}
+        {PANTRY_CATS.map((cat) => {
+          const items = CATALOG.filter((c) => c.cat === cat);
+          const sel = items.filter((c) => foods.has(c.key)).length;
+          const open = !!catOpen[cat];
+          return (
+            <div key={cat}>
+              <button className="cm-acc-h" onClick={() => setCatOpen({ ...catOpen, [cat]: !open })} aria-expanded={open}>
+                <span className="ic">{CATEGORY_ICONS[cat] || "•"}</span>
+                <span className="t">{cat}</span>
+                <span className="meta">{sel}/{items.length}</span>
+                <span className="chev">{open ? "▾" : "▸"}</span>
+              </button>
+              {open && items.map((c) => {
+                const on = foods.has(c.key);
+                return (
+                  <div key={c.key} className="cm-shop-item" onClick={() => toggleFood(c.key)}>
+                    <span className={"cm-shop-box" + (on ? " on" : "")}>{on ? "✓" : ""}</span>
+                    <span className={"cm-shop-name" + (on ? "" : " done")}>{c.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
       </div>
       <button className="cm-roll" onClick={save} disabled={!nombre.trim()}>Crear enfoque</button>
     </div>

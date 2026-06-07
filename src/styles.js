@@ -497,6 +497,12 @@ html, body{ background-color:var(--cream); }
 .cm-enf-del{ position:absolute; top:6px; right:8px; color:var(--muted); font-size:13px; padding:6px; line-height:1; }
 .cm-enf-del:active{ color:var(--terra); }
 .cm-roll:disabled{ opacity:0.5; cursor:default; box-shadow:none; }
+
+/* Feedback visual al agregar alimento */
+.cm-foodmsg{ display:flex; align-items:center; gap:9px; border-radius:12px; padding:10px 13px; margin-top:8px; font-family:var(--font-head); font-size:16px; line-height:1.25; animation:cm-pop .25s both; }
+.cm-foodmsg .ic{ font-size:18px; }
+.cm-foodmsg.ok{ background:rgba(47,125,50,0.14); color:#2F7D32; border:1px solid rgba(47,125,50,0.3); }
+.cm-foodmsg.bad{ background:rgba(178,58,46,0.13); color:var(--terra); border:1px solid rgba(178,58,46,0.35); }
 .cm-scan-reasons{ margin:0 0 10px; padding-left:18px; }
 .cm-scan-reasons li{ font-size:13.5px; color:var(--ink); line-height:1.5; }
 .cm-scan-nutri{ font-size:12.5px; color:var(--muted); margin:0 0 14px; }
