@@ -340,8 +340,13 @@ export default function App() {
     else showToast("★ Guardado en favoritos", "ok");
   };
   const removeFavWithToast = async (titulo) => {
+    const prev = favs.find((f) => f.titulo === titulo); // para poder deshacer
     const r = await removeFav(titulo);
-    showToast(session && r.error ? "Quitado local · no sincronizó" : "Quitado de favoritos", "rm");
+    const msg = session && r.error ? "Quitado local · no sincronizó" : "Quitado de favoritos";
+    const undo = prev
+      ? { label: "Deshacer", fn: () => { addFav(prev); showToast("★ Restaurado en favoritos", "ok"); } }
+      : null;
+    showToast(msg, "rm", undo);
   };
   // Abrir escáner solo con sesión (feature para registrados).
   const openScanner = () => {
@@ -386,9 +391,13 @@ export default function App() {
     const miss = missingToCook(sug, pantry, people, hidden);
     if (miss.length) { showToast(`Te falta: ${miss.map((i) => i.label).join(", ")}`, "rm"); return; }
     buzz(18);
+    const prevPantry = pantry; // snapshot para deshacer
     setPantry(applyCooked(items, pantry, people));
     const resumen = used.slice(0, 3).map((it) => `${servingFor(it, people)} ${it.unit} ${it.label.toLowerCase()}`).join(", ");
-    showToast(`🍳 Desconté ${resumen}${used.length > 3 ? "…" : ""}`, "ok");
+    showToast(`🍳 Desconté ${resumen}${used.length > 3 ? "…" : ""}`, "ok", {
+      label: "Deshacer",
+      fn: () => { setPantry(prevPantry); showToast("↩️ Despensa restaurada", "ok"); },
+    });
   };
 
   const sendMagicLink = async () => {
