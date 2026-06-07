@@ -66,6 +66,8 @@ flowchart LR
 - [x] Historial "lo más cocinado" (sección en Favoritos) + priorización en sugerencias (`history.js`, `cooked` en Supabase)
 - [x] **Navegación 4 pilares** (Inicio · Ahora · Despensa · Captura); Compras fusionado en Despensa (segment Tengo/Comprar); Semana accesible desde el dashboard; Favoritos ⭐ en topbar; sin FAB
 - [x] Topbar responsiva (marca sin wrap vía clamp; chips compactos/icon-only en pantallas angostas)
+- [x] Topbar **sticky** (siempre visible al scrollear): logo→Inicio, ⭐ favoritos, cuenta, cambiar enfoque desde cualquier pantalla
+- [x] PWA auto-update (`skipWaiting`/`clientsClaim`): los cambios se ven al reabrir, sin vaciar caché
 - [x] **Inicio rediseñado** (dashboard): enfoque tappable + hero "¿Qué como ahora?" + estado de un vistazo (despensa/favoritas/crear enfoque) + "lo que más cocinas"; sin duplicar la barra
 
 **Diseño**
