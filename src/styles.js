@@ -384,7 +384,8 @@ html, body{ background-color:var(--cream); }
 .cm-fab:active{ transform:scale(.92); }
 
 /* Overlay escáner */
-.cm-scan{ position:fixed; inset:0; z-index:80; background-color:var(--cream); background-image:var(--sheet-bg); display:flex; flex-direction:column; padding:calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 16px); overflow-y:auto; }
+.cm-scan{ position:fixed; inset:0; z-index:80; background-color:var(--cream); background-image:var(--sheet-bg); display:flex; flex-direction:column; align-items:center; padding:calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 16px); overflow-y:auto; }
+.cm-scan > *{ width:100%; max-width:620px; }
 .cm-scan-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
 .cm-scan-title{ font-family:var(--font-serif); font-weight:900; font-size:20px; color:var(--green); }
 .cm-scan-close{ border:none; background:#fff; border:1.5px solid var(--line); color:var(--muted); width:36px; height:36px; border-radius:50%; font-size:15px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
