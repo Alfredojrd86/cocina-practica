@@ -37,6 +37,12 @@ html, body{ background-color:var(--cream); }
 .cm-dots{ display:flex; align-items:center; gap:6px; margin-top:10px; }
 .cm-dot{ width:9px; height:9px; border-radius:50%; }
 .cm-dots-hint{ margin-left:auto; font-size:11px; color:var(--muted); font-style:italic; }
+.cm-cook-flag{ font-family:var(--font-body); font-size:11px; font-weight:700; border-radius:999px; padding:2px 9px; margin-left:8px; }
+.cm-cook-flag.ok{ color:#2F7D32; background:rgba(47,125,50,0.14); }
+.cm-cook-flag.miss{ color:var(--terra); background:rgba(178,58,46,0.14); }
+/* cinta según cocinabilidad */
+.cm-sug.ok::after{ background:rgba(86,106,44,0.30); border-color:rgba(86,106,44,0.5); }
+.cm-sug.miss::after{ background:rgba(178,58,46,0.22); border-color:rgba(178,58,46,0.5); }
 
 .cm-head h1{ font-family:var(--font-serif); font-weight:900; font-size:30px; line-height:1; color:var(--green); margin:0 0 9px; letter-spacing:-0.01em; }
 .cm-head h1 em{ font-style:italic; font-weight:500; color:var(--terra); }

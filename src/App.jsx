@@ -76,7 +76,7 @@ function SuggestionCard({ sug, approach, pantry, people, hidden, isOpen, onToggl
   const { badges } = analyzeSuggestion(sug.pasos, approach);
   const miss = missingToCook(sug, pantry, people, hidden);
   return (
-    <div className={"cm-sug" + (isOpen ? " open" : "")} onClick={onToggle}>
+    <div className={"cm-sug" + (isOpen ? " open" : "") + (miss.length ? " miss" : " ok")} onClick={onToggle}>
       <div className="cm-sug-top">
         <span className="cm-sug-title">{sug.titulo}</span>
         <button
@@ -88,6 +88,7 @@ function SuggestionCard({ sug, approach, pantry, people, hidden, isOpen, onToggl
       {!isOpen ? (
         <div className="cm-dots">
           {badges.slice(0, 8).map((b, k) => (<span key={k} className="cm-dot" style={{ background: TIPO_INFO[b.tipo].color }} />))}
+          <span className={"cm-cook-flag " + (miss.length ? "miss" : "ok")}>{miss.length ? "🛒 falta" : "🍳 listo"}</span>
           <span className="cm-dots-hint">ver ▾</span>
         </div>
       ) : (
