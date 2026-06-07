@@ -531,4 +531,30 @@ html, body{ background-color:var(--cream); }
 .cm-seal b{ font-size:8.5px; letter-spacing:0.5px; }
 .cm-seal span{ font-size:10.5px; letter-spacing:0.2px; padding:0 4px; }
 .cm-seal:active{ transform:scale(.94); }
+
+/* ---- Bordes rasgados (papel arrancado) en las tarjetas de receta ----
+   El filtro SVG se aplica SOLO a un borde dibujado en ::before, así el
+   texto de la tarjeta queda nítido. La línea de margen roja se mueve al
+   fondo de la tarjeta para liberar ::before. */
+@supports (filter: url(#torn-edge)) {
+  .cm-sug{
+    border-color:transparent;
+    background-image:
+      linear-gradient(rgba(178,58,46,0.35), rgba(178,58,46,0.35)),
+      repeating-linear-gradient(180deg, transparent 0 30px, rgba(120,92,48,0.17) 30px 31px);
+    background-repeat:no-repeat, repeat;
+    background-size:1.5px calc(100% - 16px), auto;
+    background-position:14px 8px, 0 0;
+  }
+  .cm-sug::before{
+    content:""; position:absolute; inset:-1px;
+    left:-1px; top:-1px; right:-1px; bottom:-1px; width:auto;
+    background:none;
+    border:1.5px solid var(--line); border-radius:8px;
+    filter:url(#torn-edge);
+    pointer-events:none; z-index:0;
+  }
+  .cm-sug.open{ border-color:transparent; }
+  .cm-sug.open::before{ border-color:var(--sage); }
+}
 `;

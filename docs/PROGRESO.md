@@ -67,6 +67,7 @@ flowchart LR
 - [x] Tema único "recetario vintage" centralizado en `src/theme.js`
 - [x] Fondo de hoja con renglones, tarjetas tipo nota (cinta), texto manuscrito
 - [x] Boleta blanca tipo factura; FAB sello; chip enfoque etiqueta
+- [x] Bordes rasgados (papel arrancado) en cards de receta: filtro SVG sobre `::before` (texto nítido)
 
 **Docs**
 - [x] README, `.env.example`, `supabase/schema.sql`, diagramas (`docs/`)
@@ -85,7 +86,6 @@ flowchart LR
 - [ ] Caché de productos escaneados (que salgan sin re-consultar)
 - [ ] Contribuir productos a Open Food Facts desde la app
 - [ ] SMTP propio (Resend/Brevo) para reactivar magic-link por email
-- [ ] Bordes rasgados reales en cards (filtro SVG)
 
 ## Decisiones clave (por qué)
 

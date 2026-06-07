@@ -569,6 +569,13 @@ export default function App() {
 
   return (
     <div className="cm-root"><div className="cm-app">
+      {/* Filtro SVG para los bordes rasgados de las tarjetas (no afecta el texto). */}
+      <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true" focusable="false">
+        <filter id="torn-edge">
+          <feTurbulence type="fractalNoise" baseFrequency="0.012 0.016" numOctaves="2" seed="7" result="noise" />
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="4" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+      </svg>
       <div className="cm-topbar">
         <span className="cm-brand" onClick={() => setTab("inicio")}>¿Qué <em>comemos</em>?</span>
         <div className="cm-topbar-actions">
