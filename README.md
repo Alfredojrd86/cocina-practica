@@ -31,7 +31,7 @@ vintage escrito a mano.
 
 ## Funcionalidades
 
-- **3 enfoques** (3x1 / Animal / Balanceado) — selector global.
+- **5 enfoques de fábrica** (3x1 / Animal / Balanceado / Keto / Mediterráneo) + **enfoques propios** que crea el usuario (nombre, emoji, base y alimentos sugeridos), sincronizados.
 - **Sugerencias**: 3 ideas con su preparación + feedback de tipo de alimento (🟢 Tipo A · 🟡 Fruta · 🟠 Tipo E).
 - **Sugerencias con IA** (Groq) — solo usuarios registrados, con límite diario por usuario.
 - **Filtros**: "Solo rápidas" y "Cocinar con lo que tengo" (prioriza tu despensa).
@@ -91,10 +91,12 @@ src/
     pantry.js          # Catálogo de ingredientes + lógica de despensa/cantidades
     shopping.js        # Frutas (guía) e ingredientes base
     diets.js           # Motor de reglas del escáner (veredicto por enfoque)
+    templates.js       # Alimentos sugeridos por enfoque (getTemplate, DB-ready)
   hooks/
     useLocalStorage.js # Estado persistente
     useFavorites.js    # Favoritos offline + sync Supabase
     usePantry.js       # Despensa offline + sync Supabase
+    useEnfoques.js     # Enfoques propios del usuario + sync Supabase
   lib/
     supabase.js        # Cliente Supabase (anon)
     suggest.js         # Generación de sugerencias / semana
@@ -148,7 +150,7 @@ Ver `.env.example`. Se configuran en **Netlify → Site configuration → Enviro
 ## Base de datos (Supabase)
 
 1. Crea un proyecto en https://supabase.com
-2. **SQL Editor** → ejecuta [`supabase/schema.sql`](supabase/schema.sql) (tablas `favorites`, `pantry`, `ai_usage`, sus políticas RLS y la función `increment_ai_usage`).
+2. **SQL Editor** → ejecuta [`supabase/schema.sql`](supabase/schema.sql) (tablas `favorites`, `pantry`, `ai_usage`, `enfoques`, sus políticas RLS y la función `increment_ai_usage`).
 3. **Authentication → Providers → Google**: habilita y pega Client ID/Secret (OAuth de Google Cloud; redirect URI = `https://<TU-REF>.supabase.co/auth/v1/callback`).
 4. **Authentication → URL Configuration**: Site URL = tu dominio Netlify.
 5. Copia **Project URL** y **anon key** a las variables de entorno. La **service_role** key va solo en Netlify.
@@ -190,8 +192,14 @@ texto manuscrito; la boleta de Compras es blanca tipo ticket (monoespaciada).
 
 - **Recetas**: `src/data/recipes.js` (`i("Nombre", "Preparación")` por enfoque).
 - **Ingredientes / despensa**: `src/data/pantry.js` (`CATALOG`: unidad, porción, base).
-- **Reglas del escáner**: `src/data/diets.js` (un objeto por enfoque; agregar uno nuevo = añadir entrada).
+- **Alimentos sugeridos por enfoque**: `src/data/templates.js`.
+- **Reglas del escáner**: `src/data/diets.js` (un objeto por enfoque).
 - **Tipos de alimento**: `src/data/foodTypes.js`.
+
+**Agregar un enfoque de fábrica** = tocar 4 lugares: `config.js` (APPROACHES + APPROACH_META),
+`templates.js` (alimentos sugeridos), `diets.js` (regla del escáner) y, si no tiene recetario
+propio, mapearlo en `lib/suggest.js` (`RECIPE_FALLBACK`). Los **enfoques propios** del usuario
+no requieren código: se crean desde la app y viven en Supabase.
 
 ## Seguridad
 

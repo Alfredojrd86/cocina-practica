@@ -41,7 +41,7 @@ flowchart TD
 ```mermaid
 flowchart LR
   UI[React PWA] -- guarda/lee --> LS[(localStorage<br/>offline-first)]
-  UI -- anon key + RLS --> SB[(Supabase<br/>favoritos · despensa)]
+  UI -- anon key + RLS --> SB[(Supabase<br/>favoritos · despensa · enfoques)]
   UI -- JWT del usuario --> FN[Netlify Functions]
   FN -- key secreta --> GROQ[(Groq IA)]
   FN -- service_role<br/>rate limit --> SB
