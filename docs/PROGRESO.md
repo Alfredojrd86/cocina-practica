@@ -84,7 +84,6 @@ flowchart LR
 - [ ] Contribuir productos a Open Food Facts desde la app
 - [ ] SMTP propio (Resend/Brevo) para reactivar magic-link por email
 - [ ] Bordes rasgados reales en cards (filtro SVG)
-- [ ] Desambiguar match "gouda" en `findItem` (empate de keyword con "queso")
 
 ## Decisiones clave (por qué)
 

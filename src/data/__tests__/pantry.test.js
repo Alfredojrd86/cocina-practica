@@ -121,10 +121,10 @@ describe("findItem (matching por keyword)", () => {
     expect(findItem("gouda en barra").key).toBe("gouda");
   });
 
-  it("empate de largo: gana el primero del catálogo (ambigüedad conocida)", () => {
-    // 'queso'(5) y 'gouda'(5) empatan -> queso está antes en CATALOG y gana.
-    // Documenta el comportamiento; ver tarea para desambiguar gouda.
-    expect(findItem("queso gouda").key).toBe("queso");
+  it("'queso gouda' matchea el item gouda (keyword compuesta gana por largo)", () => {
+    // gouda kw incluye 'queso gouda' (11) que vence a 'queso' (5).
+    expect(findItem("queso gouda").key).toBe("gouda");
+    expect(findItem("queso gouda en barra").key).toBe("gouda");
   });
   it("devuelve null si no matchea", () => {
     expect(findItem("xyz inexistente")).toBeNull();

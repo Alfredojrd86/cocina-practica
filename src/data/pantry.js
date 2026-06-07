@@ -13,7 +13,7 @@ export const CATALOG = [
   { key: "huevos", label: "Huevos", cat: "Proteínas", unit: "unid.", base: 30, serving: 2, kw: ["huevo"] },
   // Lácteos
   { key: "queso", label: "Queso llanero", cat: "Lácteos", unit: "kg", base: 1, serving: 0.05, kw: ["queso llanero", "queso blanco", "queso"] },
-  { key: "gouda", label: "Queso gouda", cat: "Lácteos", unit: "kg", base: 0.5, serving: 0.05, kw: ["gouda"] },
+  { key: "gouda", label: "Queso gouda", cat: "Lácteos", unit: "kg", base: 0.5, serving: 0.05, kw: ["queso gouda", "gouda"] },
   { key: "yogur", label: "Yogur griego", cat: "Lácteos", unit: "kg", base: 1, serving: 0.15, kw: ["yogur"] },
   { key: "leche", label: "Leche", cat: "Lácteos", unit: "L", base: 4, serving: 0.2, kw: ["leche"] },
   { key: "mantequilla", label: "Mantequilla", cat: "Lácteos", unit: "kg", base: 0.5, serving: 0.02, condiment: true, kw: ["mantequilla"] },
