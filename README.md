@@ -8,6 +8,8 @@ vintage escrito a mano.
 
 **En vivo:** https://cocina-practica.netlify.app
 
+📄 [Diagramas de flujo](docs/FLUJO.md) · 📈 [Progreso y roadmap](docs/PROGRESO.md)
+
 ---
 
 ## Tabla de contenido
