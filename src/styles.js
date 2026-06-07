@@ -438,6 +438,11 @@ ${rootVars}
 .cm-slot .sv{ font-size:16px; }
 .cm-p{ font-size:16px; font-style:normal; line-height:1.4; }
 .cm-home-btn .d, .cm-home-enfoque .sub{ font-family:var(--font-head); font-size:14px; line-height:1.3; }
+
+/* Títulos generales y etiquetas del bottombar en manuscrita */
+.cm-shop-cat-h, .cm-acc-h .t{ font-family:var(--font-head); font-size:19px; }
+.cm-brand{ font-family:var(--font-head); }
+.cm-tab{ font-family:var(--font-head); font-size:13.5px; font-weight:700; gap:1px; }
 .cm-scan-reasons{ margin:0 0 10px; padding-left:18px; }
 .cm-scan-reasons li{ font-size:13.5px; color:var(--ink); line-height:1.5; }
 .cm-scan-nutri{ font-size:12.5px; color:var(--muted); margin:0 0 14px; }
