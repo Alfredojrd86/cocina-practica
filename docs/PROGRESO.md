@@ -1,7 +1,7 @@
 # Progreso del proyecto
 
 > Dónde estamos, qué está hecho y qué sigue. Actualizar al cerrar cada sesión de trabajo.
-> Última actualización: 2026-06-06
+> Última actualización: 2026-06-07
 
 ## Estado actual
 
@@ -66,6 +66,12 @@ flowchart LR
 
 **Docs**
 - [x] README, `.env.example`, `supabase/schema.sql`, diagramas (`docs/`)
+- [x] `docs/PLAN.md`: roadmap de features en ramas `feat/*` por fases
+
+**Tests / calidad**
+- [x] Vitest configurado (`npm test`); 76 tests del core
+- [x] Tests de `suggest`, `foodTypes`, `pantry`, `diets`
+- [x] Flujo Git: rama `dev` + `feat/*`, branch deploys Netlify
 
 ## Pendiente / ideas 💡
 
@@ -78,7 +84,6 @@ flowchart LR
 - [ ] Contribuir productos a Open Food Facts desde la app
 - [ ] SMTP propio (Resend/Brevo) para reactivar magic-link por email
 - [ ] Bordes rasgados reales en cards (filtro SVG)
-- [ ] Tests del core (`suggest`, `foodTypes`, `pantry`, `diets`)
 
 ## Decisiones clave (por qué)
 
