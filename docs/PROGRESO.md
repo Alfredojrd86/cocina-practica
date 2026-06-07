@@ -27,7 +27,7 @@ flowchart LR
 - [x] Catálogo ampliado (salmón, mariscos, tuétano, verdes Tipo A, aceitunas, garbanzos)
 - [x] Feedback Tipo A/E + consejos por enfoque
 - [x] 3 sugerencias, "Solo rápidas", "Cocinar con lo que tengo"
-- [x] Semana rotada
+- [x] Semana rotada + **semana combinada** (rota los 5 enfoques por día)
 
 **Despensa / compras**
 - [x] Despensa por **cantidades reales** (kg/unid/latas), estado derivado
@@ -82,7 +82,6 @@ flowchart LR
 
 ## Pendiente / ideas 💡
 
-- [ ] Semana que combine enfoques
 - [ ] Caché de productos escaneados (que salgan sin re-consultar)
 - [ ] Contribuir productos a Open Food Facts desde la app
 - [ ] SMTP propio (Resend/Brevo) para reactivar magic-link por email

@@ -8,6 +8,8 @@ import {
   suggestN,
   suggestPool,
   buildWeek,
+  buildWeekMixed,
+  WEEK_APPROACHES,
   fmtQty,
 } from "../suggest.js";
 import { DB } from "../../data/recipes.js";
@@ -115,6 +117,35 @@ describe("buildWeek", () => {
       expect(d.almuerzo.length).toBeGreaterThan(0);
       expect(Array.isArray(d.cena)).toBe(true);
     }
+  });
+});
+
+describe("buildWeekMixed", () => {
+  it("una entrada por día con un approach de la lista", () => {
+    const w = buildWeekMixed();
+    expect(w).toHaveLength(DAYS.length);
+    for (const d of w) {
+      expect(WEEK_APPROACHES).toContain(d.approach);
+      expect(d.desayuno).toBeTruthy();
+      expect(d.almuerzo.length).toBeGreaterThan(0);
+      expect(d.cena.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("combina varios enfoques a lo largo de la semana", () => {
+    const aps = new Set(buildWeekMixed().map((d) => d.approach));
+    expect(aps.size).toBeGreaterThan(1); // no es una semana de un solo enfoque
+  });
+
+  it("rota los enfoques en orden por día", () => {
+    const w = buildWeekMixed(["animal", "balanceado"]);
+    expect(w.map((d) => d.approach)).toEqual(
+      DAYS.map((_, k) => ["animal", "balanceado"][k % 2])
+    );
+  });
+
+  it("lista vacía cae a WEEK_APPROACHES", () => {
+    expect(buildWeekMixed([])).toHaveLength(DAYS.length);
   });
 });
 

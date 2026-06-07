@@ -8,7 +8,7 @@ import { usePantry } from "./hooks/usePantry.js";
 import { useEnfoques } from "./hooks/useEnfoques.js";
 import { useCookedHistory } from "./hooks/useCookedHistory.js";
 import { supabase, supabaseReady } from "./lib/supabase.js";
-import { suggestN, suggestPool, buildWeek, names, fmtQty } from "./lib/suggest.js";
+import { suggestN, suggestPool, buildWeek, buildWeekMixed, names, fmtQty } from "./lib/suggest.js";
 import { buildShareText, whatsappUrl } from "./lib/share.js";
 import { macrosForSuggestion } from "./data/macros.js";
 import { prioritize } from "./lib/history.js";
@@ -241,6 +241,7 @@ export default function App() {
   const [cookWith, setCookWith] = useLocalStorage("cm_cookwith", false);
   const [sugs, setSugs] = useLocalStorage("cm_sugs", null);
   const [week, setWeek] = useLocalStorage("cm_week", null);
+  const [weekMixed, setWeekMixed] = useLocalStorage("cm_week_mixed", false);
   const [open, setOpen] = useLocalStorage("cm_open", {});
   const [checked, setChecked] = useLocalStorage("cm_checked", {});
   const [buy, setBuy] = useLocalStorage("cm_buy", {});
@@ -856,17 +857,24 @@ export default function App() {
 
       {tab === "semana" && (
         <div className="cm-section" style={{ marginTop: 20 }}>
-          <h2 className="cm-h2">Tu semana rotada</h2>
-          <p className="cm-p">7 días combinados sin repetir, desde la misma base.</p>
-          {!week && <button className="cm-roll" onClick={() => { setWeek(buildWeek(baseOf(approach))); setOpen({}); }}>📋 Generar la semana</button>}
+          <h2 className="cm-h2">Tu semana</h2>
+          <p className="cm-p">{weekMixed ? "7 días combinando varios enfoques." : "7 días sin repetir, desde tu enfoque actual."}</p>
+          {!week && (
+            <>
+              <button className="cm-roll" onClick={() => { setWeek(buildWeek(baseOf(approach))); setWeekMixed(false); setOpen({}); }}>📋 Semana de {metaOf(approach)?.name}</button>
+              <button className="cm-outline" onClick={() => { setWeek(buildWeekMixed()); setWeekMixed(true); setOpen({}); }}>🎲 Combinar enfoques</button>
+            </>
+          )}
           {week && (<>
             <p className="cm-hint">Toca cualquier comida para ver cómo se prepara.</p>
-            {week.map((d, k) => (<div key={k} className="cm-day"><p className="cm-day-h">{d.dia}</p>
+            {week.map((d, k) => (<div key={k} className="cm-day">
+              <p className="cm-day-h">{d.dia}{weekMixed && d.approach ? <span className="cm-day-enf">{APPROACH_META[d.approach]?.emoji} {APPROACH_META[d.approach]?.name}</span> : null}</p>
               <Slot dk={k} slot="d" label="Desayuno" prepItems={[d.desayuno]} />
               <Slot dk={k} slot="a" label="Almuerzo" prepItems={d.almuerzo} />
               <Slot dk={k} slot="c" label="Cena" prepItems={d.cena} />
             </div>))}
-            <button className="cm-outline" onClick={() => { setWeek(buildWeek(baseOf(approach))); setOpen({}); }}>↻ Mezclar otra vez</button>
+            <button className="cm-outline" onClick={() => { setWeek(weekMixed ? buildWeekMixed() : buildWeek(baseOf(approach))); setOpen({}); }}>↻ Mezclar otra vez</button>
+            <button className="cm-outline" onClick={() => { setWeek(weekMixed ? buildWeek(baseOf(approach)) : buildWeekMixed()); setWeekMixed(!weekMixed); setOpen({}); }}>{weekMixed ? `📋 Cambiar a semana de ${metaOf(approach)?.name}` : "🎲 Cambiar a combinada"}</button>
           </>)}
         </div>
       )}
