@@ -369,6 +369,21 @@ html, body{ background-color:var(--cream); }
 .cm-home-btn .ic{ font-size:30px; line-height:1; }
 .cm-home-btn .t{ font-family:var(--font-head); font-weight:700; font-size:22px; color:var(--green); }
 .cm-home-btn .d{ font-size:11.5px; color:var(--muted); line-height:1.35; }
+/* Inicio rediseñado: enfoque tappable + acción principal + estado de un vistazo */
+.cm-home-enfoque-btn{ width:100%; cursor:pointer; text-align:left; -webkit-tap-highlight-color:transparent; transition:transform .12s; }
+.cm-home-enfoque-btn .txt{ flex:1; min-width:0; }
+.cm-home-enfoque-btn .chev{ flex-shrink:0; font-family:var(--font-body); font-weight:700; font-size:12px; color:var(--terra); }
+.cm-home-enfoque-btn:active{ transform:scale(.98); }
+.cm-home-stats{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:14px; }
+.cm-home-stat{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:14px 6px; cursor:pointer; min-height:78px; box-shadow:0 12px 26px -24px rgba(47,61,46,0.5); -webkit-tap-highlight-color:transparent; transition:transform .12s; }
+.cm-home-stat:active{ transform:scale(.96); }
+.cm-home-stat .n{ font-family:var(--font-head); font-weight:700; font-size:21px; color:var(--green); line-height:1; }
+.cm-home-stat .l{ font-size:11px; color:var(--muted); text-align:center; line-height:1.2; }
+.cm-home-stat.warn .n{ color:var(--terra); }
+.cm-home-lastcook{ display:flex; align-items:center; gap:9px; width:100%; text-align:left; margin-top:14px; background:rgba(138,154,91,0.10); border:1px solid var(--line); border-radius:14px; padding:12px 14px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.cm-home-lastcook .ic{ font-size:18px; }
+.cm-home-lastcook .txt{ font-size:13px; color:var(--ink); line-height:1.35; }
+.cm-home-lastcook b{ color:var(--green); }
 
 /* Onboarding */
 .cm-onb{ position:fixed; inset:0; z-index:90; background-color:var(--cream); background-image:var(--sheet-bg); display:flex; align-items:center; justify-content:center; padding:24px 16px calc(env(safe-area-inset-bottom) + 16px); overflow-y:auto; }
