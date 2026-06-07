@@ -2,8 +2,9 @@
 // Heurística local (sin red): lista de no-saludables con su razón. Escalable: agregar reglas aquí.
 
 const RULES = [
-  { reason: "es un dulce / tiene azúcar añadida", kw: ["azúcar", "azucar", "caramelo", "golosina", "chocolate", "chocolatina", "bombón", "bombon", "dulce de leche", "manjar", "mermelada", "jarabe", "sirope", "nutella", "chicle"] },
-  { reason: "es ultraprocesado / snack", kw: ["galleta", "dona", "donut", "ponqué", "ponque", "torta", "pastel", "queque", "brownie", "cereal azucarado", "papas fritas", "papitas", "snack", "doritos", "cheetos", "chetos", "nachos", "chips", "chizitos"] },
+  { reason: "es un dulce / tiene azúcar añadida", kw: ["dulce", "azúcar", "azucar", "azucarad", "caramelo", "golosina", "chocolate", "chocolatina", "bombón", "bombon", "manjar", "mermelada", "jarabe", "sirope", "nutella", "chicle", "miel de maíz"] },
+  { reason: "es pan dulce / repostería", kw: ["pan dulce", "bizcocho", "bizcochuelo", "concha", "berlín", "berlin", "factura", "medialuna", "croissant", "brioche", "panettone", "pan de pascua", "churro", "alfajor", "wafer", "oblea", "muffin", "cupcake", "galleta dulce"] },
+  { reason: "es ultraprocesado / snack", kw: ["galleta", "dona", "donut", "ponqué", "ponque", "torta", "pastel", "queque", "brownie", "cereal", "papas fritas", "papitas", "snack", "doritos", "cheetos", "chetos", "nachos", "chips", "chizitos"] },
   { reason: "es una bebida azucarada", kw: ["refresco", "gaseosa", "soda", "coca", "pepsi", "sprite", "fanta", "jugo de caja", "bebida energ", "red bull", "monster", "frugos", "tang"] },
   { reason: "es frito / comida chatarra", kw: ["frito", "frita", "nugget", "hamburguesa", "pizza", "hot dog", "perro caliente", "salchicha", "vienesa", "embutido", "mortadela", "paté", "pate", "completo"] },
   { reason: "es una grasa/aceite no saludable (de semilla o hidrogenada)", kw: ["margarina", "manteca vegetal", "aceite de maíz", "aceite de maiz", "aceite de girasol", "aceite vegetal", "aceite de canola", "aceite de soya"] },
