@@ -8,6 +8,7 @@ import { usePantry } from "./hooks/usePantry.js";
 import { useEnfoques } from "./hooks/useEnfoques.js";
 import { supabase, supabaseReady } from "./lib/supabase.js";
 import { suggestN, suggestPool, buildWeek, names, fmtQty } from "./lib/suggest.js";
+import { buildShareText, whatsappUrl } from "./lib/share.js";
 import { analyzeSuggestion, TIPO_INFO } from "./data/foodTypes.js";
 import { CATALOG, PANTRY_CATS, PANTRY_INFO, statusOf, qtyOf, restockAll, adjustQty, stepFor, servingFor, extractItems, itemsFromNames, splitByPantry, applyCooked, findItem, getItem, missingToCook } from "./data/pantry.js";
 import { getTemplate } from "./data/templates.js";
@@ -73,7 +74,7 @@ function PantryMatch({ sug, pantry, people }) {
   );
 }
 
-function SuggestionCard({ sug, approach, pantry, people, hidden, isOpen, onToggle, isFav, onFav, onCook }) {
+function SuggestionCard({ sug, approach, pantry, people, hidden, isOpen, onToggle, isFav, onFav, onCook, onShare }) {
   const { badges } = analyzeSuggestion(sug.pasos, approach);
   const miss = missingToCook(sug, pantry, people, hidden);
   return (
@@ -101,6 +102,9 @@ function SuggestionCard({ sug, approach, pantry, people, hidden, isOpen, onToggl
           </div>
           <button className="cm-cooked" disabled={miss.length > 0} onClick={(e) => { e.stopPropagation(); if (!miss.length) onCook(sug); }}>
             {miss.length ? `Te falta: ${miss.map((i) => i.label).join(", ")}` : "🍳 Lo cociné — descontar de mi despensa"}
+          </button>
+          <button className="cm-share" onClick={(e) => { e.stopPropagation(); onShare(sug); }}>
+            📤 Compartir receta
           </button>
         </>
       )}
@@ -400,6 +404,24 @@ export default function App() {
     });
   };
 
+  // Compartir receta: usa el menú nativo (navigator.share) si existe;
+  // si no, copia al portapapeles y ofrece abrir WhatsApp.
+  const onShare = async (sug) => {
+    const text = buildShareText(sug);
+    buzz(12);
+    if (navigator.share) {
+      try { await navigator.share({ title: sug.titulo, text }); return; }
+      catch (e) { if (e && e.name === "AbortError") return; } // usuario canceló
+    }
+    const waOpen = () => window.open(whatsappUrl(text), "_blank", "noopener");
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast("📋 Receta copiada", "ok", { label: "WhatsApp", fn: waOpen });
+    } catch {
+      waOpen();
+    }
+  };
+
   const sendMagicLink = async () => {
     setAuthMsg(null);
     if (!supabaseReady) { setAuthMsg("Sync no configurado (faltan variables Supabase)."); return; }
@@ -687,7 +709,7 @@ export default function App() {
               {sugs.map((s, k) => (
                 <SuggestionCard key={s.titulo + k} sug={s} approach={baseOf(approach)} pantry={pantry} people={people} hidden={hidden}
                   isOpen={!!openSug[s.titulo + k]} onToggle={() => toggleSug(s.titulo + k)}
-                  isFav={isFav(s)} onFav={() => toggleFav(s)} onCook={onCook} />
+                  isFav={isFav(s)} onFav={() => toggleFav(s)} onCook={onCook} onShare={onShare} />
               ))}
             </div>
           ) : (
@@ -717,7 +739,7 @@ export default function App() {
               {favs.map((s, k) => (
                 <SuggestionCard key={favKey(s) + k} sug={s} approach={baseOf(s.approach)} pantry={pantry} people={people} hidden={hidden}
                   isOpen={!!openSug["fav" + favKey(s)]} onToggle={() => toggleSug("fav" + favKey(s))}
-                  isFav={true} onFav={() => toggleFav(s)} onCook={onCook} />
+                  isFav={true} onFav={() => toggleFav(s)} onCook={onCook} onShare={onShare} />
               ))}
             </div>
           )}
