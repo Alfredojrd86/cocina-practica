@@ -9,6 +9,7 @@ import { supabase, supabaseReady } from "./lib/supabase.js";
 import { suggestN, buildWeek, names, fmtQty } from "./lib/suggest.js";
 import { analyzeSuggestion, TIPO_INFO } from "./data/foodTypes.js";
 import { CATALOG, PANTRY_CATS, PANTRY_INFO, statusOf, qtyOf, restockAll, adjustQty, stepFor, servingFor, extractItems, itemsFromNames, splitByPantry, applyCooked, findItem, getItem } from "./data/pantry.js";
+import { getTemplate } from "./data/templates.js";
 // Carga el escáner; si el chunk falla (service worker viejo tras deploy), recarga una vez.
 const importScanner = () => import("./Scanner.jsx").catch((e) => {
   if (!sessionStorage.getItem("cm_reload_scanner")) {
@@ -297,6 +298,12 @@ export default function App() {
     setPantry(next);
     showToast("🧺 Despensa cargada con tu compra", "ok");
     setTab("despensa");
+  };
+
+  // Carga los alimentos sugeridos del enfoque: muestra solo esos en compras/despensa.
+  const applyTemplate = (id) => {
+    const sug = new Set(getTemplate(id).sugeridos);
+    setHidden(CATALOG.filter((c) => !sug.has(c.key)).map((c) => c.key));
   };
 
   const catKey = (where, cat) => `${where}:${cat}`;
@@ -627,6 +634,7 @@ export default function App() {
           <div className="cm-seg" style={{ marginBottom: 14 }}>
             {PEOPLE.map(([lab, n]) => (<button key={n} className={"cm-pill" + (people === n ? " on" : "")} onClick={() => setPeople(n)}>{lab}</button>))}
           </div>
+          <button className="cm-outline" style={{ marginTop: 0 }} onClick={() => { applyTemplate(approach); showToast("✨ Lista sugerida del enfoque cargada", "ok"); }}>✨ Cargar sugeridos de {APPROACH_META[approach]?.name}</button>
           <button className="cm-roll" onClick={loadPantryFromBuy}>🧺 Cargar esta compra a mi despensa</button>
           <p className="cm-hint" style={{ marginTop: 8 }}>Sustituye el stock actual por estas cantidades.</p>
           <div className="cm-card cm-receipt" style={{ marginTop: 12 }}>
@@ -753,7 +761,9 @@ export default function App() {
             <div className="cm-seg">
               {PEOPLE.map(([lab, n]) => (<button key={n} className={"cm-pill" + (people === n ? " on" : "")} onClick={() => setPeople(n)}>{lab}</button>))}
             </div>
-            <button className="cm-roll" style={{ marginTop: 18 }} onClick={() => { setOnboarded(true); setTab("inicio"); }}>Empezar →</button>
+            <p className="cm-onb-p" style={{ marginTop: 18, marginBottom: 8 }}>¿Cómo quieres empezar?</p>
+            <button className="cm-roll" onClick={() => { applyTemplate(approach); setOnboarded(true); setTab("compras"); showToast("🧺 Cargué los alimentos sugeridos", "ok"); }}>Usar la lista sugerida →</button>
+            <button className="cm-outline" onClick={() => { setHidden([]); setOnboarded(true); setTab("inicio"); }}>Armar la mía desde cero</button>
           </div>
         </div>
       )}
