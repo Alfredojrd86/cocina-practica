@@ -59,6 +59,9 @@ flowchart LR
 - [x] Login Google (Supabase Auth)
 - [x] Favoritos y despensa sincronizados (RLS por usuario)
 
+**UX**
+- [x] **Undo** al quitar favorito y al "Lo cociné" (toast "Deshacer", 4s)
+
 **Diseño**
 - [x] Tema único "recetario vintage" centralizado en `src/theme.js`
 - [x] Fondo de hoja con renglones, tarjetas tipo nota (cinta), texto manuscrito
@@ -75,7 +78,6 @@ flowchart LR
 
 ## Pendiente / ideas 💡
 
-- [ ] **Undo** al quitar favorito / al "Lo cociné"
 - [ ] Macros aproximadas por plato (proteína/grasa/carbo)
 - [ ] Compartir receta (link / WhatsApp)
 - [ ] Semana que combine enfoques
