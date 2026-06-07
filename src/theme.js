@@ -37,4 +37,10 @@ export const rootVars = `:root{
   --radius:${THEME.radius}; --radius-sm:${THEME.radiusSm};
   --shadow-card:${THEME.shadowCard}; --shadow-press:${THEME.shadowPress};
   --paper-noise:${THEME.paperNoise};
+  --sheet-bg:
+    repeating-linear-gradient(180deg, transparent 0 31px, rgba(58,45,30,0.12) 31px 32px),
+    radial-gradient(ellipse at 50% 30%, transparent 62%, rgba(58,45,30,0.10) 100%),
+    radial-gradient(circle at 15% 0%, rgba(86,106,44,0.08), transparent 42%),
+    radial-gradient(circle at 88% 8%, rgba(164,56,42,0.07), transparent 40%),
+    ${THEME.paperNoise};
 }`;
