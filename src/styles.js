@@ -268,6 +268,15 @@ html, body{ background-color:var(--cream); }
 .cm-share{ width:100%; margin-top:8px; border:1.5px solid var(--ink-soft,#b9ab97); background:transparent; color:var(--ink,#39322a); border-radius:12px; min-height:42px; font-family:var(--font-body); font-weight:600; font-size:13px; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform .12s,background .12s; }
 .cm-share:active{ transform:scale(.98); background:rgba(57,50,42,0.06); }
 
+/* Macros aproximadas del plato */
+.cm-macros{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-top:10px; font-family:var(--font-body); font-size:12px; }
+.cm-macros-kcal{ font-weight:800; color:var(--green); }
+.cm-macro{ font-weight:700; border-radius:999px; padding:2px 8px; }
+.cm-macro.p{ color:#2F7D32; background:rgba(47,125,50,0.13); }
+.cm-macro.g{ color:#B8860B; background:rgba(184,134,11,0.15); }
+.cm-macro.c{ color:var(--terra); background:rgba(178,58,46,0.13); }
+.cm-macros-unit{ color:var(--muted); font-style:italic; }
+
 /* Skeleton de carga IA */
 .cm-skel{ background:var(--paper); border:1px solid var(--line); border-radius:18px; padding:16px; }
 .cm-skel-line{ height:13px; border-radius:7px; background:linear-gradient(90deg,var(--line) 25%,#efe7d6 37%,var(--line) 63%); background-size:400% 100%; animation:cm-shimmer 1.3s infinite; margin-bottom:10px; }

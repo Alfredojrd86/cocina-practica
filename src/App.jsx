@@ -9,6 +9,7 @@ import { useEnfoques } from "./hooks/useEnfoques.js";
 import { supabase, supabaseReady } from "./lib/supabase.js";
 import { suggestN, suggestPool, buildWeek, names, fmtQty } from "./lib/suggest.js";
 import { buildShareText, whatsappUrl } from "./lib/share.js";
+import { macrosForSuggestion } from "./data/macros.js";
 import { analyzeSuggestion, TIPO_INFO } from "./data/foodTypes.js";
 import { CATALOG, PANTRY_CATS, PANTRY_INFO, statusOf, qtyOf, restockAll, adjustQty, stepFor, servingFor, extractItems, itemsFromNames, splitByPantry, applyCooked, findItem, getItem, missingToCook } from "./data/pantry.js";
 import { getTemplate } from "./data/templates.js";
@@ -74,6 +75,21 @@ function PantryMatch({ sug, pantry, people }) {
   );
 }
 
+// Fila de macros aproximadas del plato (proteína / grasa / carbo + kcal).
+function MacrosRow({ sug }) {
+  const m = macrosForSuggestion(sug);
+  if (!m) return null;
+  return (
+    <div className="cm-macros" title="Estimación aproximada por porción">
+      <span className="cm-macros-kcal">≈ {m.kcal} kcal</span>
+      <span className="cm-macro p">P {m.p}</span>
+      <span className="cm-macro g">G {m.f}</span>
+      <span className="cm-macro c">C {m.c}</span>
+      <span className="cm-macros-unit">g · aprox</span>
+    </div>
+  );
+}
+
 function SuggestionCard({ sug, approach, pantry, people, hidden, isOpen, onToggle, isFav, onFav, onCook, onShare }) {
   const { badges } = analyzeSuggestion(sug.pasos, approach);
   const miss = missingToCook(sug, pantry, people, hidden);
@@ -96,6 +112,7 @@ function SuggestionCard({ sug, approach, pantry, people, hidden, isOpen, onToggl
       ) : (
         <>
           <TypeFeedback sug={sug} approach={approach} />
+          <MacrosRow sug={sug} />
           <PantryMatch sug={sug} pantry={pantry} people={people} />
           <div className="cm-sug-steps">
             {sug.pasos.map((s, k) => (<div key={k} className="st"><b>{s.n}:</b> {s.p}</div>))}

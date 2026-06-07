@@ -62,6 +62,7 @@ flowchart LR
 **UX**
 - [x] **Undo** al quitar favorito y al "Lo cociné" (toast "Deshacer", 4s)
 - [x] Compartir receta: `navigator.share` nativo + fallback copiar/WhatsApp
+- [x] Macros aproximadas por plato (P/G/C + kcal) en card abierta (`macros.js`)
 
 **Diseño**
 - [x] Tema único "recetario vintage" centralizado en `src/theme.js`
@@ -80,7 +81,6 @@ flowchart LR
 
 ## Pendiente / ideas 💡
 
-- [ ] Macros aproximadas por plato (proteína/grasa/carbo)
 - [ ] Semana que combine enfoques
 - [ ] Historial "lo más cocinado" + priorizar en sugerencias
 - [ ] Caché de productos escaneados (que salgan sin re-consultar)
