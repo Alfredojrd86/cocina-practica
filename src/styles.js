@@ -468,6 +468,16 @@ html, body{ background-color:var(--cream); }
 .cm-receipt .cm-pill{ font-family:var(--font-body); }
 /* Boleta blanca tipo ticket (sin renglones ni papel crema) */
 .cm-receipt{ background-color:#FCFCFA; background-image:none; border:1px solid #E6E0D2; box-shadow:0 8px 22px -12px rgba(57,50,42,0.45); }
+
+/* FAB cámara = sello de tinta (cuadrado redondeado, borde punteado, rotado) */
+.cm-fab{ position:fixed; border-radius:16px; transform:rotate(-3deg); box-shadow:2px 4px 0 rgba(57,50,42,0.4); }
+.cm-fab::after{ content:""; position:absolute; inset:5px; border:1.5px dashed rgba(255,255,255,0.6); border-radius:11px; pointer-events:none; }
+.cm-fab:active{ transform:rotate(-3deg) scale(.92); box-shadow:1px 2px 0 rgba(57,50,42,0.4); }
+
+/* Chip de enfoque = etiqueta de papel (tag) */
+.cm-enfchip{ background:#FCFCFA; border:1.5px dashed var(--line); border-radius:10px; transform:rotate(-1.5deg); box-shadow:1px 2px 0 rgba(57,50,42,0.18); padding:7px 14px 7px 11px; }
+.cm-enfchip::before{ content:""; width:7px; height:7px; border-radius:50%; border:1.5px solid var(--line); background:var(--cream); flex-shrink:0; }
+.cm-enfchip:active{ transform:rotate(-1.5deg) scale(.96); }
 .cm-scan-reasons{ margin:0 0 10px; padding-left:18px; }
 .cm-scan-reasons li{ font-size:13.5px; color:var(--ink); line-height:1.5; }
 .cm-scan-nutri{ font-size:12.5px; color:var(--muted); margin:0 0 14px; }
