@@ -32,9 +32,9 @@ html, body{ background-color:var(--cream); }
 .cm-enfchip{ display:inline-flex; align-items:center; gap:6px; background:#fff; border:1.5px solid var(--line); border-radius:999px; padding:7px 13px; font-family:var(--font-body); font-weight:700; font-size:13px; color:var(--green); cursor:pointer; -webkit-tap-highlight-color:transparent; }
 .cm-enfchip .e{ font-size:15px; }
 .cm-enfchip .cv{ color:var(--muted); font-size:11px; }
-.cm-iconbtn{ display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; font-size:18px; background:#fff; border:1.5px solid var(--line); border-radius:999px; cursor:pointer; -webkit-tap-highlight-color:transparent; line-height:1; }
-.cm-iconbtn.on{ border-color:var(--terra); background:rgba(178,58,46,0.10); }
-.cm-iconbtn:active{ transform:scale(0.94); }
+/* Favoritos: mismo chip que cuenta/enfoque, solo el emoji ⭐. */
+.cm-favchip{ padding-right:13px; }
+.cm-favchip.on{ border-color:var(--terra); background:rgba(178,58,46,0.10); }
 
 /* Bottom sheet (selector de enfoque) */
 .cm-sheet{ position:fixed; inset:0; z-index:85; background:rgba(42,38,32,0.4); display:flex; align-items:flex-end; justify-content:center; animation:cm-fade .2s both; }
@@ -621,7 +621,6 @@ html, body{ background-color:var(--cream); }
   .cm-brand{ font-size:clamp(16px,5.4vw,22px); }
   .cm-topbar{ gap:6px; }
   .cm-enfchip, .cm-acctchip{ padding:6px 10px; font-size:12px; }
-  .cm-iconbtn{ width:34px; height:34px; font-size:16px; }
 }
 @media (max-width:345px){
   /* Pantallas muy chicas: la cuenta también queda solo icono. */
