@@ -286,6 +286,31 @@ export default function App() {
   const [showScanner, setShowScanner] = useState(false);
   const toastTimer = useRef(null);
 
+  // --- Instalar como app (PWA) ---
+  const [deferredPrompt, setDeferredPrompt] = useState(null); // Android: evento nativo
+  const [installHelp, setInstallHelp] = useState(false); // iOS: hoja de instrucciones
+  const [installDismissed, setInstallDismissed] = useLocalStorage("cm_install_dismissed", false);
+  const isStandalone = typeof window !== "undefined" && (window.matchMedia?.("(display-mode: standalone)").matches || window.navigator.standalone === true);
+  const isIOS = typeof navigator !== "undefined" && /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+  const canInstall = !isStandalone && !installDismissed && (!!deferredPrompt || isIOS);
+  useEffect(() => {
+    const onPrompt = (e) => { e.preventDefault(); setDeferredPrompt(e); };
+    const onInstalled = () => { setDeferredPrompt(null); setInstallDismissed(true); };
+    window.addEventListener("beforeinstallprompt", onPrompt);
+    window.addEventListener("appinstalled", onInstalled);
+    return () => { window.removeEventListener("beforeinstallprompt", onPrompt); window.removeEventListener("appinstalled", onInstalled); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const doInstall = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      try { await deferredPrompt.userChoice; } catch {}
+      setDeferredPrompt(null);
+    } else if (isIOS) {
+      setInstallHelp(true);
+    }
+  };
+
   // Migración: el tab "compras" se fusionó dentro de "Despensa" (vista Comprar).
   useEffect(() => {
     if (tab === "compras") { setDespensaView("comprar"); setTab("despensa"); }
@@ -623,6 +648,20 @@ export default function App() {
         </div>
       </div>
 
+      {installHelp && (
+        <div className="cm-sheet" onClick={() => setInstallHelp(false)}>
+          <div className="cm-sheet-card" onClick={(e) => e.stopPropagation()}>
+            <p className="cm-mini" style={{ marginBottom: 4 }}>Instalar en tu iPhone</p>
+            <p className="cm-p" style={{ marginBottom: 14 }}>iOS instala desde Safari en 2 pasos:</p>
+            <div className="cm-install-steps">
+              <div className="cm-install-step"><span className="n">1</span><span>Toca el botón <b>Compartir</b> (el cuadrado con la flecha ↑, en la barra de abajo).</span></div>
+              <div className="cm-install-step"><span className="n">2</span><span>Baja y toca <b>“Agregar a inicio”</b>. Listo: aparece el ícono <b>Comemos</b>.</span></div>
+            </div>
+            <button className="cm-roll" style={{ marginTop: 16 }} onClick={() => setInstallHelp(false)}>Entendido</button>
+          </div>
+        </div>
+      )}
+
       {enfPicker && (
         <div className="cm-sheet" onClick={() => setEnfPicker(false)}>
           <div className="cm-sheet-card" onClick={(e) => e.stopPropagation()}>
@@ -740,6 +779,13 @@ export default function App() {
               <span className="ic">🔁</span>
               <span className="txt"><b>Lo que más cocinas:</b> {topCook.titulo}</span>
             </button>
+          )}
+
+          {canInstall && (
+            <div className="cm-install">
+              <button className="cm-install-btn" onClick={doInstall}>📲 Instalar app en mi teléfono</button>
+              <button className="cm-install-x" onClick={() => setInstallDismissed(true)} aria-label="Ahora no">✕</button>
+            </div>
           )}
         </div>
         );
