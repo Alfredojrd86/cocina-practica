@@ -391,6 +391,15 @@ html, body{ background-color:var(--cream); }
 .cm-home-lastcook .ic{ font-size:18px; }
 .cm-home-lastcook .txt{ font-size:13px; color:var(--ink); line-height:1.35; }
 .cm-home-lastcook b{ color:var(--green); }
+/* Instalar app (PWA) */
+.cm-install{ display:flex; align-items:center; gap:8px; margin-top:16px; }
+.cm-install-btn{ flex:1; min-height:48px; border:1.5px dashed var(--green); background:rgba(138,154,91,0.10); color:var(--green); border-radius:14px; font-family:var(--font-serif); font-weight:600; font-size:15px; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform .12s; }
+.cm-install-btn:active{ transform:scale(.98); }
+.cm-install-x{ width:40px; height:40px; flex-shrink:0; border:1px solid var(--line); background:var(--paper); color:var(--muted); border-radius:12px; font-size:14px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.cm-install-steps{ display:grid; gap:12px; }
+.cm-install-step{ display:flex; align-items:flex-start; gap:11px; font-size:14px; line-height:1.45; color:var(--ink); }
+.cm-install-step .n{ flex-shrink:0; width:24px; height:24px; display:grid; place-items:center; border-radius:50%; background:var(--terra); color:#fff; font-weight:800; font-size:13px; }
+.cm-install-step b{ color:var(--green); }
 
 /* Onboarding */
 .cm-onb{ position:fixed; inset:0; z-index:90; background-color:var(--cream); background-image:var(--sheet-bg); display:flex; align-items:center; justify-content:center; padding:24px 16px calc(env(safe-area-inset-bottom) + 16px); overflow-y:auto; }
