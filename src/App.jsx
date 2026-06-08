@@ -7,6 +7,7 @@ import { useFavorites } from "./hooks/useFavorites.js";
 import { usePantry } from "./hooks/usePantry.js";
 import { useEnfoques } from "./hooks/useEnfoques.js";
 import { useCookedHistory } from "./hooks/useCookedHistory.js";
+import { useDeviceLog } from "./hooks/useDeviceLog.js";
 import { supabase, supabaseReady } from "./lib/supabase.js";
 import { suggestN, suggestPool, buildWeek, buildWeekMixed, names, fmtQty } from "./lib/suggest.js";
 import { buildShareText, whatsappUrl } from "./lib/share.js";
@@ -267,6 +268,7 @@ export default function App() {
   const { favs, add: addFav, remove: removeFav, session, syncing } = useFavorites();
   const { pantry, setPantry } = usePantry(session);
   const { history: cooked, record: recordCooked, topFor: topCookedFor } = useCookedHistory(session);
+  useDeviceLog(session); // registra el dispositivo del usuario (solo Supabase)
   const { enfoques: customEnfoques, add: addEnfoque, remove: removeEnfoque } = useEnfoques(session);
   const [openSug, setOpenSug] = useState({});
   const [aiLoading, setAiLoading] = useState(false);
