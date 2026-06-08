@@ -58,6 +58,7 @@ flowchart LR
 **Cuentas / sync**
 - [x] Login Google (Supabase Auth)
 - [x] Favoritos y despensa sincronizados (RLS por usuario)
+- [x] Registro de **dispositivos** por usuario (tabla `devices`: plataforma/navegador/instalada, first/last seen) — solo Supabase (admin)
 
 **UX**
 - [x] **Undo** al quitar favorito y al "Lo cociné" (toast "Deshacer", 4s)

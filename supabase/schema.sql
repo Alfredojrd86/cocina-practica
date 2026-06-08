@@ -23,6 +23,30 @@ create policy "insert propios" on favorites for insert with check (auth.uid() = 
 create policy "update propios" on favorites for update using (auth.uid() = user_id);
 create policy "delete propios" on favorites for delete using (auth.uid() = user_id);
 
+-- ============ Dispositivos por usuario ============
+-- Un registro por (usuario, dispositivo). device_id se genera en el cliente y se
+-- guarda en localStorage. Sirve para saber desde cuántos/qué dispositivos entra
+-- una persona. Se consulta desde el dashboard de Supabase (admin).
+create table if not exists devices (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  device_id text not null,
+  platform text,            -- iOS | Android | Desktop | Otro
+  browser text,             -- Chrome | Safari | Firefox | Edge | Samsung Internet | Otro
+  installed boolean default false, -- true si corre como PWA instalada (standalone)
+  screen text,              -- "ancho x alto"
+  first_seen timestamptz default now(),
+  last_seen timestamptz default now(),
+  primary key (user_id, device_id)
+);
+
+alter table devices enable row level security;
+drop policy if exists "devices select propio" on devices;
+drop policy if exists "devices insert propio" on devices;
+drop policy if exists "devices update propio" on devices;
+create policy "devices select propio" on devices for select using (auth.uid() = user_id);
+create policy "devices insert propio" on devices for insert with check (auth.uid() = user_id);
+create policy "devices update propio" on devices for update using (auth.uid() = user_id);
+
 -- ============ Despensa (un registro JSON por usuario) ============
 create table if not exists pantry (
   user_id uuid primary key references auth.users(id) on delete cascade,
