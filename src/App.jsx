@@ -287,27 +287,36 @@ export default function App() {
   const toastTimer = useRef(null);
 
   // --- Instalar como app (PWA) ---
-  const [deferredPrompt, setDeferredPrompt] = useState(null); // Android: evento nativo
-  const [installHelp, setInstallHelp] = useState(false); // iOS: hoja de instrucciones
+  // El evento beforeinstallprompt se captura en index.html (window.__cmInstall)
+  // porque se dispara antes de que React monte; aquí solo lo leemos.
+  const [deferredPrompt, setDeferredPrompt] = useState(() => (typeof window !== "undefined" ? window.__cmInstall : null));
+  const [installHelp, setInstallHelp] = useState(null); // "ios" | "android" | null
   const [installDismissed, setInstallDismissed] = useLocalStorage("cm_install_dismissed", false);
+  const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
   const isStandalone = typeof window !== "undefined" && (window.matchMedia?.("(display-mode: standalone)").matches || window.navigator.standalone === true);
-  const isIOS = typeof navigator !== "undefined" && /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
-  const canInstall = !isStandalone && !installDismissed && (!!deferredPrompt || isIOS);
+  const isIOS = /iphone|ipad|ipod/i.test(ua) && !window.MSStream;
+  const isAndroid = /android/i.test(ua);
+  // Botón visible en móvil si no está instalada ni descartada: con prompt nativo
+  // instala; sin él (iOS, o Android que no disparó el evento) muestra guía.
+  const canInstall = !isStandalone && !installDismissed && (!!deferredPrompt || isIOS || isAndroid);
   useEffect(() => {
-    const onPrompt = (e) => { e.preventDefault(); setDeferredPrompt(e); };
-    const onInstalled = () => { setDeferredPrompt(null); setInstallDismissed(true); };
-    window.addEventListener("beforeinstallprompt", onPrompt);
+    const sync = () => setDeferredPrompt(window.__cmInstall || null);
+    const onInstalled = () => { window.__cmInstall = null; setDeferredPrompt(null); setInstallDismissed(true); };
+    window.addEventListener("cm-installable", sync); // disparado desde index.html
+    window.addEventListener("beforeinstallprompt", sync); // por si llega tarde
     window.addEventListener("appinstalled", onInstalled);
-    return () => { window.removeEventListener("beforeinstallprompt", onPrompt); window.removeEventListener("appinstalled", onInstalled); };
+    sync();
+    return () => { window.removeEventListener("cm-installable", sync); window.removeEventListener("beforeinstallprompt", sync); window.removeEventListener("appinstalled", onInstalled); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const doInstall = async () => {
     if (deferredPrompt) {
       deferredPrompt.prompt();
       try { await deferredPrompt.userChoice; } catch {}
+      window.__cmInstall = null;
       setDeferredPrompt(null);
-    } else if (isIOS) {
-      setInstallHelp(true);
+    } else {
+      setInstallHelp(isIOS ? "ios" : "android");
     }
   };
 
@@ -649,15 +658,24 @@ export default function App() {
       </div>
 
       {installHelp && (
-        <div className="cm-sheet" onClick={() => setInstallHelp(false)}>
+        <div className="cm-sheet" onClick={() => setInstallHelp(null)}>
           <div className="cm-sheet-card" onClick={(e) => e.stopPropagation()}>
-            <p className="cm-mini" style={{ marginBottom: 4 }}>Instalar en tu iPhone</p>
-            <p className="cm-p" style={{ marginBottom: 14 }}>iOS instala desde Safari en 2 pasos:</p>
-            <div className="cm-install-steps">
-              <div className="cm-install-step"><span className="n">1</span><span>Toca el botón <b>Compartir</b> (el cuadrado con la flecha ↑, en la barra de abajo).</span></div>
-              <div className="cm-install-step"><span className="n">2</span><span>Baja y toca <b>“Agregar a inicio”</b>. Listo: aparece el ícono <b>Comemos</b>.</span></div>
-            </div>
-            <button className="cm-roll" style={{ marginTop: 16 }} onClick={() => setInstallHelp(false)}>Entendido</button>
+            {installHelp === "ios" ? (<>
+              <p className="cm-mini" style={{ marginBottom: 4 }}>Instalar en tu iPhone</p>
+              <p className="cm-p" style={{ marginBottom: 14 }}>iOS instala desde Safari en 2 pasos:</p>
+              <div className="cm-install-steps">
+                <div className="cm-install-step"><span className="n">1</span><span>Toca el botón <b>Compartir</b> (el cuadrado con la flecha ↑, en la barra de abajo).</span></div>
+                <div className="cm-install-step"><span className="n">2</span><span>Baja y toca <b>“Agregar a inicio”</b>. Listo: aparece el ícono <b>Comemos</b>.</span></div>
+              </div>
+            </>) : (<>
+              <p className="cm-mini" style={{ marginBottom: 4 }}>Instalar en tu Android</p>
+              <p className="cm-p" style={{ marginBottom: 14 }}>Desde el navegador (Chrome, Edge, Samsung Internet):</p>
+              <div className="cm-install-steps">
+                <div className="cm-install-step"><span className="n">1</span><span>Abre el menú <b>⋮</b> (arriba a la derecha).</span></div>
+                <div className="cm-install-step"><span className="n">2</span><span>Toca <b>“Instalar aplicación”</b> o <b>“Agregar a pantalla principal”</b>.</span></div>
+              </div>
+            </>)}
+            <button className="cm-roll" style={{ marginTop: 16 }} onClick={() => setInstallHelp(null)}>Entendido</button>
           </div>
         </div>
       )}
