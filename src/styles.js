@@ -614,12 +614,9 @@ html, body{ background-color:var(--cream); }
 .cm-topbar-actions{ flex-wrap:nowrap; min-width:0; flex-shrink:1; }
 .cm-acctchip{ flex-shrink:0; }
 .cm-enfchip{ min-width:0; }
-/* Solo el chip de ENFOQUE (no el de cuenta) recorta su nombre. */
-.cm-enfchip:not(.cm-acctchip) .lbl{ display:inline-block; max-width:9em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; vertical-align:bottom; }
-@media (max-width:480px){
-  /* El nombre del enfoque (el texto más largo) pasa a solo emoji + ▾. */
-  .cm-enfchip:not(.cm-acctchip) .lbl{ display:none; }
-}
+/* El chip de ENFOQUE siempre muestra solo el emoji + ▾ (consistente en todos los
+   anchos y nombres). El nombre completo se ve al abrir el selector. */
+.cm-enfchip:not(.cm-acctchip) .lbl{ display:none; }
 @media (max-width:430px){
   .cm-brand{ font-size:clamp(16px,5.4vw,22px); }
   .cm-topbar{ gap:6px; }
