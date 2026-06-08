@@ -1,6 +1,30 @@
 -- Esquema de base de datos — ¿Qué comemos?
 -- Ejecutar en Supabase → SQL Editor. Idempotente (usa IF NOT EXISTS donde aplica).
 
+-- ============ Whitelist de beta testers ============
+-- Solo los correos en esta tabla pueden usar la app (gate suave en cliente +
+-- protección de las funciones de IA). Agrega testers con:
+--   insert into allowlist(email, name) values ('correo@gmail.com','Nombre');
+-- IMPORTANTE: agrega TU propio correo primero para no quedarte fuera.
+create table if not exists allowlist (
+  email text primary key,
+  name text,
+  added_at timestamptz default now()
+);
+alter table allowlist enable row level security;
+-- Sin políticas de SELECT: los usuarios NO leen la lista directamente.
+
+-- Devuelve true si el correo del usuario autenticado está en la lista.
+-- security definer: puede leer allowlist aunque RLS la oculte.
+create or replace function public.is_allowed()
+returns boolean language sql stable security definer set search_path = public as $$
+  select exists(
+    select 1 from allowlist a
+    where lower(a.email) = lower((select u.email from auth.users u where u.id = auth.uid()))
+  );
+$$;
+grant execute on function public.is_allowed() to anon, authenticated;
+
 -- ============ Favoritos (sincronizados por usuario) ============
 create table if not exists favorites (
   id uuid primary key default gen_random_uuid(),

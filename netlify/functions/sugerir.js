@@ -19,6 +19,19 @@ async function getUser(token, supaUrl, anon) {
   }
 }
 
+// Whitelist beta: ¿el correo está en la lista? Fail-open ante error de infra.
+async function isAllowed(email, supaUrl, service) {
+  if (!email) return false;
+  try {
+    const r = await fetch(`${supaUrl}/rest/v1/allowlist?select=email&email=ilike.${encodeURIComponent(email)}`, {
+      headers: { apikey: service, Authorization: `Bearer ${service}` },
+    });
+    if (!r.ok) return true;
+    const rows = await r.json();
+    return Array.isArray(rows) && rows.length > 0;
+  } catch { return true; }
+}
+
 // Incrementa el uso diario de forma atómica (RPC con service role). Devuelve {allowed, used, max_n}.
 async function bumpUsage(userId, supaUrl, service) {
   const r = await fetch(`${supaUrl}/rest/v1/rpc/increment_ai_usage`, {
@@ -68,6 +81,7 @@ export const handler = async (event) => {
   const token = authHeader.replace(/^Bearer\s+/i, "").trim();
   const userObj = await getUser(token, supaUrl, anon);
   if (!userObj || !userObj.id) return json(401, { error: "Inicia sesión para usar la IA." });
+  if (!(await isAllowed(userObj.email, supaUrl, service))) return json(403, { error: "Acceso por invitación. Tu correo no está en la lista de testers." });
 
   let usage;
   try {

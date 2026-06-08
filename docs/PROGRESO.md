@@ -59,6 +59,7 @@ flowchart LR
 - [x] Login Google (Supabase Auth)
 - [x] Favoritos y despensa sincronizados (RLS por usuario)
 - [x] Registro de **dispositivos** por usuario (tabla `devices`: plataforma/navegador/instalada, first/last seen) — solo Supabase (admin)
+- [x] **Whitelist de beta testers** (tabla `allowlist` + RPC `is_allowed`): gate suave en cliente (pantalla "lista de espera" si el correo no está) + funciones de IA protegidas (403)
 
 **UX**
 - [x] **Undo** al quitar favorito y al "Lo cociné" (toast "Deshacer", 4s)
