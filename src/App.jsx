@@ -1141,7 +1141,7 @@ export default function App() {
 
       {toast && (
         <div key={toast.id} className={"cm-toast " + toast.kind} role="status" aria-live="polite">
-          <span>{toast.msg}</span>
+          <span className="cm-toast-msg">{toast.msg}</span>
           {toast.action && (
             <button className="cm-toast-btn" onClick={() => { toast.action.fn(); setToast(null); }}>{toast.action.label}</button>
           )}
