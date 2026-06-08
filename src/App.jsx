@@ -647,7 +647,7 @@ export default function App() {
       <div className="cm-topbar">
         <span className="cm-brand" onClick={() => setTab("inicio")}>¿Qué <em>comemos</em>?</span>
         <div className="cm-topbar-actions">
-          <button className={"cm-iconbtn" + (tab === "favoritos" ? " on" : "")} onClick={() => setTab("favoritos")} aria-label="Tus favoritos">⭐</button>
+          <button className={"cm-enfchip cm-favchip" + (tab === "favoritos" ? " on" : "")} onClick={() => setTab("favoritos")} aria-label="Tus favoritos"><span className="e">⭐</span></button>
           <button className={"cm-enfchip cm-acctchip" + (session ? " in" : "")} onClick={() => { setConfirmOut(false); setAuthMsg(null); setAcctSheet(true); }} aria-label="Tu cuenta">
             <span className="e">{session ? "✓" : "👤"}</span><span className="lbl">{session ? "Cuenta" : "Entrar"}</span>
           </button>
