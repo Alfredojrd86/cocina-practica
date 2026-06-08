@@ -608,17 +608,27 @@ html, body{ background-color:var(--cream); }
 /* ---- Topbar responsiva (pantallas compactas) ----
    La marca nunca hace wrap y escala con el ancho; los chips se achican; en
    muy angosto quedan icon-only (se ocultan los textos, no el icono/emoji). */
-.cm-brand{ white-space:nowrap; flex-shrink:1; min-width:0; }
-.cm-topbar-actions{ flex-wrap:nowrap; }
+/* La marca siempre completa (es el home); como último recurso, … sin pisar nada. */
+.cm-brand{ white-space:nowrap; flex-shrink:0; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+/* Las acciones se encogen para no empujar la marca; el nombre del enfoque recorta. */
+.cm-topbar-actions{ flex-wrap:nowrap; min-width:0; flex-shrink:1; }
+.cm-acctchip{ flex-shrink:0; }
+.cm-enfchip{ min-width:0; }
+/* Solo el chip de ENFOQUE (no el de cuenta) recorta su nombre. */
+.cm-enfchip:not(.cm-acctchip) .lbl{ display:inline-block; max-width:9em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; vertical-align:bottom; }
+@media (max-width:480px){
+  /* El nombre del enfoque (el texto más largo) pasa a solo emoji + ▾. */
+  .cm-enfchip:not(.cm-acctchip) .lbl{ display:none; }
+}
 @media (max-width:430px){
-  .cm-brand{ font-size:clamp(15px,5.2vw,22px); }
+  .cm-brand{ font-size:clamp(16px,5.4vw,22px); }
   .cm-topbar{ gap:6px; }
-  .cm-enfchip, .cm-acctchip{ padding:6px 11px; font-size:12px; }
+  .cm-enfchip, .cm-acctchip{ padding:6px 10px; font-size:12px; }
   .cm-iconbtn{ width:34px; height:34px; font-size:16px; }
 }
-@media (max-width:360px){
-  /* Solo icono/emoji: se ocultan etiquetas para que todo entre en una fila */
-  .cm-acctchip .lbl, .cm-enfchip .lbl, .cm-enfchip .cv{ display:none; }
+@media (max-width:345px){
+  /* Pantallas muy chicas: la cuenta también queda solo icono. */
+  .cm-acctchip .lbl{ display:none; }
   .cm-enfchip, .cm-acctchip{ padding:7px 9px; }
 }
 `;
