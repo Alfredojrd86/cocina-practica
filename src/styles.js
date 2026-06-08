@@ -404,6 +404,11 @@ html, body{ background-color:var(--cream); }
 
 /* Onboarding */
 .cm-onb{ position:fixed; inset:0; z-index:90; background-color:var(--cream); background-image:var(--sheet-bg); display:flex; align-items:center; justify-content:center; padding:24px 16px calc(env(safe-area-inset-bottom) + 16px); overflow-y:auto; }
+/* Pantalla de bloqueo (whitelist beta): cubre todo, por encima de cualquier cosa. */
+.cm-block{ position:fixed; inset:0; z-index:100; background-color:var(--cream); background-image:var(--sheet-bg); display:flex; align-items:center; justify-content:center; padding:24px 20px calc(env(safe-area-inset-bottom) + 16px); }
+.cm-block-card{ background:var(--paper); border:1px solid var(--line); border-radius:18px; padding:26px 22px; max-width:380px; width:100%; box-shadow:0 16px 40px -24px rgba(47,61,46,0.5); display:grid; gap:6px; }
+.cm-block-emoji{ font-size:40px; text-align:center; margin-bottom:4px; }
+.cm-block-card .cm-outline{ margin-top:16px; }
 .cm-onb-card{ width:100%; max-width:460px; }
 .cm-onb-h{ font-family:var(--font-head); font-weight:700; font-size:42px; color:var(--green); margin:0 0 6px; }
 .cm-onb-h em{ font-style:italic; font-weight:500; color:var(--terra); }

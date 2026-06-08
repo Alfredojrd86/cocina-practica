@@ -328,6 +328,21 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Whitelist (beta): si el correo no está en la lista, se bloquea la app.
+  // Fail-open ante error para no romper a testers válidos.
+  const [accessBlocked, setAccessBlocked] = useState(false);
+  useEffect(() => {
+    if (!supabase || !session) { setAccessBlocked(false); return; }
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data, error } = await supabase.rpc("is_allowed");
+        if (!cancelled) setAccessBlocked(!error && data === false);
+      } catch { if (!cancelled) setAccessBlocked(false); }
+    })();
+    return () => { cancelled = true; };
+  }, [session]);
+
   const showToast = (msg, kind = "ok", action = null) => {
     setToast({ msg, kind, action, id: Date.now() });
     clearTimeout(toastTimer.current);
@@ -646,6 +661,21 @@ export default function App() {
           <feDisplacementMap in="SourceGraphic" in2="noise" scale="4" xChannelSelector="R" yChannelSelector="G" />
         </filter>
       </svg>
+
+      {accessBlocked && (
+        <div className="cm-block">
+          <div className="cm-block-card">
+            <div className="cm-block-emoji">🔒</div>
+            <h2 className="cm-h2" style={{ textAlign: "center" }}>App en pruebas privadas</h2>
+            <p className="cm-p" style={{ textAlign: "center" }}>
+              Tu correo <b>{session?.user?.email}</b> aún no está en la lista de testers.
+              Pide acceso a quien te compartió la app.
+            </p>
+            <button className="cm-outline" onClick={() => { signOut(); }}>Cerrar sesión</button>
+          </div>
+        </div>
+      )}
+
       <div className="cm-topbar">
         <span className="cm-brand" onClick={() => setTab("inicio")}>¿Qué <em>comemos</em>?</span>
         <div className="cm-topbar-actions">
