@@ -68,6 +68,7 @@ flowchart LR
 - [x] Topbar responsiva (marca sin wrap vía clamp; chips compactos/icon-only en pantallas angostas)
 - [x] Topbar **sticky** (siempre visible al scrollear): logo→Inicio, ⭐ favoritos, cuenta, cambiar enfoque desde cualquier pantalla
 - [x] PWA auto-update (`skipWaiting`/`clientsClaim`): los cambios se ven al reabrir, sin vaciar caché
+- [x] Botón **Instalar app** en el dashboard: Android dispara el prompt nativo; iOS muestra instrucciones (Safari → Agregar a inicio); se oculta si ya está instalada o se descarta
 - [x] **Inicio rediseñado** (dashboard): enfoque tappable + hero "¿Qué como ahora?" + estado de un vistazo (despensa/favoritas/crear enfoque) + "lo que más cocinas"; sin duplicar la barra
 
 **Diseño**
