@@ -1,7 +1,7 @@
 # Progreso del proyecto
 
 > Dónde estamos, qué está hecho y qué sigue. Actualizar al cerrar cada sesión de trabajo.
-> Última actualización: 2026-06-07
+> Última actualización: 2026-06-08
 
 ## Estado actual
 
@@ -59,7 +59,7 @@ flowchart LR
 - [x] Login Google (Supabase Auth)
 - [x] Favoritos y despensa sincronizados (RLS por usuario)
 - [x] Registro de **dispositivos** por usuario (tabla `devices`: plataforma/navegador/instalada, first/last seen) — solo Supabase (admin)
-- [x] **Whitelist de beta testers** (tabla `allowlist` + RPC `is_allowed`): gate suave en cliente (pantalla "lista de espera" si el correo no está) + funciones de IA protegidas (403)
+- [x] **Whitelist de beta testers** (tabla `allowlist` + RPC `is_allowed`): gate suave en cliente (pantalla "lista de espera" si el correo no está) + funciones de IA protegidas (403). **Activo y verificado en prod** (ver Operación)
 
 **UX**
 - [x] **Undo** al quitar favorito y al "Lo cociné" (toast "Deshacer", 4s)
@@ -103,6 +103,30 @@ flowchart LR
 - **Despensa por cantidades**: el modelo 3-niveles agotaba a los 3 usos (irreal).
 - **Tema único centralizado** (`theme.js`): cambiar diseño = editar tokens en 1 archivo.
 - **Boleta en otra fuente**: la lista de compras imita una factura a propósito.
+- **Whitelist por tabla (no Auth nativo)**: con Google OAuth cualquiera puede loguear; el control de acceso se hace con la tabla `allowlist` + RPC `is_allowed` (gate suave) y las funciones de IA lo revalidan (403). Verificado en prod.
+
+## Operación (admin, vía Supabase)
+
+**Beta testers (whitelist).** Solo los correos en `allowlist` usan la app.
+```sql
+-- agregar tester
+insert into allowlist(email, name) values ('correo@gmail.com', 'Nombre');
+-- quitar tester
+delete from allowlist where lower(email) = lower('correo@gmail.com');
+-- ver lista
+select * from allowlist order by added_at desc;
+```
+Case-insensitive. Quien no está ve "App en pruebas privadas". La IA devuelve 403.
+Estado: tabla + RPC en prod; correo del owner ya en la lista.
+
+**Dispositivos por usuario.** Tabla `devices` (plataforma/navegador/instalada, first/last seen).
+```sql
+-- usuarios con más de un dispositivo
+select user_id, count(*) dispositivos,
+       array_agg(platform || '/' || browser || case when installed then ' (instalada)' else '' end
+                 order by last_seen desc) detalle
+from devices group by user_id having count(*) > 1 order by dispositivos desc;
+```
 
 ## Cómo retomar
 
